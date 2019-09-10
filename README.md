@@ -17,6 +17,7 @@ Use [dds](https://github.com/dds-bridge/dds) and [python-dds](https://github.com
 #### Procedure
 Clone [dds](https://github.com/dds-bridge/dds) and make 'libdds.so'.
 ```
+$ mkdir bridge_env/dds_files
 $ cd bridge_env/dds_files
 $ git clone https://github.com/dds-bridge/dds
 
