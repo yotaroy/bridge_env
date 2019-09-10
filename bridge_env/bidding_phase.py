@@ -1,5 +1,6 @@
 """
 Contract bridge bidding environment
+
 class 'BiddingPhase'
     - initialize: Initialize bidding phase environment. you should initialize before a bidding phase starts.
     - take_bid: check the end of the bidding phase and whether a bid is illegal.

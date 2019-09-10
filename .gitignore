@@ -1,5 +1,7 @@
 .idea/
 __pycache__
 
-bridge_env/dds_files/
-bridge_env/dds_files/
+bridge_env/dds_files/dds
+bridge_env/dds_files/python_dds
+
+*.csv

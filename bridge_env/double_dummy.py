@@ -1,7 +1,8 @@
 """
 Contract bridge double dummy solver
-- calc_double_dummy: Return double dummy result.
-                    The style of the result is multiple dictionary:
+
+    - calc_double_dummy: Return double dummy result.
+                        The style of the result is multiple dictionary:
                         result[declarer][trump], declarer => N, E, S, W, trump => C, D, H, S, NT
 
 """

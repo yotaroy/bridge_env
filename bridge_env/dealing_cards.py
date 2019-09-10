@@ -1,5 +1,6 @@
 """
 Contract bridge dealing cards environment
+
 class 'Dealing'
     - deal_card: Deal 13 cards each to 4 players randomly.
     - deal_opponent_again: Deal 13 cards each to two opponent players again.
@@ -18,11 +19,11 @@ class Dealing:
 
     def __init__(self):
         self.deal_array = np.array(range(52))
-        self.deal = {}
+        self.deal = dict()
         self.player = ['N', 'E', 'S', 'W']
         self.pbn_style = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
         self.pbn_hand = ''
-        self.binary_hand = {}
+        self.binary_hand = dict()
 
     def deal_card(self):
         random.shuffle(self.deal_array)
