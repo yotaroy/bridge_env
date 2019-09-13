@@ -34,7 +34,7 @@ from bridge_env.double_dummy import calc_double_dummy
 DATASET_NUM = 10**5
 PLAYER = ['N', 'E', 'S', 'W']
 TRUMP = ['C', 'D', 'H', 'S', 'NT']
-name = 'hand_data'
+name = 'hand_100000_'
 
 i = 1
 while os.path.isfile(name+str(i).zfill(2)+'.csv'):

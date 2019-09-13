@@ -1,4 +1,4 @@
-# Bridge\_A2C
+# bridge\_bidding\_env
 
 ## Requirements
 - Python 3.7.3
