@@ -25,6 +25,8 @@ RUN curl -o miniconda.sh -O  https://repo.continuum.io/miniconda/Miniconda3-late
 
 ENV PATH /opt/conda/bin:$PATH
 
+RUN cd / && git clone https://github.com/dds-bridge/dds && git cd /dds && git checkout 9c554cc
+
 RUN pip install kiwisolver matplotlib numpy tqdm
 
 
