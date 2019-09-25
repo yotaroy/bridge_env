@@ -27,6 +27,8 @@ ENV PATH /opt/conda/bin:$PATH
 
 RUN cd / && git clone https://github.com/dds-bridge/dds && git cd /dds && git checkout 9c554cc
 
+RUN cd / && git clone https://github.com/Afwas/python-dds && mv /python-dds /python_dds && cd /python_dds && git checkout 653dbd5
+
 RUN pip install kiwisolver matplotlib numpy tqdm
 
 
