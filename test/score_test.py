@@ -23,7 +23,9 @@ class TestScore(unittest.TestCase):
                       (7, 1, 13, False, False, False, 1440),    # 7D 13tricks
                       (6, 1, 13, False, False, True, 1580),     # 6DXX 13tricks
                       (3, 4, 10, False, False, False, 430),     # 3NT 10tricks
-                      (2, 2, 10, False, False, False, 170)      # 2H 10tricks
+                      (2, 2, 10, False, False, False, 170),     # 2H 10tricks
+                      (3, 0, 9, False, False, False, 110),      # 3C 9tricks
+                      (4, 3, 10, False, True, False, 590)       # 4SX 11tricks
                       )
 
         for contract_num, contract_suit, tricks, vul, X, XX, point in test_cases:
@@ -35,7 +37,11 @@ class TestScore(unittest.TestCase):
     def test_score_to_imp(self):
 
         test_cases = ((450, 50, 11),
-                      (1100, -420, 12))
+                      (1100, -420, 12),
+                      (100, 620, 12),
+                      (600, -600, 0),
+                      (50, 0, 2)
+                      )
 
         for first, second, imp in test_cases:
             with self.subTest(first=first, second=second, imp=imp):
