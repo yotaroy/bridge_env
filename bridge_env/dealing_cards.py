@@ -12,13 +12,13 @@ class 'Dealing'
 """
 
 import numpy as np
-import random
 
 
 class Dealing:
 
-    def __init__(self):
-        self.deal_array = np.array(range(52))
+    def __init__(self, seed=None):
+        np.random.seed(seed)
+        self.deal_array = np.arange(52)
         self.deal = dict()
         self.player = ['N', 'E', 'S', 'W']
         self.pbn_style = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
@@ -26,7 +26,7 @@ class Dealing:
         self.binary_hand = dict()
 
     def deal_card(self):
-        random.shuffle(self.deal_array)
+        np.random.shuffle(self.deal_array)
         self.deal['N'] = self.deal_array[:13]
         self.deal['E'] = self.deal_array[13:26]
         self.deal['S'] = self.deal_array[26:39]
@@ -36,7 +36,7 @@ class Dealing:
 
     def deal_opponent_again(self):
         deal_opponent = np.hstack((self.deal['E'], self.deal['W']))
-        random.shuffle(deal_opponent)   # deal hands of the opponent players(E and W) again.
+        np.random.shuffle(deal_opponent)   # deal hands of the opponent players(E and W) again.
         self.deal['E'] = deal_opponent[:13]
         self.deal['W'] = deal_opponent[13:26]
 
@@ -66,7 +66,10 @@ class Dealing:
 
 
 if __name__ == '__main__':
-    deal = Dealing()
+    deal = Dealing(0)
+    deal.deal_card()
+    print(deal.pbn_hand)
+    print(deal.binary_hand)
     deal.deal_card()
     print(deal.pbn_hand)
     print(deal.binary_hand)
