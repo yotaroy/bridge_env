@@ -60,10 +60,10 @@ def calc_score(contract_num, contract_suit, tricks, vul=False, X=False, XX=False
     elif tricks < contract_num + 6:  # down
         down_num = contract_num + 6 - tricks
         if XX:
-            return DOWN_XX[vul][down_num]
+            return DOWN_XX[vul][down_num-1]
         if X:
-            return DOWN_X[vul][down_num]
-        return DOWN[vul][down_num]
+            return DOWN_X[vul][down_num-1]
+        return DOWN[vul][down_num-1]
 
     if contract_suit <= 1:  # minor suit (C, D)
         point = MINOR * contract_num
