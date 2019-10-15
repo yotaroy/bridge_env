@@ -44,14 +44,22 @@ IMP_LIST = (20, 50, 90, 130, 170,
             1300, 1500, 1750, 2000, 2250,
             2500, 3000, 3500, 4000)
 
+SUIT_TO_NUM = {'C': 0, 'D': 1, 'H': 2, 'S': 3, 'NT': 4}
 
-def calc_score(contract_num, contract_suit, tricks, vul=False, X=False, XX=False):
-    """
-    contract_num: 1-7, contract_suit: 0-4(C,D,H,S,NT), trick: 0-13
-    contract_num: 0 = 4 passes
-    vul: False (not vulnerable) or True (vulnerable)
+
+def calc_score(contract_num, contract_trump, tricks, vul=False, X=False, XX=False):
     """
 
+    :param contract_num: int 1-7
+    :param contract_trump: str 'C','D','H','S'or'NT'
+    :param tricks: int 0-13
+    :param vul: bool
+    :param X: bool
+    :param XX: bool
+    :return: int
+    """
+
+    contract_trump = SUIT_TO_NUM[contract_trump]
     vul = 1 if vul else 0
 
     if contract_num == 0:  # 4 passes
@@ -65,10 +73,10 @@ def calc_score(contract_num, contract_suit, tricks, vul=False, X=False, XX=False
             return DOWN_X[vul][down_num-1]
         return DOWN[vul][down_num-1]
 
-    if contract_suit <= 1:  # minor suit (C, D)
+    if contract_trump <= 1:  # minor suit (C, D)
         point = MINOR * contract_num
         up_make_point = MINOR
-    elif contract_suit <= 3:  # major suit (H, S)
+    elif contract_trump <= 3:  # major suit (H, S)
         point = MAJOR * contract_num
         up_make_point = MAJOR
     else:  # NT
@@ -120,13 +128,18 @@ def score_to_imp(first_score, second_score):
 
 def calc_dds_bid_score(bid, dds, vul=False, X=False, XX=False):
     """
-    bid: 0~34(1C-7NT)
-    dds : 5dims array (C0, D1, H2, S3, NT4)
-    vul: False (not vulnerable) or True (vulnerable)
+
+    :param bid: int 0-34(1C-7NT)
+    :param dds: 5dims array (C0, D1, H2, S3, NT4)
+    :param vul: bool
+    :param X: bool
+    :param XX: bool
+    :return: int score
     """
+
     contract_num = bid // 5 + 1
-    contract_suit = bid % 5  # C0, D1, H2, S3, NT4
+    contract_trump = bid % 5  # C0, D1, H2, S3, NT4
 
-    tricks = dds[contract_suit]
+    tricks = dds[contract_trump]
 
-    return calc_score(contract_num, contract_suit, tricks, vul, X, XX)
+    return calc_score(contract_num, contract_trump, tricks, vul, X, XX)

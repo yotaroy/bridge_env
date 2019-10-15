@@ -18,14 +18,14 @@ class TestScore(unittest.TestCase):
     # test calc_score
     def test_calc_score(self):
 
-        test_cases = ((3, 4, 10, False, False, False, 430),     # 3NT 10tricks
-                      (4, 1, 13, True, False, True, 2120),      # 4DXX vul 13tricks
-                      (7, 1, 13, False, False, False, 1440),    # 7D 13tricks
-                      (6, 1, 13, False, False, True, 1580),     # 6DXX 13tricks
-                      (3, 4, 10, False, False, False, 430),     # 3NT 10tricks
-                      (2, 2, 10, False, False, False, 170),     # 2H 10tricks
-                      (3, 0, 9, False, False, False, 110),      # 3C 9tricks
-                      (4, 3, 10, False, True, False, 590)       # 4SX 11tricks
+        test_cases = ((3, 'NT', 10, False, False, False, 430),     # 3NT 10tricks
+                      (4, 'D', 13, True, False, True, 2120),      # 4DXX vul 13tricks
+                      (7, 'D', 13, False, False, False, 1440),    # 7D 13tricks
+                      (6, 'D', 13, False, False, True, 1580),     # 6DXX 13tricks
+                      (3, 'NT', 10, False, False, False, 430),     # 3NT 10tricks
+                      (2, 'H', 10, False, False, False, 170),     # 2H 10tricks
+                      (3, 'C', 9, False, False, False, 110),      # 3C 9tricks
+                      (4, 'S', 10, False, True, False, 590)       # 4SX 11tricks
                       )
 
         for contract_num, contract_suit, tricks, vul, X, XX, point in test_cases:
