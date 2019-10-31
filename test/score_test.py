@@ -12,7 +12,6 @@ import unittest
 import bridge_env.score as sc
 
 
-# test class of score.py
 class TestScore(unittest.TestCase):
 
     # test calc_score
