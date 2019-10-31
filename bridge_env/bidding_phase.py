@@ -116,17 +116,18 @@ class BiddingPhase:
 
     def bidding_result(self):
         if self.last_bid is None:   # 4 consecutive passes
-            return None
+            contract_num, contract_trump, declarer = None, None, None
+            contract = 'Passed Out'
+        else:
+            contract_num, contract_trump = self.convert_num_to_contract(self.last_bid)
+            declarer = self.declarer_check[TEAM_PLAYERS[self.last_bidder]][contract_trump]
 
-        contract_num, contract_trump = self.convert_num_to_contract(self.last_bid)
-        declarer = self.declarer_check[TEAM_PLAYERS[self.last_bidder]][contract_trump]
-
-        contract = str(contract_num) + contract_trump
-        if self.called_double:
-            if self.called_redouble:
-                contract = contract + 'XX'
-            else:
-                contract = contract + 'X'
+            contract = str(contract_num) + contract_trump
+            if self.called_double:
+                if self.called_redouble:
+                    contract = contract + 'XX'
+                else:
+                    contract = contract + 'X'
 
         result = {'declarer': declarer, 'contract': contract, 'num': contract_num, 'trump': contract_trump,
                   'double': self.called_double, 'redouble': self.called_redouble}
