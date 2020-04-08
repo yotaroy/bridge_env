@@ -1,11 +1,11 @@
-
+import math
 
 class Display:
     def __init__(self, env):
         self.env = env
 
     def display_phase(self):
-        print('==================================================')
+        print('======================================================================')
         print('Dealer: ', self.env.dealer)
         print('Active Player: ', self.env.active_player)
 
@@ -25,24 +25,23 @@ class Display:
         w = 15
         w2 = 2
         w3 = 2
-        print(' '*(w-3), 'Player: N')
+        print(' '*(w-3), '[Player: N]')
         print(' '*w, 'S: ', *s['N'][3])
         print(' '*w, 'H: ', *s['N'][2])
         print(' '*w, 'D: ', *s['N'][1])
         print(' '*w, 'C: ', *s['N'][0])
         print()
-        print('Player: W', ' '*20, 'Player: E')
+        print('[Player: W]', ' '*20, '[Player: E]')
         print(' '*w2, 'S: ', *s['W'][3], ' '*w3, 'S: ', *s['E'][3])
         print(' '*w2, 'H: ', *s['W'][2], ' '*w3, 'H: ', *s['E'][2])
         print(' '*w2, 'D: ', *s['W'][1], ' '*w3, 'D: ', *s['E'][1])
         print(' '*w2, 'C: ', *s['W'][0], ' '*w3, 'C: ', *s['E'][0])
         print()
-        print(' '*(w-3), 'Player: S')
+        print(' '*(w-3), '[Player: S]')
         print(' '*w, 'S: ', *s['S'][3])
         print(' '*w, 'H: ', *s['S'][2])
         print(' '*w, 'D: ', *s['S'][1])
         print(' '*w, 'C: ', *s['S'][0])
-
 
     def display_available_bid(self):
         print('Available bids: ', end='')
@@ -59,21 +58,48 @@ class Display:
 
 
     def display_bid_history(self):
-        s = {'N': '', 'E': '', 'S': '', 'W': ''}
+        s = {'N': [], 'E': [], 'S': [], 'W': []}
+        l = 0
         for p in PLAYERS:
             for b in self.env.player_bid_history[p]:
-                s[p] += BID_ARRAY[b] + ', '
+                s[p].append(BID_ARRAY[b])
+                l += 1
+        h = math.ceil(l/(4*4))
 
-        w = 20
-        w2 = 2
-        print(' '*(w-3), 'Player: N')
-        print(' '*w, s['N'][:-2])
+        wn = 28
+        ww = 3
+        we = 43
+        ws = 18
+        print(' '*(wn-3), '[Player: N]')
+        for i in range(h):
+            if len(s['N']) > i*4:
+                print(' '*wn, ', '.join(s['N'][i*4:min((i+4)*h, len(s['N']))]))
+            else:
+                print()
         print()
-        print('Player: W', ' '*w*2, 'Player: E')
-        print(' '*w2, s['W'][:-2], ' '*(w*2+w2+5), s['E'][:-2])
+
+        print(' '*(ww-3), '[Player: W]')
+        for i in range(h):
+            if len(s['W']) > i*4:
+                print(' '*ww, ', '.join(s['W'][i*4:min((i+4)*h, len(s['W']))]))
+            else:
+                print()
         print()
-        print(' '*(w-3), 'Player: S')
-        print(' '*w, s['N'][:-2])
+
+        print(' '*(we-3), '[Player: E]')
+        for i in range(h):
+            if len(s['E']) > i*4:
+                print(' '*we, ', '.join(s['E'][i*4:min((i+4)*h, len(s['E']))]))
+            else:
+                print()
+        print()
+
+        print(' '*(ws-3), '[Player: S]')
+        for i in range(h):
+            if len(s['S']) > i*4:
+                print(' '*ws, ', '.join(s['S'][i*4:min((i+4)*h, len(s['S']))]))
+            else:
+                print()
 
 
 PLAYERS = ['N', 'E', 'S', 'W']
@@ -98,7 +124,7 @@ if __name__ == '__main__':
     print(c.pbn_hand)
     d.display_hands(c.binary_hand)
 
-    for bid in [6, 8, 12, 35, 20, 35]:
+    for bid in [6, 7, 8, 12, 13, 14, 15, 16, 17, 35, 18, 36, 35, 19, 20, 35, 35, 35]:
         b.take_bid(bid)
     print()
     d.display_bid_history()
