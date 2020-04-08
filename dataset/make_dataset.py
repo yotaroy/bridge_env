@@ -32,8 +32,9 @@ from bridge_env.double_dummy import calc_double_dummy
 PLAYER = ['N', 'E', 'S', 'W']
 TRUMP = ['C', 'D', 'H', 'S', 'NT']
 
+import random
 
-def make(path, seed=0, num=10**5):
+def make(path, seed=0, num=10**5, add_pbn=False, add_vul=False, add_dealer=False):
     for i in tqdm(range(num)):
         dealing = Dealing(seed)
         dealing.deal_card()
@@ -44,6 +45,17 @@ def make(path, seed=0, num=10**5):
                 'dds_results': {p: {t: int(dds_results[p][t]) for t in TRUMP} for p in PLAYER},
                 'seed': seed
                 }
+        if add_pbn:
+            data['pbn_hands'] = dealing.pbn_hand[:-1]
+
+        if add_vul:     # select a random vulnerable setting
+            random.seed(seed)
+            data['vul'] = random.choice(['None', 'NS', 'EW', 'Both'])
+
+        if add_dealer:     # randomly select a dealer
+            if not add_vul:
+                random.seed(seed)
+            data['dealer'] = random.choice(['N', 'E', 'S', 'W'])
 
         with open(path, 'a') as outfile:
             json.dump(data, outfile)
@@ -71,7 +83,7 @@ if __name__ == '__main__':
 
     elif i == 25:
         print('eval')
-        make(path_set(5000, dataset_type='eval'), seed=5*(10**6), num=10**5)
+        make(path_set(5000, dataset_type='eval'), seed=5*(10**6), num=10**5, add_pbn=True, add_vul=True, add_dealer=True)
     else:
         print('end')
 
