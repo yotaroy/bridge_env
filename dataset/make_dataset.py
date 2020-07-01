@@ -26,7 +26,7 @@ sys.path.append('./../.')
 
 from tqdm import tqdm
 import json
-from bridge_env.dealing_cards import Dealing
+from bridge_env.hands import Hands
 from bridge_env.double_dummy import calc_double_dummy
 
 PLAYER = ['N', 'E', 'S', 'W']
@@ -36,7 +36,7 @@ import random
 
 def make(path, seed=0, num=10**5, add_pbn=False, add_vul=False, add_dealer=False):
     for i in tqdm(range(num)):
-        dealing = Dealing(seed)
+        dealing = Hands(seed)
         dealing.deal_card()
 
         binary_hands = dealing.binary_hand
