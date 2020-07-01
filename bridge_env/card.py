@@ -8,6 +8,12 @@ class Suit(IntEnum):
     S = 4
     NT = 5
 
+    def is_minor(self):
+        return self.value <= 2
+
+    def is_major(self):
+        return 2 < self.value <= 4
+
 
 class Card:
     def __init__(self, rank: int, suit: Suit):

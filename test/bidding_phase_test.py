@@ -10,6 +10,7 @@ sys.path.append('./../.')
 
 import unittest
 from bridge_env.bidding_phase import BiddingPhase
+from bridge_env.bid import Bid
 
 
 class TestScore(unittest.TestCase):
@@ -17,14 +18,13 @@ class TestScore(unittest.TestCase):
     # test bidding_result in the case of passed out
     def test_passed_out(self):
         BP = BiddingPhase()
-        BP.initialize()
 
-        BP.take_bid(35)
-        BP.take_bid(35)
-        BP.take_bid(35)
-        BP.take_bid(35)
+        BP.take_bid(Bid.Pass)
+        BP.take_bid(Bid.Pass)
+        BP.take_bid(Bid.Pass)
+        BP.take_bid(Bid.Pass)
 
-        result = {'declarer': None, 'contract': 'Passed Out', 'num': None, 'trump': None,
+        result = {'declarer': None, 'contract': 'Passed Out', 'level': None, 'trump': None,
                   'double': False, 'redouble': False}
 
         self.assertEqual(BP.bidding_result(), result)

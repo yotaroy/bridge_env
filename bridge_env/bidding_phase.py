@@ -12,151 +12,130 @@ class 'BiddingPhase'
 """
 
 import numpy as np
+from bridge_env.player import Player, Team
+from bridge_env.card import Suit
+from bridge_env.bid import Bid
+from enum import IntEnum
 
-TEAM_PLAYERS = {'N': ('N', 'S'), 'E': ('E', 'W'), 'S': ('N', 'S'), 'W': ('E', 'W')}
-TRUMPS = ['C', 'D', 'H', 'S', 'NT']
-NEXT_ACTIVE_PLAYER = {'N': 'E', 'E': 'S', 'S': 'W', 'W': 'N'}
+
+class BiddingPhaseState(IntEnum):
+    illegal = -1        # illegal bid
+    ongoing = 1         # bidding phase is ongoing
+    finished = 2        # bidding phase is over
 
 
 class BiddingPhase:
-    def __init__(self):
-        self.dealer = None
-        self.active_player = None
-        self.last_bidder = None
-        self.last_bid = None
-        self.called_double = None
-        self.called_redouble = None
+    def __init__(self, dealer: Player = Player.N):
+        self.dealer = dealer                    # player who firstly take a bid
+        self.active_player = self.dealer        # player who take a bid in this turn
 
-        self.bid_history = None
-        self.player_bid_history = None
-        self.declarer_check = None
-        self.available_bid = None
-
-    def initialize(self, dealer='N'):
-        self.dealer = dealer                # player who firstly take a bid
-        self.active_player = self.dealer    # player who take a bid in this turn
-        self.last_bidder = None             # player who take the last bid except pass, double and redouble
-        self.last_bid = None                # the last bid except pass, double and redouble
-        self.called_double = False
-        self.called_redouble = False
+        self.__last_bidder = None               # player who take the last bid except pass, double and redouble
+        self.__last_bid = None                  # the last bid except pass, double and redouble
+        self.__called_double = False
+        self.__called_redouble = False
 
         self.bid_history = []
-        self.player_bid_history = {'N': [], 'E': [], 'S': [], 'W': []}
-        self.declarer_check = {('N', 'S'): {'C': None, 'D': None, 'H': None, 'S': None, 'NT': None},
-                               ('E', 'W'): {'C': None, 'D': None, 'H': None, 'S': None, 'NT': None}}
+        self.player_bid_history = {player: [] for player in Player}
+        self.__declarer_check = {team: {suit: None for suit in Suit} for team in Team}
+
         self.available_bid = np.ones(38)
-        self.available_bid[-2:] = 0     # double and redouble is illegal
+        self.available_bid[-2:] = 0     # double and redouble are set to be illegal
 
-    def take_bid(self, bid):
-        """
-        bid = 0-37 (int): 1C, 1D, 1H, 1S, 1NT, 2C, ..., 7NT, pass, double, redouble
-        the function return 'the end of the bidding phase' (True ,False or None). None is illegal bid
-        """
-        if bid < 0 or 37 < bid:     # illegal bid number
-            return None
+    def take_bid(self, bid: Bid) -> BiddingPhaseState:
+        if self.available_bid[bid.idx] == 0:      # illegal bid
+            return BiddingPhaseState.illegal
 
-        if self.available_bid[bid] == 0:      # illegal bid
-            return None
-
-        if bid == 35:  # pass
+        if bid == Bid.Pass:
             if len(self.bid_history) >= 3:
-                if self.bid_history[-1] == self.bid_history[-2] == 35:  # three consecutive passes
+                if self.bid_history[-1] == Bid.Pass and self.bid_history[-2] == Bid.Pass:  # three consecutive passes
                     self.bid_history.append(bid)
                     self.player_bid_history[self.active_player].append(bid)
                     self.active_player = None
-                    return True
+                    return BiddingPhaseState.finished
 
-        elif bid == 36:  # double
-            self.called_double = True
-        elif bid == 37:  # redouble
-            self.called_redouble = True
+        elif bid == Bid.X:  # double
+            self.__called_double = True
+        elif bid == Bid.XX:  # redouble
+            self.__called_redouble = True
 
         else:       # regular bid (bid = [0,34])
-            self.last_bidder = self.active_player
-            self.last_bid = bid
+            self.__last_bidder = self.active_player
+            self.__last_bid = bid
 
-            trick, trump = self.convert_num_to_contract(bid)
-            if self.declarer_check[TEAM_PLAYERS[self.active_player]][trump] is None:
-                self.declarer_check[TEAM_PLAYERS[self.active_player]][trump] = self.active_player
+            if self.__declarer_check[self.active_player.team][bid.suit] is None:
+                self.__declarer_check[self.active_player.team][bid.suit] = self.active_player
 
-            self.called_double, self.called_redouble = False, False
-            self.available_bid[:bid+1] = 0
+            self.__called_double, self.__called_redouble = False, False
+            self.available_bid[:bid.idx+1] = 0
 
         self.bid_history.append(bid)
         self.player_bid_history[self.active_player].append(bid)
-        self.active_player = NEXT_ACTIVE_PLAYER[self.active_player]
+        self.active_player = self.active_player.next_player
 
-        if self.last_bidder is not None:
+        if self.__last_bidder is not None:
             # check double
-            if (not self.called_double) and (not self.called_redouble) and \
-                    (self.active_player not in TEAM_PLAYERS[self.last_bidder]):
-                self.available_bid[36] = 1
+            if (not self.__called_double) and (not self.__called_redouble) and \
+                    (not self.active_player.is_teammate(self.__last_bidder)):
+                self.available_bid[Bid.X.idx] = 1
             else:
-                self.available_bid[36] = 0
+                self.available_bid[Bid.X.idx] = 0
 
             # check redouble
-            if self.called_double and (not self.called_redouble) and \
-                    self.active_player in TEAM_PLAYERS[self.last_bidder]:
-                self.available_bid[37] = 1
+            if self.__called_double and (not self.__called_redouble) and self.active_player.is_teammate(self.__last_bidder):
+                self.available_bid[Bid.XX.idx] = 1
             else:
-                self.available_bid[37] = 0
+                self.available_bid[Bid.XX.idx] = 0
 
-        return False
-
-    def convert_num_to_contract(self, num):
-        if num < 0 or num > 34:
-            return None, None
-
-        trick = num // 5
-        trick += 1
-
-        trump = TRUMPS[num % 5]
-
-        return trick, trump     # trick: 1~7 int, trump: str
+        return BiddingPhaseState.ongoing
 
     def bidding_result(self):
-        if self.last_bid is None:   # 4 consecutive passes
+        if self.__last_bid is None:   # 4 consecutive passes
             contract_num, contract_trump, declarer = None, None, None
             contract = 'Passed Out'
         else:
-            contract_num, contract_trump = self.convert_num_to_contract(self.last_bid)
-            declarer = self.declarer_check[TEAM_PLAYERS[self.last_bidder]][contract_trump]
+            declarer = self.__declarer_check[self.__last_bidder.team][self.__last_bid.suit]
 
-            contract = str(contract_num) + contract_trump
-            if self.called_double:
-                if self.called_redouble:
+            contract = str(self.__last_bid)
+            if self.__called_double:
+                if self.__called_redouble:
                     contract = contract + 'XX'
                 else:
                     contract = contract + 'X'
 
-        result = {'declarer': declarer, 'contract': contract, 'num': contract_num, 'trump': contract_trump,
-                  'double': self.called_double, 'redouble': self.called_redouble}
+        result = {'declarer': declarer, 'contract': contract,
+                  'level': self.__last_bid.level if self.__last_bid is not None else None,   # TODO: change "num" -> "level" in bridge_bidding_RL
+                  'trump': self.__last_bid.suit if self.__last_bid is not None else None,
+                  'double': self.__called_double, 'redouble': self.__called_redouble}
         return result
 
-    def print_state(self):
-        print('Dealer: ', self.dealer)
-        print('Active player: ', self.active_player)
-        print('Bid history: ', self.bid_history)
-        print('Bid history of each player: ', self.player_bid_history)
-        print('Available bid: ', self.available_bid)
+
 
 if __name__ == '__main__':
-    env = BiddingPhase()
-    env.initialize()
+    def print_state(env):
+        print('Dealer: ', env.dealer)
+        print('Active player: ', env.active_player)
+        print('Bid history: ', env.bid_history)
+        print('Bid history of each player: ', env.player_bid_history)
+        print('Available bid: ', env.available_bid)
 
-    env.print_state()
+    env = BiddingPhase()
+
+    print_state(env)
     print('----------------------------------------------')
-    while True:
+    for bid_int in [35, 6, 8, 12, 36, 35, 14, 36, 37, 35, 35, 30, 35, 35, 35]:
         print('input a bid of player', env.active_player)
-        bid = int(input())
-        a = env.take_bid(bid)
-        if a is None:
+        b = Bid.int_to_bid(bid_int)
+        print(b)
+        a = env.take_bid(b)
+        if a is BiddingPhaseState.illegal:
             print('illegal bid')
-        elif a:
+        elif a is BiddingPhaseState.finished:
             break
-        else:
-            env.print_state()
+        elif a is BiddingPhaseState.ongoing:
+            print_state(env)
             print('----------------------------------------------')
-    print(env.bid_history)
+        else:
+            print("ERROR")
+    print(list(map(str, env.bid_history)))
     print(env.player_bid_history)
     print(env.bidding_result())

@@ -7,6 +7,9 @@ Contract bridge scoring
     - calc_dds_bid_score: Calculate bridge score with double dummy solver res
 """
 
+from bridge_env.contract import Contract
+
+
 MINOR = 20
 MAJOR = 30
 NT = 10
@@ -44,67 +47,60 @@ IMP_LIST = (20, 50, 90, 130, 170,
             1300, 1500, 1750, 2000, 2250,
             2500, 3000, 3500, 4000)
 
-SUIT_TO_NUM = {'C': 0, 'D': 1, 'H': 2, 'S': 3, 'NT': 4}
 
-
-def calc_score(contract_num, contract_trump, tricks, vul=False, X=False, XX=False):
+def calc_score(contract: Contract, taken_tricks: int) -> int:
     """
 
-    :param contract_num: int 1-7
-    :param contract_trump: str 'C','D','H','S'or'NT'
-    :param tricks: int 0-13
-    :param vul: bool
-    :param X: bool
-    :param XX: bool
+    :param contract: Contract
+    :param taken_tricks: int 0-13
     :return: int
     """
 
-    contract_trump = SUIT_TO_NUM[contract_trump]
-    vul = 1 if vul else 0
+    vul = 1 if contract.vul else 0
 
-    if contract_num == 0:  # 4 passes
+    if contract.is_passed_out():  # 4 passes
         return 0
 
-    elif tricks < contract_num + 6:  # down
-        down_num = contract_num + 6 - tricks
-        if XX:
+    elif taken_tricks < contract.necessary_tricks():  # down
+        down_num = contract.necessary_tricks() - taken_tricks
+        if contract.XX:
             return DOWN_XX[vul][down_num-1]
-        if X:
+        if contract.X:
             return DOWN_X[vul][down_num-1]
         return DOWN[vul][down_num-1]
 
-    if contract_trump <= 1:  # minor suit (C, D)
-        point = MINOR * contract_num
+    if contract.trump.is_minor():  # minor suit (C, D)
+        point = MINOR * contract.level
         up_make_point = MINOR
-    elif contract_trump <= 3:  # major suit (H, S)
-        point = MAJOR * contract_num
+    elif contract.trump.is_major():  # major suit (H, S)
+        point = MAJOR * contract.level
         up_make_point = MAJOR
     else:  # NT
-        point = MAJOR * contract_num + NT
+        point = MAJOR * contract.level + NT
         up_make_point = MAJOR
 
-    if XX:
+    if contract.XX:
         point *= 4
-    elif X:
+    elif contract.X:
         point *= 2
 
     if point >= 100:  # game make bonus
         point += GAME[vul]
-        if contract_num >= 6:  # small slam make bonus
+        if contract.level >= 6:  # small slam make bonus
             point += SMALL_SLAM[vul]
-            if contract_num == 7:  # grand slam make bonus
+            if contract.level == 7:  # grand slam make bonus
                 point += GRAND_SLAM[vul]
 
     point += MAKE  # make bonus
-    if X or XX:
+    if contract.X or contract.XX:
         point += MAKE_X  # double make bonus
         up_make_point = UP_MAKE[0][vul]
-        if XX:
+        if contract.XX:
             point += MAKE_XX  # redouble make bonus
             up_make_point = UP_MAKE[1][vul]
 
     # up make
-    point += up_make_point * max(0, tricks - (contract_num + 6))
+    point += up_make_point * max(0, taken_tricks - contract.necessary_tricks())
 
     return point
 

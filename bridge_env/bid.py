@@ -1,62 +1,96 @@
 from bridge_env.card import Suit
+from enum import IntEnum
 
 
-class Bid:
-    def __init__(self, level: int = None, suit: Suit = None, Pass: bool = False, X: bool = False, XX: bool = False):
-        if level is not None and (level < -1 or 7 < level):
-            raise ValueError("bid level is from 1 to 7")
+class Bid(IntEnum):
+    C1 = 1
+    D1 = 2
+    H1 = 3
+    S1 = 4
+    NT1 = 5
 
-        if (Pass and X) or (X and XX) or (XX and Pass):
-            raise ValueError("choose one of pass, double or redouble")
+    C2 = 6
+    D2 = 7
+    H2 = 8
+    S2 = 9
+    NT2 = 10
 
-        self.level = level
-        self.suit = suit
+    C3 = 11
+    D3 = 12
+    H3 = 13
+    S3 = 14
+    NT3 = 15
 
-        self.Pass = Pass  # pass
-        self.X = X  # double
-        self.XX = XX  # redouble
+    C4 = 16
+    D4 = 17
+    H4 = 18
+    S4 = 19
+    NT4 = 20
+
+    C5 = 21
+    D5 = 22
+    H5 = 23
+    S5 = 24
+    NT5 = 25
+
+    C6 = 26
+    D6 = 27
+    H6 = 28
+    S6 = 29
+    NT6 = 30
+
+    C7 = 31
+    D7 = 32
+    H7 = 33
+    S7 = 34
+    NT7 = 35
+
+    Pass = 36
+    X = 37
+    XX = 38
 
     def __str__(self):
-        if self.Pass:
-            return "Pass"
-        elif self.X:
-            return "X"
-        elif self.XX:
-            return "XX"
+        if self.value >= 36:
+            return self.name
+        return self.name[-1] + self.name[:-1]
 
-        return str(self.level) + self.suit.name
+    @property
+    def idx(self) -> int:       # 0-index
+        return self.value - 1
 
-    def __int__(self):
-        if self.Pass:
-            return 35
-        elif self.X:
-            return 36
-        elif self.XX:
-            return 37
+    @property
+    def level(self) -> int:
+        if self.value >= 36:
+            return None
+        return self.idx // 5 + 1
 
-        return self.suit.value - 1 + (self.level - 1) * 5
+    @property
+    def suit(self) -> Suit:
+        if self.value >= 36:
+            return None
+        return Suit(self.idx % 5 + 1)
 
     @classmethod
-    def int_to_bid(cls, x: int):
+    def int_to_bid(cls, x: int):    # 0-index
         if x < 0 or 37 < x:
             raise ValueError("bid int is from 0 to 37")
 
-        if x == 35:
-            return Bid(Pass=True)
-        elif x == 36:
-            return Bid(X=True)
-        elif x == 37:
-            return Bid(XX=True)
+        return Bid(x + 1)
 
-        return Bid(x // 5 + 1, Suit(x % 5 + 1))
+    @classmethod
+    def convert_level_suit_to_bid(cls, level: int, suit: Suit):
+        if level < 0 or 7 < level:
+            raise ValueError("bid int is from 0 to 37")
+        return Bid((level - 1) * 5 + suit.value)
 
 
 if __name__ == '__main__':
-    b = Bid(Pass=True)
+    b = Bid.int_to_bid(36)
     print(str(b))
 
-    b = Bid(2, Suit(3))
+    b = Bid.convert_level_suit_to_bid(2, Suit(3))
     print(str(b))
 
     for i in range(38):
-        print(i, Bid.int_to_bid(i))
+        b = Bid.int_to_bid(i)
+        print(i, b, b.level, b.suit)
