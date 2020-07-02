@@ -1,8 +1,8 @@
 from __future__ import annotations
-from enum import IntEnum
+from enum import Enum
 
 
-class Suit(IntEnum):
+class Suit(Enum):
     C = 1
     D = 2
     H = 3

@@ -12,6 +12,7 @@ import unittest
 import bridge_env.score as sc
 from bridge_env.contract import Contract
 from bridge_env.bid import Bid
+from bridge_env.player import Vul
 
 
 class TestScore(unittest.TestCase):
@@ -20,7 +21,7 @@ class TestScore(unittest.TestCase):
     def test_calc_score(self):
 
         test_cases = ((Contract(Bid.NT3), 10, 430),                     # 3NT 10tricks
-                      (Contract(Bid.D4, vul=True, XX=True), 13, 2120),  # 4DXX vul 13tricks
+                      (Contract(Bid.D4, XX=True, vul=Vul.BOTH), 13, 2120),  # 4DXX vul 13tricks
                       (Contract(Bid.D7), 13, 1440),                     # 7D 13tricks
                       (Contract(Bid.D6, XX=True), 13, 1580),            # 6DXX 13tricks
                       (Contract(Bid.NT3), 10, 430),                     # 3NT 10tricks

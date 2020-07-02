@@ -1,9 +1,9 @@
 from __future__ import annotations
 from bridge_env.card import Suit
-from enum import IntEnum
+from enum import Enum
 
 
-class Bid(IntEnum):
+class Bid(Enum):
     C1 = 1
     D1 = 2
     H1 = 3
@@ -47,8 +47,8 @@ class Bid(IntEnum):
     NT7 = 35
 
     Pass = 36
-    X = 37
-    XX = 38
+    X = 37      # double
+    XX = 38     # redouble
 
     def __str__(self):
         if self.value >= 36:

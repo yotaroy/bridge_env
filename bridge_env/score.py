@@ -56,7 +56,7 @@ def calc_score(contract: Contract, taken_tricks: int) -> int:
     :return: int
     """
 
-    vul = 1 if contract.vul else 0
+    vul = 1 if contract.is_vul() else 0
 
     if contract.is_passed_out():  # 4 passes
         return 0

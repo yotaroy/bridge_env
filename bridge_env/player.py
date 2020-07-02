@@ -1,8 +1,8 @@
 from __future__ import annotations
-from enum import IntEnum
+from enum import Enum
 
 
-class Player(IntEnum):
+class Player(Enum):
     N = 1
     E = 2
     S = 3
@@ -30,7 +30,7 @@ class Player(IntEnum):
         return self.team.is_vul(vul)
 
 
-class Team(IntEnum):
+class Team(Enum):
     NS = 1
     EW = 2
 
@@ -38,10 +38,10 @@ class Team(IntEnum):
         return self.name
 
     def is_vul(self, vul: Vul) -> bool:
-        return vul == Vul.BOTH or vul.name == self.name
+        return vul is Vul.BOTH or vul.name == self.name
 
 
-class Vul(IntEnum):
+class Vul(Enum):
     NONE = 1    # None
     NS = 2
     EW = 3
