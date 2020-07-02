@@ -1,3 +1,4 @@
+from __future__ import annotations
 from enum import IntEnum
 
 
@@ -8,10 +9,10 @@ class Suit(IntEnum):
     S = 4
     NT = 5
 
-    def is_minor(self):
+    def is_minor(self) -> bool:
         return self.value <= 2
 
-    def is_major(self):
+    def is_major(self) -> bool:
         return 2 < self.value <= 4
 
 
@@ -47,7 +48,7 @@ class Card:
         return self.rank - 2 + (self.suit.value - 1) * 13
 
     @classmethod
-    def int_to_card(cls, x: int):
+    def int_to_card(cls, x: int) -> Card:
         if x < 0 or 51 < x:
             raise ValueError("card int is from 0 to 51")
 

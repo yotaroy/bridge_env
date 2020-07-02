@@ -120,22 +120,3 @@ def score_to_imp(first_score, second_score):
         imp += 1
 
     return imp * win
-
-
-def calc_dds_bid_score(bid, dds, vul=False, X=False, XX=False):
-    """
-
-    :param bid: int 0-34(1C-7NT)
-    :param dds: 5dims array (C0, D1, H2, S3, NT4)
-    :param vul: bool
-    :param X: bool
-    :param XX: bool
-    :return: int score
-    """
-
-    contract_num = bid // 5 + 1
-    contract_trump = bid % 5  # C0, D1, H2, S3, NT4
-
-    tricks = dds[contract_trump]
-
-    return calc_score(contract_num, contract_trump, tricks, vul, X, XX)

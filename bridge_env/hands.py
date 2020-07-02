@@ -19,7 +19,7 @@ from bridge_env.card import Card
 
 
 class Hands:
-    def __init__(self, seed=None):
+    def __init__(self, seed: int = None):
         np.random.seed(seed)
         hands_array = np.arange(52)
         np.random.shuffle(hands_array)
@@ -30,7 +30,7 @@ class Hands:
         self.hands[Player.S] = np.sort(hands_array[26:39])
         self.hands[Player.W] = np.sort(hands_array[39:])
 
-    def convert_binary(self):
+    def convert_binary(self) -> dict:
         binary_hands = dict()
 
         for p in Player:
@@ -39,7 +39,7 @@ class Hands:
 
         return binary_hands
 
-    def convert_pbn(self):
+    def convert_pbn(self) -> str:
         pbn_hands = "N:"
 
         for p in Player:

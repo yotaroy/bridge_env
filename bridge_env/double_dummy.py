@@ -13,7 +13,7 @@ suit_name = ['S', 'H', 'D', 'C', 'NT']
 declarer_name = ['N', 'E', 'S', 'W']
 
 
-def calc_double_dummy(pbn_hands):
+def calc_double_dummy(pbn_hands: str):
     tableDealPBN = dds.ddTableDealPBN()
     table = dds.ddTableResults()
     myTable = ctypes.pointer(table)

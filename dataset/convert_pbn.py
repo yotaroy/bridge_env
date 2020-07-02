@@ -22,10 +22,3 @@ with open(dataset_path, 'r') as fr:
             fw.write('[Seed "{}"]\n'.format(seed))
             fw.write('[DDS "{}"]\n'.format(dds))
             fw.write('\n\n')
-
-
-
-
-
-
-

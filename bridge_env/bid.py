@@ -1,3 +1,4 @@
+from __future__ import annotations
 from bridge_env.card import Suit
 from enum import IntEnum
 
@@ -71,14 +72,13 @@ class Bid(IntEnum):
         return Suit(self.idx % 5 + 1)
 
     @classmethod
-    def int_to_bid(cls, x: int):    # 0-index
+    def int_to_bid(cls, x: int) -> Bid:    # 0-index
         if x < 0 or 37 < x:
             raise ValueError("bid int is from 0 to 37")
-
         return Bid(x + 1)
 
     @classmethod
-    def convert_level_suit_to_bid(cls, level: int, suit: Suit):
+    def convert_level_suit_to_bid(cls, level: int, suit: Suit) -> Bid:
         if level < 0 or 7 < level:
             raise ValueError("bid int is from 0 to 37")
         return Bid((level - 1) * 5 + suit.value)
