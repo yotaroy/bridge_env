@@ -8,6 +8,9 @@ class Player(IntEnum):
     S = 3
     W = 4
 
+    def __str__(self):
+        return self.name
+
     @property
     def next_player(self) -> Player:
         return Player(self.value % 4 + 1)
@@ -30,6 +33,9 @@ class Player(IntEnum):
 class Team(IntEnum):
     NS = 1
     EW = 2
+
+    def __str__(self):
+        return self.name
 
     def is_vul(self, vul: Vul) -> bool:
         return vul == Vul.BOTH or vul.name == self.name
@@ -66,7 +72,7 @@ class Vul(IntEnum):
 if __name__ == '__main__':
     for i in range(1, 5):
         p = Player(i)
-        print(p, p.next_player, p.teammate, p.team, p.is_vul(Vul.NS), p.is_vul(Vul.EW), p.is_vul(Vul.NONE), p.is_vul(Vul.BOTH))
+        print(p, str(p), p.next_player, p.teammate, p.team, p.is_vul(Vul.NS), p.is_vul(Vul.EW), p.is_vul(Vul.NONE), p.is_vul(Vul.BOTH))
 
     print(Vul["BOTH"])
     print(Vul.str_to_Vul("Both"))

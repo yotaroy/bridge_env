@@ -9,6 +9,9 @@ class Suit(IntEnum):
     S = 4
     NT = 5
 
+    def __str__(self):
+        return self.name
+
     def is_minor(self) -> bool:
         return self.value <= 2
 

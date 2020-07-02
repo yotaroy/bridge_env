@@ -13,10 +13,10 @@ One set of hands data has 6 rows.
         W double dummy results
     ```
 
-You can produce hands and double dummy results dataset.
+You can produce sets of hands and double dummy results dataset.
 Run this code in this directory.
 ```
-$ python make_dataset.py
+$ python make_dataset.py [seed setting number]
 ```
 
 """
@@ -29,22 +29,22 @@ from tqdm import tqdm
 import json
 from bridge_env.hands import Hands
 from bridge_env.double_dummy import calc_double_dummy
-
-PLAYER = ['N', 'E', 'S', 'W']
-TRUMP = ['C', 'D', 'H', 'S', 'NT']
+from bridge_env.player import Player, Vul
+from bridge_env.card import Suit
 
 import random
 
 
-def make(path, seed=0, num=10 ** 5, add_pbn=False, add_vul=False, add_dealer=False):
+def make_dataset(path: str, seed: int = 0, num: int = 10 ** 5,
+                 add_pbn: bool = False, add_vul: bool = False, add_dealer: bool = False):
     for i in tqdm(range(num)):
         hands = Hands(seed)
 
         binary_hands = hands.convert_binary()
         pbn_hands = hands.convert_pbn()
         dds_results = calc_double_dummy(pbn_hands)
-        data = {'binary_hands': {p: ','.join(map(lambda x: str(int(x)), binary_hands[p])) for p in PLAYER},
-                'dds_results': {p: {t: int(dds_results[p][t]) for t in TRUMP} for p in PLAYER},
+        data = {'binary_hands': {str(p): ','.join(map(lambda x: str(int(x)), binary_hands[p])) for p in Player},
+                'dds_results': {str(p): {str(trump): int(dds_results[p][trump]) for trump in Suit} for p in Player},
                 'seed': seed
                 }
         if add_pbn:
@@ -52,21 +52,24 @@ def make(path, seed=0, num=10 ** 5, add_pbn=False, add_vul=False, add_dealer=Fal
 
         if add_vul:  # select a random vulnerable setting
             random.seed(seed)
-            data['vul'] = random.choice(['None', 'NS', 'EW', 'Both'])
+            data['vul'] = random.choice([str(Vul.NONE), str(Vul.NS), str(Vul.EW), str(Vul.BOTH)])
 
         if add_dealer:  # randomly select a dealer
             if not add_vul:
                 random.seed(seed)
-            data['dealer'] = random.choice(['N', 'E', 'S', 'W'])
+            data['dealer'] = random.choice([str(Player.N), str(Player.E), str(Player.S), str(Player.W)])
 
-        with open(path, 'a') as outfile:
-            json.dump(data, outfile)
-            outfile.write('\n')
+        if path is not None:
+            with open(path, 'a') as outfile:
+                json.dump(data, outfile)
+                outfile.write('\n')
+        else:
+            print(json.dumps(data, indent=2))
 
         seed += 1
 
 
-def path_set(i, dataset_type='train'):
+def set_path(i: int, dataset_type: str = 'train') -> str:
     return dataset_type + '/deal_' + str(i).zfill(4) + 'k' + '.json'
 
 
@@ -81,11 +84,13 @@ if __name__ == '__main__':
     # for i in range(24, 25):
     if 0 <= i < 25:
         print(i * 100, 'k - ', (i + 1) * 100, 'k')
-        make(path_set(i * 100), seed=i * (10 ** 5), num=10 ** 5)
+        make_dataset(set_path(i * 100), seed=i * (10 ** 5), num=10 ** 5)
 
     elif i == 25:
         print('eval')
-        make(path_set(5000, dataset_type='eval'), seed=5 * (10 ** 6), num=10 ** 5, add_pbn=True, add_vul=True,
-             add_dealer=True)
+        make_dataset(set_path(5000, dataset_type='eval'), seed=5 * (10 ** 6), num=10 ** 5,
+                     add_pbn=True, add_vul=True, add_dealer=True)
     else:
+        print("Test Mode:")
+        print(make_dataset(None, 0, 10, True, True, True))
         print('end')

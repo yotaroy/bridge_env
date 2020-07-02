@@ -1,19 +1,20 @@
-"""
-Contract bridge double dummy solver
-
-    - calc_double_dummy: Return double dummy result.
-                        The style of the result is multiple dictionary:
-                        result[declarer][trump], declarer => N, E, S, W, trump => C, D, H, S, NT
-
-"""
 from bridge_env.dds_files.python_dds.examples import dds
 import ctypes
 
-suit_name = ['S', 'H', 'D', 'C', 'NT']
-declarer_name = ['N', 'E', 'S', 'W']
+from bridge_env.card import Suit
+from bridge_env.player import Player
+
+suit_num_dict = {Suit.S: 0, Suit.H: 1, Suit.D: 2, Suit.C: 3, Suit.NT: 4}
 
 
-def calc_double_dummy(pbn_hands: str):
+def calc_double_dummy(pbn_hands: str) -> dict:
+    """ calculate double dummy results with pbn_hands
+
+    :param pbn_hands:
+    :type pbn_hands: str
+    :return: dict of double dummy results (type: int). key1 is declarer(tyep: Player), key2 is suit (type: Suit).
+    :rtype: dict
+    """
     tableDealPBN = dds.ddTableDealPBN()
     table = dds.ddTableResults()
     myTable = ctypes.pointer(table)
@@ -26,10 +27,10 @@ def calc_double_dummy(pbn_hands: str):
     # print_table(myTable)
 
     result = dict()
-    for declarer in range(4):
-        result[declarer_name[declarer]] = dict()
-        for suit in range(5):
-            result[declarer_name[declarer]][suit_name[suit]] = myTable.contents.resTable[suit][declarer]
+    for declarer in Player:
+        result[declarer] = dict()
+        for suit in Suit:
+            result[declarer][suit] = myTable.contents.resTable[suit_num_dict[suit]][declarer.value - 1]
 
     return result
 
@@ -44,7 +45,7 @@ def print_table(table):
         table.contents.resTable[4][3]))
     for suit in range(0, dds.DDS_SUITS):
         print("{:>5} {:5} {:5} {:5} {:5}".format(
-            suit_name[suit],
+            suit_num_dict[suit],
             table.contents.resTable[suit][0],
             table.contents.resTable[suit][2],
             table.contents.resTable[suit][1],
