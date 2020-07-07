@@ -11,6 +11,8 @@ sys.path.append('./../.')
 import unittest
 from bridge_env.bidding_phase import BiddingPhase
 from bridge_env.bid import Bid
+from bridge_env.contract import Contract
+from bridge_env.player import Player, Vul
 
 
 class TestScore(unittest.TestCase):
@@ -24,10 +26,18 @@ class TestScore(unittest.TestCase):
         BP.take_bid(Bid.Pass)
         BP.take_bid(Bid.Pass)
 
-        result = {'declarer': None, 'contract': 'Passed Out', 'level': None, 'trump': None,
-                  'double': False, 'redouble': False}
+        self.assertTrue(BP.done)    # bidding phase is over
 
-        self.assertEqual(BP.bidding_result(), result)
+        contract = Contract(None, vul=Vul.NONE)
+        result = BP.contract()
+
+        self.assertEqual(result.final_bid, contract.final_bid)
+        self.assertEqual(result.X, contract.X)
+        self.assertEqual(result.XX, contract.XX)
+        self.assertEqual(result.vul, contract.vul)
+        self.assertEqual(result.declarer, contract.declarer)
+
+        self.assertTrue(result.is_passed_out())
 
 
 if __name__ == '__main__':

@@ -122,11 +122,11 @@ class BiddingPhase:
 
     def contract(self) -> Contract:
         if self.__last_bid is None:   # 4 consecutive passes
-            return Contract(None)
+            return Contract(None, vul=self.__vul)   # Passed Out
         else:
             contract = Contract(final_bid=self.__last_bid, X=self.__called_X, XX=self.__called_XX,
                                 vul=self.__vul,
-                                declarer = self.__declarer_check[self.__last_bidder.team][self.__last_bid.suit])
+                                declarer=self.__declarer_check[self.__last_bidder.team][self.__last_bid.suit])
         return contract
 
 
@@ -158,4 +158,5 @@ if __name__ == '__main__':
             print("ERROR")
     print(list(map(str, env.bid_history)))
     print(env.players_bid_history)
-    print(env.bidding_result())
+    print(env.contract())
+    env.contract().display()
