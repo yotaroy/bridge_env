@@ -36,8 +36,8 @@ class BiddingPhase:
         self.__players_bid_history = {player: [] for player in Player}
         self.__declarer_check = {team: {suit: None for suit in Suit} for team in Team}
 
-        self.__available_bids = np.ones(38)
-        self.__available_bids[-2:] = 0     # X and XX are set to be illegal
+        self.__available_bid = np.ones(38)
+        self.__available_bid[-2:] = 0     # X and XX are set to be illegal
 
         self.__done = False                        # a state whether bidding phase is over (type: bool)
 
@@ -66,8 +66,8 @@ class BiddingPhase:
         return self.__players_bid_history
 
     @property
-    def available_bids(self):
-        return self.__available_bids
+    def available_bid(self):
+        return self.__available_bid
 
     def take_bid(self, bid: Bid) -> BiddingPhaseState:
         """ Take a bid. Check the end of the bidding phase and whether a bid is illegal, then return BiddingPhaseState.
@@ -75,7 +75,7 @@ class BiddingPhase:
         :param bid:
         :return:
         """
-        if self.__available_bids[bid.idx] == 0:      # illegal bids
+        if self.__available_bid[bid.idx] == 0:      # illegal bids
             return BiddingPhaseState.illegal
 
         if bid is Bid.Pass:                 # Pass
@@ -98,7 +98,7 @@ class BiddingPhase:
                 self.__declarer_check[self.__active_player.team][bid.suit] = self.__active_player
 
             self.__called_X, self.__called_XX = False, False
-            self.__available_bids[:bid.idx + 1] = 0
+            self.__available_bid[:bid.idx + 1] = 0
 
         self.__bid_history.append(bid)
         self.__players_bid_history[self.__active_player].append(bid)
@@ -108,15 +108,15 @@ class BiddingPhase:
             # check X
             if (not self.__called_X) and (not self.__called_XX) and \
                     (not self.__active_player.is_teammate(self.__last_bidder)):
-                self.__available_bids[Bid.X.idx] = 1
+                self.__available_bid[Bid.X.idx] = 1
             else:
-                self.__available_bids[Bid.X.idx] = 0
+                self.__available_bid[Bid.X.idx] = 0
 
             # check XX
             if self.__called_X and (not self.__called_XX) and self.__active_player.is_teammate(self.__last_bidder):
-                self.__available_bids[Bid.XX.idx] = 1
+                self.__available_bid[Bid.XX.idx] = 1
             else:
-                self.__available_bids[Bid.XX.idx] = 0
+                self.__available_bid[Bid.XX.idx] = 0
 
         return BiddingPhaseState.ongoing
 
@@ -136,7 +136,7 @@ if __name__ == '__main__':
         print('Active player: ', env.active_player)
         print('Bid history: ', env.bid_history)
         print('Bid history of each player: ', env.players_bid_history)
-        print('Available bid: ', env.available_bids)
+        print('Available bid: ', env.available_bid)
 
     env = BiddingPhase()
 

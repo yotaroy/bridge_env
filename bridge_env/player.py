@@ -20,8 +20,20 @@ class Player(Enum):
         return Player((self.value + 1) % 4 + 1)
 
     @property
+    def left(self) -> Player:
+        return self.next_player
+
+    @property
+    def right(self):
+        return Player((self.value + 2) % 4 + 1)
+
+    @property
     def team(self) -> Team:
         return Team((self.value + 1) % 2 + 1)
+
+    @property
+    def opponent_team(self) -> Team:
+        return self.team.opponent_team
 
     def is_teammate(self, player) -> bool:
         return player.value % 2 == self.value % 2
@@ -36,6 +48,10 @@ class Team(Enum):
 
     def __str__(self):
         return self.name
+
+    @property
+    def opponent_team(self):
+        return Team(3 - self.value)
 
     def is_vul(self, vul: Vul) -> bool:
         return vul is Vul.BOTH or vul.name == self.name

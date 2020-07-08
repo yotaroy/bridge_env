@@ -83,6 +83,12 @@ class Bid(Enum):
             raise ValueError("bid int is from 0 to 37")
         return Bid((level - 1) * 5 + suit.value)
 
+    @classmethod
+    def str_to_bid(cls, bid_str: str) -> Bid:
+        if bid_str in ["Pass", "X", "XX"]:
+            return Bid[bid_str]
+        return Bid[bid_str[1:] + bid_str[0]]
+
 
 if __name__ == '__main__':
     b = Bid.int_to_bid(36)
