@@ -4,7 +4,7 @@ Contract bridge dealing cards environment
 class 'Dealing'
     - deal_card: Deal 13 cards each to 4 players randomly.
     - deal_opponent_again: Deal 13 cards each to two opponent players again.
-    - _convert_style: Convert deal result to binary style and pbn style.
+    - _to_pbn_style: Convert deal result to binary style and pbn style.
 
     - self.pbn_hand: Hands information in pbn style.
     - self.binary_hand: Hands information in binary style.
@@ -32,7 +32,7 @@ class Dealing:
         self.deal['S'] = self.deal_array[26:39]
         self.deal['W'] = self.deal_array[39:]
 
-        self._convert_style()
+        self._to_pbn_style()
 
     def deal_opponent_again(self):
         deal_opponent = np.hstack((self.deal['E'], self.deal['W']))
@@ -40,9 +40,9 @@ class Dealing:
         self.deal['E'] = deal_opponent[:13]
         self.deal['W'] = deal_opponent[13:26]
 
-        self._convert_style()
+        self._to_pbn_style()
 
-    def _convert_style(self):
+    def _to_pbn_style(self):
 
         # make binary style
         for i in self.player:

@@ -24,36 +24,66 @@ $ python make_dataset.py
 import sys
 sys.path.append('./../.')
 
-import os
 from tqdm import tqdm
-import csv
+import json
 from bridge_env.dealing_cards import Dealing
 from bridge_env.double_dummy import calc_double_dummy
 
-
-DATASET_NUM = 10**5
 PLAYER = ['N', 'E', 'S', 'W']
 TRUMP = ['C', 'D', 'H', 'S', 'NT']
-name = 'hand_100000_'
 
-i = 1
-while os.path.isfile(name+str(i).zfill(2)+'.csv'):
-    i += 1
-path = name+str(i).zfill(2)+'.csv'
+import random
 
-print(path)
-
-with open(path, 'w') as f:
-    writer = csv.writer(f)
-    for i in tqdm(range(DATASET_NUM)):
-        dealing = Dealing()
+def make(path, seed=0, num=10**5, add_pbn=False, add_vul=False, add_dealer=False):
+    for i in tqdm(range(num)):
+        dealing = Dealing(seed)
         dealing.deal_card()
 
-        hands = dealing.binary_hand
-        for p in PLAYER:
-            writer.writerow(hands[p])
+        binary_hands = dealing.binary_hand
+        dds_results = calc_double_dummy(dealing.pbn_hand)
+        data = {'binary_hands': {p: ','.join(map(lambda x: str(int(x)), binary_hands[p])) for p in PLAYER},
+                'dds_results': {p: {t: int(dds_results[p][t]) for t in TRUMP} for p in PLAYER},
+                'seed': seed
+                }
+        if add_pbn:
+            data['pbn_hands'] = dealing.pbn_hand[:-1]
 
-        results = calc_double_dummy(dealing.pbn_hand)
-        for p in PLAYER:
-            dds = [results[p][t] for t in TRUMP]
-            writer.writerow(dds)
+        if add_vul:     # select a random vulnerable setting
+            random.seed(seed)
+            data['vul'] = random.choice(['None', 'NS', 'EW', 'Both'])
+
+        if add_dealer:     # randomly select a dealer
+            if not add_vul:
+                random.seed(seed)
+            data['dealer'] = random.choice(['N', 'E', 'S', 'W'])
+
+        with open(path, 'a') as outfile:
+            json.dump(data, outfile)
+            outfile.write('\n')
+
+        seed += 1
+
+
+def path_set(i, dataset_type='train'):
+    return dataset_type+'/deal_'+str(i).zfill(4)+'k'+'.json'
+
+
+if __name__ == '__main__':
+    """
+    dataset_type == 'train' => 2500k data, seed 0 - 2,499,999
+    dataset_type == 'eval'  => 100k data, seed 5,000,000 - 6,000,000
+    """
+    args = sys.argv
+    i = int(args[1])
+
+    # for i in range(24, 25):
+    if 0 <= i < 25:
+        print(i*100, 'k - ', (i+1)*100, 'k')
+        make(path_set(i*100), seed=i*(10**5), num=10**5)
+
+    elif i == 25:
+        print('eval')
+        make(path_set(5000, dataset_type='eval'), seed=5*(10**6), num=10**5, add_pbn=True, add_vul=True, add_dealer=True)
+    else:
+        print('end')
+
