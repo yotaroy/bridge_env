@@ -1,5 +1,6 @@
 import math
 
+
 class Display:
     def __init__(self, env):
         self.env = env
@@ -110,9 +111,9 @@ BID_ARRAY = ['{num}{suit}'.format(num=n, suit=s) for n in range(1, 8) for s in [
 
 if __name__ == '__main__':
     from bridge_env.bidding_phase import BiddingPhase
-    from bridge_env.dealing_cards import Dealing
+    from bridge_env.hands import Hands
     b = BiddingPhase()
-    c = Dealing()
+    c = Hands()
     d = Display(env=b)
     c.deal_card()
     b.initialize()

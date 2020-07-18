@@ -10,6 +10,9 @@ sys.path.append('./../.')
 
 import unittest
 import bridge_env.score as sc
+from bridge_env.contract import Contract
+from bridge_env.bid import Bid
+from bridge_env.player import Vul
 
 
 class TestScore(unittest.TestCase):
@@ -17,20 +20,20 @@ class TestScore(unittest.TestCase):
     # test calc_score
     def test_calc_score(self):
 
-        test_cases = ((3, 'NT', 10, False, False, False, 430),     # 3NT 10tricks
-                      (4, 'D', 13, True, False, True, 2120),      # 4DXX vul 13tricks
-                      (7, 'D', 13, False, False, False, 1440),    # 7D 13tricks
-                      (6, 'D', 13, False, False, True, 1580),     # 6DXX 13tricks
-                      (3, 'NT', 10, False, False, False, 430),     # 3NT 10tricks
-                      (2, 'H', 10, False, False, False, 170),     # 2H 10tricks
-                      (3, 'C', 9, False, False, False, 110),      # 3C 9tricks
-                      (4, 'S', 10, False, True, False, 590)       # 4SX 11tricks
+        test_cases = ((Contract(Bid.NT3), 10, 430),                     # 3NT 10tricks
+                      (Contract(Bid.D4, XX=True, vul=Vul.BOTH), 13, 2120),  # 4DXX vul 13tricks
+                      (Contract(Bid.D7), 13, 1440),                     # 7D 13tricks
+                      (Contract(Bid.D6, XX=True), 13, 1580),            # 6DXX 13tricks
+                      (Contract(Bid.NT3), 10, 430),                     # 3NT 10tricks
+                      (Contract(Bid.H2), 10, 170),                      # 2H 10tricks
+                      (Contract(Bid.C3), 9, 110),                       # 3C 9tricks
+                      (Contract(Bid.S4, X=True), 10, 590),              # 4SX 11tricks
+                      (Contract(Bid.Pass), 0, 0)                        # Passed Out
                       )
 
-        for contract_num, contract_suit, tricks, vul, X, XX, point in test_cases:
-            with self.subTest(contract_num=contract_num, contract_suit=contract_suit, tricks=tricks,
-                              vul=vul, X=X, XX=XX):
-                self.assertEqual(sc.calc_score(contract_num, contract_suit, tricks, vul=vul, X=X, XX=XX), point)
+        for contract, taken_tricks, point in test_cases:
+            with self.subTest(contract=str(contract), vul=contract.vul, taken_tricks=taken_tricks):
+                self.assertEqual(sc.calc_score(contract, taken_tricks), point)
 
     # test score_to_imp
     def test_score_to_imp(self):
