@@ -6,7 +6,7 @@ class 'BiddingPhase'
                 Convert the input number(0~34) to the set of its contract num(1~7) and its contract trump(C,D,H,S,NT).
     - bidding_result: Return information about the contract of the bidding phase.
 """
-
+from typing import Union
 import numpy as np
 from bridge_env.player import Player, Team, Vul
 from bridge_env.card import Suit
@@ -120,7 +120,10 @@ class BiddingPhase:
 
         return BiddingPhaseState.ongoing
 
-    def contract(self) -> Contract:
+    def contract(self) -> Union[Contract, None]:
+        if not self.__done:
+            return None
+
         if self.__last_bid is None:   # 4 consecutive passes
             return Contract(None, vul=self.__vul)   # Passed Out
         else:

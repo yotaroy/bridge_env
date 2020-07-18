@@ -52,7 +52,7 @@ class Hands:
             while 0 < bef:
                 pbn_hands += '.'
                 bef -= 1
-            pbn_hands += ' '
+            pbn_hands += ' '        # TODO: the end with space. remove the end space?
 
         return pbn_hands
 
