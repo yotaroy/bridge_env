@@ -252,12 +252,12 @@ Enum class
 - `right`
     - `Player` object
     - a player located on the right side of the player
-- `team`
-    - `Team` object
-    - a team of the player
-- `opponent_team`
-    - `Team` object
-    - the opponent team of the player
+- `pair`
+    - `Pair` object
+    - a pair of the player
+- `opponent_pair`
+    - `pair` object
+    - the opponent pair
 
 #### method
 - `is_teammate(player)`
@@ -269,18 +269,18 @@ Enum class
 
 [player.py](./bridge_env/player.py)
 
-### CLASS `bridge_env.Team`
+### CLASS `bridge_env.Pair`
 Enum class
 
-|Team|str|
+|Pair|str|
 | --- | --- |
-|`Team.NS`|`"NS"`|
-|`Team.EW`|`"EW"`|
+|`Pair.NS`|`"NS"`|
+|`Pair.EW`|`"EW"`|
 
 #### properties
-- `opponent_team`
-    - `Team` object
-    - the opponent team of the team
+- `opponent_pair`
+    - `Pair` object
+    - the opponent pair of the pair
 
 #### methods
 - `is_vul(vul)`
@@ -395,7 +395,7 @@ Enum class
     - contract of the board
 - `taken_tricks`
     - `int`
-    - the number of tricks declarer's team takes
+    - the number of tricks declarer's pair takes
 
 [score.py](./bridge_env/score.py)
 
@@ -404,7 +404,7 @@ Returns the IMPs (International Match Points) of a team.
 #### parameters
 - `first_score`
     - `int`
-    - score by a pair of the team
+    - score by a pair of a team
 - `second_score`
     - `int`
     - score by the other pair of the team

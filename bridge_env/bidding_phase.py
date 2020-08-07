@@ -8,7 +8,7 @@ class 'BiddingPhase'
 """
 from typing import Union
 import numpy as np
-from bridge_env.player import Player, Team, Vul
+from bridge_env.player import Player, Pair, Vul
 from bridge_env.card import Suit
 from bridge_env.bid import Bid
 from bridge_env.contract import Contract
@@ -34,7 +34,7 @@ class BiddingPhase:
 
         self.__bid_history = []
         self.__players_bid_history = {player: [] for player in Player}
-        self.__declarer_check = {team: {suit: None for suit in Suit} for team in Team}
+        self.__declarer_check = {pair: {suit: None for suit in Suit} for pair in Pair}
 
         self.__available_bid = np.ones(38)
         self.__available_bid[-2:] = 0     # X and XX are set to be illegal
@@ -94,8 +94,8 @@ class BiddingPhase:
             self.__last_bidder = self.__active_player
             self.__last_bid = bid
 
-            if self.__declarer_check[self.__active_player.team][bid.suit] is None:
-                self.__declarer_check[self.__active_player.team][bid.suit] = self.__active_player
+            if self.__declarer_check[self.__active_player.pair][bid.suit] is None:
+                self.__declarer_check[self.__active_player.pair][bid.suit] = self.__active_player
 
             self.__called_X, self.__called_XX = False, False
             self.__available_bid[:bid.idx + 1] = 0
@@ -129,7 +129,7 @@ class BiddingPhase:
         else:
             contract = Contract(final_bid=self.__last_bid, X=self.__called_X, XX=self.__called_XX,
                                 vul=self.__vul,
-                                declarer=self.__declarer_check[self.__last_bidder.team][self.__last_bid.suit])
+                                declarer=self.__declarer_check[self.__last_bidder.pair][self.__last_bid.suit])
         return contract
 
 

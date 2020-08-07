@@ -28,21 +28,21 @@ class Player(Enum):
         return Player((self.value + 2) % 4 + 1)
 
     @property
-    def team(self) -> Team:
-        return Team((self.value + 1) % 2 + 1)
+    def pair(self) -> Pair:
+        return Pair((self.value + 1) % 2 + 1)
 
     @property
-    def opponent_team(self) -> Team:
-        return self.team.opponent_team
+    def opponent_pair(self) -> Pair:
+        return self.pair.opponent_pair
 
     def is_teammate(self, player) -> bool:
         return player.value % 2 == self.value % 2
 
     def is_vul(self, vul: Vul) -> bool:
-        return self.team.is_vul(vul)
+        return self.pair.is_vul(vul)
 
 
-class Team(Enum):
+class Pair(Enum):
     NS = 1
     EW = 2
 
@@ -50,8 +50,8 @@ class Team(Enum):
         return self.name
 
     @property
-    def opponent_team(self):
-        return Team(3 - self.value)
+    def opponent_pair(self):
+        return Pair(3 - self.value)
 
     def is_vul(self, vul: Vul) -> bool:
         return vul is Vul.BOTH or vul.name == self.name
@@ -82,13 +82,14 @@ class Vul(Enum):
             return Vul.NONE
         elif str_vul == "Both":
             return Vul.BOTH
+        # TODO: throw exception
         return Vul[str_vul]
 
 
 if __name__ == '__main__':
     for i in range(1, 5):
         p = Player(i)
-        print(p, str(p), p.next_player, p.teammate, p.team, p.is_vul(Vul.NS), p.is_vul(Vul.EW), p.is_vul(Vul.NONE), p.is_vul(Vul.BOTH))
+        print(p, str(p), p.next_player, p.teammate, p.pair, p.is_vul(Vul.NS), p.is_vul(Vul.EW), p.is_vul(Vul.NONE), p.is_vul(Vul.BOTH))
 
     print(Vul["BOTH"])
     print(Vul.str_to_Vul("Both"))
