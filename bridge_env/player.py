@@ -82,6 +82,7 @@ class Vul(Enum):
             return Vul.NONE
         elif str_vul == "Both":
             return Vul.BOTH
+        # TODO: throw exception
         return Vul[str_vul]
 
 

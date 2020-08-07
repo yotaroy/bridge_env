@@ -6,6 +6,12 @@ from bridge_env import Vul
 
 
 class TestPlayer(unittest.TestCase):
+    def test_str(self):
+        self.assertEqual(str(Player.N), "N")
+        self.assertEqual(str(Player.E), "E")
+        self.assertEqual(str(Player.S), "S")
+        self.assertEqual(str(Player.W), "W")
+
     def test_next_player(self):
         self.assertEqual(Player.N.next_player, Player.E)
         self.assertEqual(Player.E.next_player, Player.S)
