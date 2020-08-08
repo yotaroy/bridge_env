@@ -2,8 +2,8 @@
 
 ## Requirements
 - Python 3.7.3
-- Cuda 10.0
-- Pytorch 1.2.0
+- Cuda 10.0 (for [bridge_bidding_RL](https://github.com/yotaroy/bridge_bidding_RL))
+- Pytorch 1.2.0 (for [bridge_bidding_RL](https://github.com/yotaroy/bridge_bidding_RL))
 
 ```
 # Requirements including pytorch packages
@@ -11,14 +11,13 @@
 $ pip install -r requirements.txt
 ```
 
-### Double dummy solver
+### To Use Double Dummy Solver and Make Datasets ([double_dummy.py](./dataset/double_dummy.py), [make_dataset.py](./dataset/make_dataset.py))
 Use [dds](https://github.com/dds-bridge/dds) and [python-dds](https://github.com/Afwas/python-dds).
 
 #### Procedure
 Clone [dds](https://github.com/dds-bridge/dds) and make `libdds.so`.
 ```
-$ mkdir bridge_env/dds_files
-$ cd bridge_env/dds_files
+# clone "dds" repository to the same directory as "bridge_bidding_env" repository
 $ git clone https://github.com/dds-bridge/dds
 
 # Then make 'libdds.so'.
@@ -27,11 +26,8 @@ $ git clone https://github.com/dds-bridge/dds
 
 Clone [python-dds](https://github.com/Afwas/python-dds). 
 ```
-$ cd bridge_env/dds_files
+# clone "python-dds" repository to the same directory as "bridge_bidding_env" repository
 $ git clone https://github.com/Afwas/python-dds
-
-# Change the directory name for importing python_dds/dds.py in python codes.
-$ mv python-dds/ python_dds/
 ```
 Chage the path to the file `libdds.so` in the file [dds.py](./bridge_env/dds_files/python_dds/examples/dds.py).
 
