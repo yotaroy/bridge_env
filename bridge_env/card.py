@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bridge_env.suit import Suit
+from .suit import Suit
 
 
 class Card:

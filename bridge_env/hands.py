@@ -14,8 +14,8 @@ class 'Hands'
 """
 
 import numpy as np
-from bridge_env.player import Player
-from bridge_env.card import Card
+from .player import Player
+from .card import Card
 
 
 class Hands:

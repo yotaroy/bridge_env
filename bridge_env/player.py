@@ -1,8 +1,8 @@
 from __future__ import annotations
 from enum import Enum
 
-from bridge_env.vul import Vul
-from bridge_env.pair import Pair
+from .vul import Vul
+from .pair import Pair
 
 
 class Player(Enum):

@@ -1,4 +1,5 @@
 from .bid import Bid
+from .bidding_phase import BiddingPhase, BiddingPhaseState
 from .card import Card
 from .contract import Contract
 from .hands import Hands

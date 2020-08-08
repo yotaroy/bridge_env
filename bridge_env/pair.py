@@ -1,7 +1,7 @@
 from __future__ import annotations
 from enum import Enum
 
-from bridge_env.vul import Vul
+from .vul import Vul
 
 
 class Pair(Enum):

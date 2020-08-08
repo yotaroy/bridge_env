@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "./../"))
 # add path of python_dds
 sys.path.append(os.path.join(os.path.dirname(__file__), "./../../python-dds/"))
 
-from examples import dds
+from examples import dds    # in python-dds
 import ctypes
 
 from bridge_env.card import Suit

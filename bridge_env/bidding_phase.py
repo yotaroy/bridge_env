@@ -8,10 +8,10 @@ class 'BiddingPhase'
 """
 from typing import Union
 import numpy as np
-from bridge_env.player import Player, Pair, Vul
-from bridge_env.card import Suit
-from bridge_env.bid import Bid
-from bridge_env.contract import Contract
+from .player import Player, Pair, Vul
+from .card import Suit
+from .bid import Bid
+from .contract import Contract
 from enum import Enum
 
 

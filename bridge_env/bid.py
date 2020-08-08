@@ -1,9 +1,10 @@
 from __future__ import annotations
-from bridge_env.card import Suit
+from .card import Suit
 from enum import Enum
 
 
 class Bid(Enum):
+    """ Bid class """
     C1 = 1
     D1 = 2
     H1 = 3
@@ -47,8 +48,8 @@ class Bid(Enum):
     NT7 = 35
 
     Pass = 36
-    X = 37      # double
-    XX = 38     # redouble
+    X = 37  # double
+    XX = 38  # redouble
 
     def __str__(self):
         if self.value >= 36:
@@ -56,7 +57,7 @@ class Bid(Enum):
         return self.name[-1] + self.name[:-1]
 
     @property
-    def idx(self) -> int:       # 0-index
+    def idx(self) -> int:  # 0-index
         return self.value - 1
 
     @property
@@ -72,7 +73,7 @@ class Bid(Enum):
         return Suit(self.idx % 5 + 1)
 
     @classmethod
-    def int_to_bid(cls, x: int) -> Bid:    # 0-index
+    def int_to_bid(cls, x: int) -> Bid:  # 0-index
         if x < 0 or 37 < x:
             raise ValueError("bid int is from 0 to 37")
         return Bid(x + 1)
@@ -85,6 +86,11 @@ class Bid(Enum):
 
     @classmethod
     def str_to_bid(cls, bid_str: str) -> Bid:
+        """ make Bid object
+
+        :param bid_str: str bid representation
+        :return:
+        """
         if bid_str in ["Pass", "X", "XX"]:
             return Bid[bid_str]
         return Bid[bid_str[1:] + bid_str[0]]
