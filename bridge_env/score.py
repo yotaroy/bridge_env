@@ -7,7 +7,7 @@ Contract bridge scoring
     - calc_dds_bid_score: Calculate bridge score with double dummy solver res
 """
 
-from bridge_env.contract import Contract
+from .contract import Contract
 
 
 MINOR = 20
