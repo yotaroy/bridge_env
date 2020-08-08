@@ -29,8 +29,8 @@ class BiddingPhase:
 
         self.__last_bidder = None               # player who take the last bid except Pass, X and XX (type: Player)
         self.__last_bid = None                  # the last bid except Pass, X and XX (type: Bid)
-        self.__called_X = False
-        self.__called_XX = False
+        self.__called_x = False
+        self.__called_xx = False
 
         self.__bid_history = []
         self.__players_bid_history = {player: [] for player in Player}
@@ -86,10 +86,10 @@ class BiddingPhase:
                     self.__active_player = None
                     self.__done = True
                     return BiddingPhaseState.finished       # bidding phase end
-        elif bid is Bid.X:                  # X
-            self.__called_X = True
-        elif bid is Bid.XX:                 # XX
-            self.__called_XX = True
+        elif bid is Bid.x:                  # X
+            self.__called_x = True
+        elif bid is Bid.xx:                 # XX
+            self.__called_xx = True
         else:                               # regular bids
             self.__last_bidder = self.__active_player
             self.__last_bid = bid
@@ -97,7 +97,7 @@ class BiddingPhase:
             if self.__declarer_check[self.__active_player.pair][bid.suit] is None:
                 self.__declarer_check[self.__active_player.pair][bid.suit] = self.__active_player
 
-            self.__called_X, self.__called_XX = False, False
+            self.__called_x, self.__called_xx = False, False
             self.__available_bid[:bid.idx + 1] = 0
 
         self.__bid_history.append(bid)
@@ -106,17 +106,17 @@ class BiddingPhase:
 
         if self.__last_bidder is not None:
             # check X
-            if (not self.__called_X) and (not self.__called_XX) and \
+            if (not self.__called_x) and (not self.__called_xx) and \
                     (not self.__active_player.is_teammate(self.__last_bidder)):
-                self.__available_bid[Bid.X.idx] = 1
+                self.__available_bid[Bid.x.idx] = 1
             else:
-                self.__available_bid[Bid.X.idx] = 0
+                self.__available_bid[Bid.x.idx] = 0
 
             # check XX
-            if self.__called_X and (not self.__called_XX) and self.__active_player.is_teammate(self.__last_bidder):
-                self.__available_bid[Bid.XX.idx] = 1
+            if self.__called_x and (not self.__called_xx) and self.__active_player.is_teammate(self.__last_bidder):
+                self.__available_bid[Bid.xx.idx] = 1
             else:
-                self.__available_bid[Bid.XX.idx] = 0
+                self.__available_bid[Bid.xx.idx] = 0
 
         return BiddingPhaseState.ongoing
 
@@ -127,7 +127,7 @@ class BiddingPhase:
         if self.__last_bid is None:   # 4 consecutive passes
             return Contract(None, vul=self.__vul)   # Passed Out
         else:
-            contract = Contract(final_bid=self.__last_bid, X=self.__called_X, XX=self.__called_XX,
+            contract = Contract(final_bid=self.__last_bid, x=self.__called_x, xx=self.__called_xx,
                                 vul=self.__vul,
                                 declarer=self.__declarer_check[self.__last_bidder.pair][self.__last_bid.suit])
         return contract

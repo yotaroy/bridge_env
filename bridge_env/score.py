@@ -63,9 +63,9 @@ def calc_score(contract: Contract, taken_tricks: int) -> int:
 
     elif taken_tricks < contract.necessary_tricks():  # down
         down_num = contract.necessary_tricks() - taken_tricks
-        if contract.XX:
+        if contract.xx:
             return DOWN_XX[vul][down_num-1]
-        if contract.X:
+        if contract.x:
             return DOWN_X[vul][down_num-1]
         return DOWN[vul][down_num-1]
 
@@ -79,9 +79,9 @@ def calc_score(contract: Contract, taken_tricks: int) -> int:
         point = MAJOR * contract.level + NT
         up_make_point = MAJOR
 
-    if contract.XX:
+    if contract.xx:
         point *= 4
-    elif contract.X:
+    elif contract.x:
         point *= 2
 
     if point >= 100:  # game make bonus
@@ -92,10 +92,10 @@ def calc_score(contract: Contract, taken_tricks: int) -> int:
                 point += GRAND_SLAM[vul]
 
     point += MAKE  # make bonus
-    if contract.X or contract.XX:
+    if contract.x or contract.xx:
         point += MAKE_X  # double make bonus
         up_make_point = UP_MAKE[0][vul]
-        if contract.XX:
+        if contract.xx:
             point += MAKE_XX  # redouble make bonus
             up_make_point = UP_MAKE[1][vul]
 
