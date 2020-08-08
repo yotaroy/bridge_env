@@ -1,5 +1,6 @@
 from bridge_env.bid import Bid
-from bridge_env.player import Player, Vul
+from bridge_env.player import Player
+from bridge_env.vul import Vul
 
 
 class Contract:

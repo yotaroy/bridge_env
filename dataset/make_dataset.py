@@ -28,9 +28,9 @@ sys.path.append('./../.')
 from tqdm import tqdm
 import json
 from bridge_env.hands import Hands
-from bridge_env.double_dummy import calc_double_dummy
 from bridge_env.player import Player, Vul
 from bridge_env.card import Suit
+from dataset.double_dummy import calc_double_dummy
 
 import random
 

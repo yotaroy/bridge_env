@@ -1,4 +1,11 @@
-from bridge_env.dds_files.python_dds.examples import dds
+import os
+import sys
+# add path of bridge_env
+sys.path.append(os.path.join(os.path.dirname(__file__), "./../"))
+# add path of python_dds
+sys.path.append(os.path.join(os.path.dirname(__file__), "./../../python-dds/"))
+
+from examples import dds
 import ctypes
 
 from bridge_env.card import Suit
@@ -51,3 +58,8 @@ def print_table(table):
             table.contents.resTable[suit][1],
             table.contents.resTable[suit][3]))
     print("")
+
+
+if __name__ == '__main__':
+    hand = "N:.63.AKQ987.A9732 A8654.KQ5.T.QJT6 J973.J98742.3.K4 KQT2.AT.J6542.85"
+    print(calc_double_dummy(hand))

@@ -1,6 +1,9 @@
 from .bid import Bid
-from .card import Suit, Card
+from .card import Card
 from .contract import Contract
-from .player import Player, Pair, Vul
 from .hands import Hands
+from .pair import Pair
+from .player import Player
+from .suit import Suit
 from .table import Table
+from .vul import Vul
