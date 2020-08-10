@@ -4,9 +4,9 @@ from enum import Enum
 
 
 class Bid(Enum):
-    """ Bid of an auction in contract bridge
+    """ Bid of an auction in contract bridge.
 
-    | Use str() and get a str representation of the bid
+    | Use str() and get a str representation of the bid.
     |
     | Bid, idx, suit, str() table
     |
@@ -116,14 +116,14 @@ class Bid(Enum):
         | Bid.X (X, double) -> 36,
         | Bid.XX (XX, redouble) -> 37
 
-        :return: An index of the bid
+        :return: An index of the bid.
         :rtype: int
         """
         return self.value - 1
 
     @property
     def level(self) -> int:
-        """ A level of the bid
+        """ A level of the bid.
 
         | Bid.C1, Bid.D1, Bid.H1, Bid.S1, Bid.NT1 -> 1,
         | Bid.C2, Bid.D2, Bid.H2, Bid.S2, Bid.NT2 -> 2,
@@ -131,7 +131,7 @@ class Bid(Enum):
         | Bid.C7, Bid.D7, Bid.H7, Bid.S7, Bid.NT7 -> 7,
         | Bid.Pass, Bid.X, Bid.XX -> None
 
-        :return: A level of the bid
+        :return: A level of the bid.
         :rtype: int or None
         """
         if self.value >= 36:
@@ -140,11 +140,11 @@ class Bid(Enum):
 
     @property
     def suit(self) -> Suit:
-        """ A suit of the bid
+        """ A suit of the bid.
 
-        Bid.Pass.suit, Bid.X.suit, Bid.XX.suit returns None
+        Bid.Pass.suit, Bid.X.suit, Bid.XX.suit returns None.
 
-        :return: A suit of the bid
+        :return: A suit of the bid.
         :rtype: Suit or None
         """
         if self.value >= 36:
@@ -153,10 +153,10 @@ class Bid(Enum):
 
     @classmethod
     def int_to_bid(cls, x: int) -> Bid:  # 0-index
-        """  Converts 0-index representation of bids to Bid object
+        """  Converts 0-index representation of bids to Bid object.
 
-        :param int x: 0-index bid representation
-        :return: A bid of the index
+        :param int x: 0-index bid representation.
+        :return: A bid of the index.
         :rtype: Bid
         :raise ValueError: if x < 0 or 37 < x.
         """
@@ -166,11 +166,11 @@ class Bid(Enum):
 
     @classmethod
     def level_suit_to_bid(cls, level: int, suit: Suit) -> Bid:
-        """ Converts level and suit to Bid object
+        """ Converts level and suit to Bid object.
 
-        :param int level: A level of the bid
-        :param Suit suit: A suit of the bid
-        :return: A bid of the level and the suit
+        :param int level: A level of the bid.
+        :param Suit suit: A suit of the bid.
+        :return: A bid of the level and the suit.
         :rtype: Bid
         :raise ValueError: if level < 0 or 7 < level.
         """
@@ -180,10 +180,10 @@ class Bid(Enum):
 
     @classmethod
     def str_to_bid(cls, bid_str: str) -> Bid:
-        """ Converts str to Bid object
+        """ Converts str to Bid object.
 
-        :param str bid_str: str bid representation
-        :return: A bid represented as the string
+        :param str bid_str: str bid representation.
+        :return: A bid represented as the string.
         :rtype: Bid
         """
         if bid_str in ["Pass", "X", "XX"]:
