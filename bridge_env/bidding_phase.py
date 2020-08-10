@@ -16,19 +16,19 @@ from enum import Enum
 
 
 class BiddingPhaseState(Enum):
-    illegal = -1        # illegal bid
-    ongoing = 1         # bidding phase is ongoing
-    finished = 2        # bidding phase is over
+    illegal = -1  # illegal bid
+    ongoing = 1  # bidding phase is ongoing
+    finished = 2  # bidding phase is over
 
 
 class BiddingPhase:
     def __init__(self, dealer: Player = Player.N, vul: Vul = Vul.NONE):
-        self.__dealer = dealer                    # player who firstly take a bid (type: Player)
-        self.__vul = vul                        # vulnerable (type: Vul)
-        self.__active_player = self.__dealer        # player who take a bid in this turn (type: Player)
+        self.__dealer = dealer  # player who firstly take a bid (type: Player)
+        self.__vul = vul  # vulnerable (type: Vul)
+        self.__active_player = self.__dealer  # player who take a bid in this turn (type: Player)
 
-        self.__last_bidder = None               # player who take the last bid except Pass, X and XX (type: Player)
-        self.__last_bid = None                  # the last bid except Pass, X and XX (type: Bid)
+        self.__last_bidder = None  # player who take the last bid except Pass, X and XX (type: Player)
+        self.__last_bid = None  # the last bid except Pass, X and XX (type: Bid)
         self.__called_x = False
         self.__called_xx = False
 
@@ -37,9 +37,9 @@ class BiddingPhase:
         self.__declarer_check = {pair: {suit: None for suit in Suit} for pair in Pair}
 
         self.__available_bid = np.ones(38)
-        self.__available_bid[-2:] = 0     # X and XX are set to be illegal
+        self.__available_bid[-2:] = 0  # X and XX are set to be illegal
 
-        self.__done = False                        # a state whether bidding phase is over (type: bool)
+        self.__done = False  # a state whether bidding phase is over (type: bool)
 
     @property
     def dealer(self):
@@ -75,22 +75,22 @@ class BiddingPhase:
         :param bid:
         :return:
         """
-        if self.__available_bid[bid.idx] == 0:      # illegal bids
+        if self.__available_bid[bid.idx] == 0:  # illegal bids
             return BiddingPhaseState.illegal
 
-        if bid is Bid.Pass:                 # Pass
+        if bid is Bid.Pass:  # Pass
             if len(self.__bid_history) >= 3:
                 if self.__bid_history[-1] is Bid.Pass and self.__bid_history[-2] is Bid.Pass:
                     self.__bid_history.append(bid)
                     self.__players_bid_history[self.__active_player].append(bid)
                     self.__active_player = None
                     self.__done = True
-                    return BiddingPhaseState.finished       # bidding phase end
-        elif bid is Bid.x:                  # X
+                    return BiddingPhaseState.finished  # bidding phase end
+        elif bid is Bid.X:  # X
             self.__called_x = True
-        elif bid is Bid.xx:                 # XX
+        elif bid is Bid.XX:  # XX
             self.__called_xx = True
-        else:                               # regular bids
+        else:  # regular bids
             self.__last_bidder = self.__active_player
             self.__last_bid = bid
 
@@ -108,15 +108,15 @@ class BiddingPhase:
             # check X
             if (not self.__called_x) and (not self.__called_xx) and \
                     (not self.__active_player.is_teammate(self.__last_bidder)):
-                self.__available_bid[Bid.x.idx] = 1
+                self.__available_bid[Bid.X.idx] = 1
             else:
-                self.__available_bid[Bid.x.idx] = 0
+                self.__available_bid[Bid.X.idx] = 0
 
             # check XX
             if self.__called_x and (not self.__called_xx) and self.__active_player.is_teammate(self.__last_bidder):
-                self.__available_bid[Bid.xx.idx] = 1
+                self.__available_bid[Bid.XX.idx] = 1
             else:
-                self.__available_bid[Bid.xx.idx] = 0
+                self.__available_bid[Bid.XX.idx] = 0
 
         return BiddingPhaseState.ongoing
 
@@ -124,42 +124,10 @@ class BiddingPhase:
         if not self.__done:
             return None
 
-        if self.__last_bid is None:   # 4 consecutive passes
-            return Contract(None, vul=self.__vul)   # Passed Out
+        if self.__last_bid is None:  # 4 consecutive passes
+            return Contract(None, vul=self.__vul)  # Passed Out
         else:
             contract = Contract(final_bid=self.__last_bid, x=self.__called_x, xx=self.__called_xx,
                                 vul=self.__vul,
                                 declarer=self.__declarer_check[self.__last_bidder.pair][self.__last_bid.suit])
         return contract
-
-
-if __name__ == '__main__':
-    def print_state(env):
-        print('Dealer: ', env.dealer)
-        print('Active player: ', env.active_player)
-        print('Bid history: ', env.bid_history)
-        print('Bid history of each player: ', env.players_bid_history)
-        print('Available bid: ', env.available_bid)
-
-    env = BiddingPhase()
-
-    print_state(env)
-    print('----------------------------------------------')
-    for bid_int in [35, 6, 8, 12, 36, 35, 14, 36, 37, 35, 35, 30, 35, 35, 35]:
-        print('input a bid of player', env.active_player)
-        b = Bid.int_to_bid(bid_int)
-        print(b)
-        a = env.take_bid(b)
-        if a is BiddingPhaseState.illegal:
-            print('illegal bid')
-        elif a is BiddingPhaseState.finished:
-            break
-        elif a is BiddingPhaseState.ongoing:
-            print_state(env)
-            print('----------------------------------------------')
-        else:
-            print("ERROR")
-    print(list(map(str, env.bid_history)))
-    print(env.players_bid_history)
-    print(env.contract())
-    env.contract().display()

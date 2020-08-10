@@ -5,7 +5,6 @@ from .vul import Vul
 
 
 class Contract:
-
     def __init__(self, final_bid: Bid, x: bool = False, xx: bool = False, vul: Vul = Vul.NONE,
                  declarer: Player = None):
         """

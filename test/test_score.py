@@ -40,5 +40,6 @@ class TestScore(unittest.TestCase):
             with self.subTest(first=first, second=second, imp=imp):
                 self.assertEqual(sc.score_to_imp(first, second), imp)
 
+
 if __name__ == '__main__':
     unittest.main()
