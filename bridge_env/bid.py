@@ -4,7 +4,51 @@ from enum import Enum
 
 
 class Bid(Enum):
-    """ Bid class """
+    """ Bid of an auction in contract bridge
+
+    | Use str() and get a str representation of the bid
+    |
+    | Bid, idx, suit, str() table
+    |
+    | Bid.C1, 0, Suit.C, "1C"
+    | Bid.D1, 1, Suit.D, "1D"
+    | Bid.H1, 2, Suit.H, "1H"
+    | Bid.S1, 3, Suit.S, "1S"
+    | Bid.NT1, 4, Suit.NT, "1NT"
+    | Bid.C2, 5, Suit.C, "2C"
+    | Bid.D2, 6, Suit.D, "2D"
+    | Bid.H2, 7, Suit.H, "2H"
+    | Bid.S2, 8, Suit.S, "2S"
+    | Bid.NT2, 9, Suit.NT, "2NT"
+    | Bid.C3, 10, Suit.C, "3C"
+    | Bid.D3, 11, Suit.D, "3D"
+    | Bid.H3, 12, Suit.H, "3H"
+    | Bid.S3, 13, Suit.S, "3S"
+    | Bid.NT3, 14, Suit.NT, "3NT"
+    | Bid.C4, 15, Suit.C, "4C"
+    | Bid.D4, 16, Suit.D, "4D"
+    | Bid.H4, 17, Suit.H, "4H"
+    | Bid.S4, 18, Suit.S, "4S"
+    | Bid.NT4, 19, Suit.NT, "4NT"
+    | Bid.C5, 20, Suit.C, "5C"
+    | Bid.D5, 21, Suit.D, "5D"
+    | Bid.H5, 22, Suit.H, "5H"
+    | Bid.S5, 23, Suit.S, "5S"
+    | Bid.NT5, 24, Suit.NT, "5NT"
+    | Bid.C6, 25, Suit.C, "6C"
+    | Bid.D6, 26, Suit.D, "6D"
+    | Bid.H6, 27, Suit.H, "6H"
+    | Bid.S6, 28, Suit.S, "6S"
+    | Bid.NT6, 29, Suit.NT, "6NT"
+    | Bid.C7, 30, Suit.C, "7C"
+    | Bid.D7, 31, Suit.D, "7D"
+    | Bid.H7, 32, Suit.H, "7H"
+    | Bid.S7, 33, Suit.S, "7S"
+    | Bid.NT7, 34, Suit.NT, "7NT"
+    | Bid.Pass, 35, None, "Pass"
+    | Bid.X, 36, None, "X"
+    | Bid.XX, 37, None, "XX"
+    """
     C1 = 1
     D1 = 2
     H1 = 3
@@ -72,7 +116,7 @@ class Bid(Enum):
         | Bid.X (X, double) -> 36,
         | Bid.XX (XX, redouble) -> 37
 
-        :return: index of the bid
+        :return: An index of the bid
         :rtype: int
         """
         return self.value - 1
@@ -87,7 +131,7 @@ class Bid(Enum):
         | Bid.C7, Bid.D7, Bid.H7, Bid.S7, Bid.NT7 -> 7,
         | Bid.Pass, Bid.X, Bid.XX -> None
 
-        :return: a level of the bid
+        :return: A level of the bid
         :rtype: int or None
         """
         if self.value >= 36:
@@ -100,7 +144,7 @@ class Bid(Enum):
 
         Bid.Pass.suit, Bid.X.suit, Bid.XX.suit returns None
 
-        :return: a suit of the bid
+        :return: A suit of the bid
         :rtype: Suit or None
         """
         if self.value >= 36:
@@ -112,7 +156,7 @@ class Bid(Enum):
         """  Converts 0-index representation of bids to Bid object
 
         :param int x: 0-index bid representation
-        :return: a bid of the index
+        :return: A bid of the index
         :rtype: Bid
         :raise ValueError: if x < 0 or 37 < x.
         """
@@ -124,9 +168,9 @@ class Bid(Enum):
     def level_suit_to_bid(cls, level: int, suit: Suit) -> Bid:
         """ Converts level and suit to Bid object
 
-        :param int level: a level of the bid
-        :param Suit suit: a suit of the bid
-        :return: a bid of the level and the suit
+        :param int level: A level of the bid
+        :param Suit suit: A suit of the bid
+        :return: A bid of the level and the suit
         :rtype: Bid
         :raise ValueError: if level < 0 or 7 < level.
         """
@@ -139,7 +183,7 @@ class Bid(Enum):
         """ Converts str to Bid object
 
         :param str bid_str: str bid representation
-        :return: a bid represented as the string
+        :return: A bid represented as the string
         :rtype: Bid
         """
         if bid_str in ["Pass", "X", "XX"]:

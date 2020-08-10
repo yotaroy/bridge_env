@@ -4,7 +4,14 @@ from .suit import Suit
 
 
 class Card:
+    """ Cards of playing cards """
     def __init__(self, rank: int, suit: Suit):
+        """
+
+        :param int rank: Rank of the card. A value is from 2 to 14.
+            10 means T, 11 means J, 12 means Q, 13 means K, 14 means A.
+        :param Suit suit: Suit of the card.
+        """
         if rank < 2 or 14 < rank:
             raise ValueError("card rank is from 2 to 14")
         if suit == Suit.NT:

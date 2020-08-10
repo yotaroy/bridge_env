@@ -239,9 +239,9 @@ Enum class
     - `Player` object
     - a next active player
     - same as a player who located on the left side of the player
-- `teammate`
+- `partner`
     - `Player` object
-    - a player who is the teammate of the player
+    - a player who is the partner of the player
 - `left`
     - `Player` object
     - a player located on the left side of the player
@@ -256,7 +256,7 @@ Enum class
     - the opponent pair
 
 #### method
-- `is_teammate(player)`
+- `is_partner(player)`
     - `player` is `Player` object
     - returns `bool`
 - `is_vul(vul)`

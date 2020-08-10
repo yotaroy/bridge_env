@@ -23,13 +23,13 @@ class TestPlayer(unittest.TestCase):
         self.assertNotEqual(Player.S.next_player, Player.N)
 
     def test_teammate(self):
-        self.assertEqual(Player.N.teammate, Player.S)
-        self.assertEqual(Player.W.teammate, Player.E)
-        self.assertEqual(Player.E.teammate, Player.W)
-        self.assertEqual(Player.S.teammate, Player.N)
+        self.assertEqual(Player.N.partner, Player.S)
+        self.assertEqual(Player.W.partner, Player.E)
+        self.assertEqual(Player.E.partner, Player.W)
+        self.assertEqual(Player.S.partner, Player.N)
 
-        self.assertNotEqual(Player.N.teammate, Player.N)
-        self.assertNotEqual(Player.E.teammate, Player.N)
+        self.assertNotEqual(Player.N.partner, Player.N)
+        self.assertNotEqual(Player.E.partner, Player.N)
 
     def test_right(self):
         self.assertEqual(Player.N.right, Player.W)
@@ -50,16 +50,16 @@ class TestPlayer(unittest.TestCase):
         self.assertEqual(Player.W.opponent_pair, Pair.NS)
 
     def test_is_teammate(self):
-        self.assertTrue(Player.N.is_teammate(Player.N))
-        self.assertTrue(Player.N.is_teammate(Player.S))
-        self.assertTrue(Player.S.is_teammate(Player.S))
+        self.assertTrue(Player.N.is_partner(Player.N))
+        self.assertTrue(Player.N.is_partner(Player.S))
+        self.assertTrue(Player.S.is_partner(Player.S))
 
-        self.assertTrue(Player.E.is_teammate(Player.E))
-        self.assertTrue(Player.E.is_teammate(Player.W))
-        self.assertTrue(Player.W.is_teammate(Player.W))
+        self.assertTrue(Player.E.is_partner(Player.E))
+        self.assertTrue(Player.E.is_partner(Player.W))
+        self.assertTrue(Player.W.is_partner(Player.W))
 
-        self.assertFalse(Player.N.is_teammate(Player.E))
-        self.assertFalse(Player.N.is_teammate(Player.W))
+        self.assertFalse(Player.N.is_partner(Player.E))
+        self.assertFalse(Player.N.is_partner(Player.W))
 
     def test_is_vul(self):
         self.assertTrue(Player.N.is_vul(Vul.NS))

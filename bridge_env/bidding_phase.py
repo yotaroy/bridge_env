@@ -107,13 +107,13 @@ class BiddingPhase:
         if self.__last_bidder is not None:
             # check X
             if (not self.__called_x) and (not self.__called_xx) and \
-                    (not self.__active_player.is_teammate(self.__last_bidder)):
+                    (not self.__active_player.is_partner(self.__last_bidder)):
                 self.__available_bid[Bid.X.idx] = 1
             else:
                 self.__available_bid[Bid.X.idx] = 0
 
             # check XX
-            if self.__called_x and (not self.__called_xx) and self.__active_player.is_teammate(self.__last_bidder):
+            if self.__called_x and (not self.__called_xx) and self.__active_player.is_partner(self.__last_bidder):
                 self.__available_bid[Bid.XX.idx] = 1
             else:
                 self.__available_bid[Bid.XX.idx] = 0
