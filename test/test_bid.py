@@ -62,9 +62,9 @@ class TestBid(unittest.TestCase):
         self.assertEqual(Bid.int_to_bid(37), Bid.XX)
 
     def test_convert_level_suit_to_bid(self):
-        self.assertEqual(Bid.convert_level_suit_to_bid(1, Suit.C), Bid.C1)
-        self.assertEqual(Bid.convert_level_suit_to_bid(3, Suit.S), Bid.S3)
-        self.assertEqual(Bid.convert_level_suit_to_bid(7, Suit.NT), Bid.NT7)
+        self.assertEqual(Bid.level_suit_to_bid(1, Suit.C), Bid.C1)
+        self.assertEqual(Bid.level_suit_to_bid(3, Suit.S), Bid.S3)
+        self.assertEqual(Bid.level_suit_to_bid(7, Suit.NT), Bid.NT7)
 
     def test_str_to_bid(self):
         self.assertEqual(Bid.str_to_bid("1C"), Bid.C1)

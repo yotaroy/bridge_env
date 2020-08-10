@@ -102,7 +102,7 @@ Enum class
     - `x` is `int` between 0 to 37
     - returns `Bid` object of `idx` `x`
 
-- `convert_level_suit_to_bid(level, suit)`
+- `level_suit_to_bid(level, suit)`
     - `level` is `int` between 1 to 7
     - `suit` is `Suit` object
     - returns `Bid` object
