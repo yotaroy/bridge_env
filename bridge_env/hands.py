@@ -56,6 +56,8 @@ class Hands:
 
         return pbn_hands
 
+    # TODO: implement a class method to make Hands from pbn style.
+
 
 if __name__ == '__main__':
     for i in range(100):

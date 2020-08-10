@@ -15,17 +15,17 @@ class Card:
 
     def __str__(self):
         if self.rank == 10:
-            return 'T' + self.suit.name
+            return self.suit.name + 'T'
         elif self.rank == 11:
-            return 'J' + self.suit.name
+            return self.suit.name + 'J'
         elif self.rank == 12:
-            return 'Q' + self.suit.name
+            return self.suit.name + 'Q'
         elif self.rank == 13:
-            return 'K' + self.suit.name
+            return self.suit.name + 'K'
         elif self.rank == 14:
-            return 'A' + self.suit.name
+            return self.suit.name + 'A'
 
-        return str(self.rank) + self.suit.name
+        return self.suit.name + str(self.rank)
 
     def __int__(self):
         """
@@ -33,6 +33,9 @@ class Card:
         :return: int, [0, 51] (C2 - CA, D2 - DA, H2 - HA, S2 - SA)
         """
         return self.rank - 2 + (self.suit.value - 1) * 13
+
+    def __eq__(self, card):
+        return self.suit == card.suit and self.rank == card.rank
 
     @classmethod
     def int_to_card(cls, x: int) -> Card:
