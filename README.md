@@ -102,7 +102,7 @@ Enum class
     - `x` is `int` between 0 to 37
     - returns `Bid` object of `idx` `x`
 
-- `convert_level_suit_to_bid(level, suit)`
+- `level_suit_to_bid(level, suit)`
     - `level` is `int` between 1 to 7
     - `suit` is `Suit` object
     - returns `Bid` object
@@ -239,9 +239,9 @@ Enum class
     - `Player` object
     - a next active player
     - same as a player who located on the left side of the player
-- `teammate`
+- `partner`
     - `Player` object
-    - a player who is the teammate of the player
+    - a player who is the partner of the player
 - `left`
     - `Player` object
     - a player located on the left side of the player
@@ -256,7 +256,7 @@ Enum class
     - the opponent pair
 
 #### method
-- `is_teammate(player)`
+- `is_partner(player)`
     - `player` is `Player` object
     - returns `bool`
 - `is_vul(vul)`
@@ -296,11 +296,11 @@ Enum class
 |`Vul.BOTH`|`"Both"`|
 
 #### class methods
-- `str_to_Vul(str_vul)`
+- `str_to_vul(str_vul)`
     - `str_vul` is `str`
     - returns `Vul` object
 ```python
->>> vul = bridge_env.Vul.str_to_Vul("None")
+>>> vul = bridge_env.Vul.str_to_vul("None")
 >>> vul
 <Vul.NONE: 1>
 ```

@@ -1,25 +1,16 @@
-"""
-Contract bridge hands
-
-class 'Hands'
-    - self.hands
-        key: Player
-        value: 13dims numpy array [0 - 51]
-
-    - convert_binary(): Hands in binary style of dictionary
-        key: Player
-        value: 52 dims array(C2-A, D2-A, H2-A, S2-A)
-
-    - convert_pbn(): Hands in pbn style. str
-"""
-
 import numpy as np
 from .player import Player
 from .card import Card
 
 
 class Hands:
+    """Hands in contract bridge."""
+
     def __init__(self, seed: int = None):
+        """
+
+        :param int seed: Random seed to create hands randomly.
+        """
         np.random.seed(seed)
         hands_array = np.arange(52)
         np.random.shuffle(hands_array)
@@ -31,6 +22,11 @@ class Hands:
         self.hands[Player.W] = np.sort(hands_array[39:])
 
     def convert_binary(self) -> dict:
+        """Convert hands to the binary vector representation.
+
+        :return: Binary vector of players' hands.
+        :rtype: dict of (Player, numpy array)
+        """
         binary_hands = dict()
 
         for p in Player:
@@ -40,6 +36,11 @@ class Hands:
         return binary_hands
 
     def convert_pbn(self) -> str:
+        """Convert hands to the pbn style.
+
+        :return: The pbn style of hands.
+        :rtype: str
+        """
         pbn_hands = "N:"
 
         for p in Player:
@@ -57,15 +58,3 @@ class Hands:
         return pbn_hands
 
     # TODO: implement a class method to make Hands from pbn style.
-
-
-if __name__ == '__main__':
-    for i in range(100):
-        deal = Hands(i)
-        print(deal.hands)
-        print(deal.convert_binary())
-        print(deal.convert_pbn())
-        for d in deal.hands.values():
-            print(list(map(str, list(map(Card.int_to_card, d)))))
-        print("========================================================")
-

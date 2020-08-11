@@ -1,28 +1,31 @@
-"""
-Contract bridge bidding environment
-
-class 'BiddingPhase'
-    - convert_num_to_contract:
-                Convert the input number(0~34) to the set of its contract num(1~7) and its contract trump(C,D,H,S,NT).
-    - bidding_result: Return information about the contract of the bidding phase.
-"""
 from typing import Union
 import numpy as np
-from .player import Player, Pair, Vul
-from .card import Suit
+from enum import Enum
+
 from .bid import Bid
 from .contract import Contract
-from enum import Enum
+from .pair import Pair
+from .player import Player
+from .card import Suit
+from .vul import Vul
 
 
 class BiddingPhaseState(Enum):
+    """State of a bidding phase in contract bridge."""
     illegal = -1  # illegal bid
     ongoing = 1  # bidding phase is ongoing
     finished = 2  # bidding phase is over
 
 
 class BiddingPhase:
+    """Bidding phase in contract bridge."""
+
     def __init__(self, dealer: Player = Player.N, vul: Vul = Vul.NONE):
+        """
+
+        :param Player dealer: Dealer in the bidding phase. Dealer is the first player to take a bid.
+        :param Vul vul: Vulnerability setting.
+        """
         self.__dealer = dealer  # player who firstly take a bid (type: Player)
         self.__vul = vul  # vulnerable (type: Vul)
         self.__active_player = self.__dealer  # player who take a bid in this turn (type: Player)
@@ -43,37 +46,76 @@ class BiddingPhase:
 
     @property
     def dealer(self):
+        """Dealer in the bidding phase.
+        Dealer is the first player to take a bid.
+
+        :return: Dealer.
+        :rtype: Player
+        """
         return self.__dealer
 
     @property
     def vul(self):
+        """Vulnerability.
+
+        :return: Vulnerability setting.
+        :rtype: Vul
+        """
         return self.__vul
 
     @property
     def active_player(self):
+        """Active player. This player takes a bid.
+
+        :return: Active player.
+        :rtype: Player
+        """
         return self.__active_player
 
     @property
     def done(self):
+        """Checks whether the bidding phase is done.
+
+        :return: Whether the bidding phase is done.
+        :rtype: bool
+        """
         return self.__done
 
     @property
     def bid_history(self):
+        """History of bids.
+
+        :return: History of bids.
+        :rtype: list
+        """
         return self.__bid_history
 
     @property
     def players_bid_history(self):
+        """Each player's history of bids.
+
+        :return: Players' history of bids.
+        :rtype: dict of (Player, list)
+        """
         return self.__players_bid_history
 
     @property
     def available_bid(self):
+        """Binary vector of available bids.
+        The index of vector corresponds to Bid object index.
+        [0-34] are [1C-7NT], 35 is Pass, 36 is X, 37 is XX.
+
+        :return: Binary vector of available bids.
+        :rtype: numpy array
+        """
         return self.__available_bid
 
     def take_bid(self, bid: Bid) -> BiddingPhaseState:
-        """ Take a bid. Check the end of the bidding phase and whether a bid is illegal, then return BiddingPhaseState.
+        """Takes a bid.
 
-        :param bid:
-        :return:
+        :param Bid bid: A bid to take.
+        :return: Whether the bid is legal, and whether the bidding phase ends.
+        :rtype: BiddingPhaseState
         """
         if self.__available_bid[bid.idx] == 0:  # illegal bids
             return BiddingPhaseState.illegal
@@ -107,13 +149,13 @@ class BiddingPhase:
         if self.__last_bidder is not None:
             # check X
             if (not self.__called_x) and (not self.__called_xx) and \
-                    (not self.__active_player.is_teammate(self.__last_bidder)):
+                    (not self.__active_player.is_partner(self.__last_bidder)):
                 self.__available_bid[Bid.X.idx] = 1
             else:
                 self.__available_bid[Bid.X.idx] = 0
 
             # check XX
-            if self.__called_x and (not self.__called_xx) and self.__active_player.is_teammate(self.__last_bidder):
+            if self.__called_x and (not self.__called_xx) and self.__active_player.is_partner(self.__last_bidder):
                 self.__available_bid[Bid.XX.idx] = 1
             else:
                 self.__available_bid[Bid.XX.idx] = 0
@@ -121,6 +163,11 @@ class BiddingPhase:
         return BiddingPhaseState.ongoing
 
     def contract(self) -> Union[Contract, None]:
+        """Contract declared in the bidding phase.
+
+        :return: Contract declared in the bidding phase. If the bidding phase is not done, returns None.
+        :rtype: Contract or None
+        """
         if not self.__done:
             return None
 
