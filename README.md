@@ -296,11 +296,11 @@ Enum class
 |`Vul.BOTH`|`"Both"`|
 
 #### class methods
-- `str_to_Vul(str_vul)`
+- `str_to_vul(str_vul)`
     - `str_vul` is `str`
     - returns `Vul` object
 ```python
->>> vul = bridge_env.Vul.str_to_Vul("None")
+>>> vul = bridge_env.Vul.str_to_vul("None")
 >>> vul
 <Vul.NONE: 1>
 ```

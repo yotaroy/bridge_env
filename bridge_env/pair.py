@@ -5,7 +5,7 @@ from .vul import Vul
 
 
 class Pair(Enum):
-    """ Pair in contract bridge. """
+    """Pair in contract bridge."""
     NS = 1
     EW = 2
 
@@ -18,7 +18,7 @@ class Pair(Enum):
 
     @property
     def opponent_pair(self):
-        """ Opponent pair of the pair.
+        """Opponent pair of the pair.
 
         :return: Opponent pair of the pair.
         :rtype: Pair
@@ -26,7 +26,7 @@ class Pair(Enum):
         return Pair(3 - self.value)
 
     def is_vul(self, vul: Vul) -> bool:
-        """ Check the pair is vulnerable.
+        """Check the pair is vulnerable.
 
         :param Vul vul: Vulnerability setting.
         :return: Whether the pair is vulnerable.

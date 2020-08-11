@@ -3,7 +3,7 @@ from enum import Enum
 
 
 class Suit(Enum):
-    """ Suit of playing cards.
+    """Suit of playing cards.
 
     | 4 suits of playing cards and NT (No Trump).
     |
@@ -29,7 +29,7 @@ class Suit(Enum):
         return self.name
 
     def is_minor(self) -> bool:
-        """ Returns whether the suit is a minor suit (Club or Diamond).
+        """Returns whether the suit is a minor suit (Club or Diamond).
 
         :return: Whether the suit is minor.
         :rtype: bool
@@ -37,7 +37,7 @@ class Suit(Enum):
         return self.value <= 2
 
     def is_major(self) -> bool:
-        """ Returns whether the suit is a major suit (Heart or Spade).
+        """Returns whether the suit is a major suit (Heart or Spade).
 
         :return: Whether the suit is major.
         :rtype: bool

@@ -1,3 +1,5 @@
+from typing import Union
+
 from .bid import Bid
 from .player import Player
 from .suit import Suit
@@ -5,13 +7,14 @@ from .vul import Vul
 
 
 class Contract:
-    """ Contract in contract bridge. """
+    """Contract in contract bridge."""
 
-    def __init__(self, final_bid: Bid, x: bool = False, xx: bool = False, vul: Vul = Vul.NONE,
+    def __init__(self, final_bid: Union[Bid, None], x: bool = False, xx: bool = False, vul: Vul = Vul.NONE,
                  declarer: Player = None):
         """
 
-        :param Bid final_bid: The final bid of the bidding phase. Bid.Pass or None means "Passed Out".
+        :param  final_bid: The final bid of the bidding phase. Bid.Pass or None means "Passed Out".
+        :type final_bid: Bid or None
         :param bool x: Double.
         :param bool xx: Redouble.
         :param Vul vul: Vulnerability.
@@ -42,7 +45,7 @@ class Contract:
 
     @property
     def level(self):
-        """ A level of the contract.
+        """A level of the contract.
 
         :return: A level of the contract. If passed out, return None.
         :rtype: int or None
@@ -53,7 +56,7 @@ class Contract:
 
     @property
     def trump(self):
-        """ A suit of the contract.
+        """A suit of the contract.
 
         :return: A suit of the contract. If passed out, return None.
         :rtype: Suit or None
@@ -63,7 +66,7 @@ class Contract:
         return self.final_bid.suit
 
     def is_passed_out(self) -> bool:
-        """ Whether it is passed out.
+        """Whether it is passed out.
 
         :return: Whether it is passed out.
         :rtype: bool
@@ -71,7 +74,7 @@ class Contract:
         return self.final_bid is Bid.Pass or self.final_bid is None
 
     def necessary_tricks(self) -> int:
-        """ Necessary tricks to take in the playing phase.
+        """Necessary tricks to take in the playing phase.
 
         :return: Necessary tricks to take.
         :rtype: int
@@ -79,7 +82,7 @@ class Contract:
         return self.level + 6
 
     def is_vul(self) -> bool:
-        """ Check whether the declarer's team is vulnerable.
+        """Check whether the declarer's team is vulnerable.
 
         :return: Whether the declarer's team is vulnerable.
         :rtype: bool
@@ -93,7 +96,7 @@ class Contract:
         return self.declarer.is_vul(self.vul)
 
     def display(self):
-        """ Print contract information.
+        """Print contract information.
 
         :return: None.
         """

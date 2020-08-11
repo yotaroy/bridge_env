@@ -4,7 +4,7 @@ from .suit import Suit
 
 
 class Card:
-    """ Cards of playing cards. """
+    """Cards of playing cards."""
 
     def __init__(self, rank: int, suit: Suit):
         """
@@ -57,7 +57,7 @@ class Card:
 
     @classmethod
     def int_to_card(cls, x: int) -> Card:
-        """ Convert int representation of card to Card
+        """Convert int representation of card to Card
 
         :param int x: int representation of a card.
         :return: Card object of the int representation of a card.
@@ -71,7 +71,7 @@ class Card:
 
     @classmethod
     def rank_int_to_str(cls, rank: int) -> str:
-        """ Convert int representation to str representation of rank.
+        """Convert int representation to str representation of rank.
 
         :param int rank: int representation of rank
         :return: str representation of rank
