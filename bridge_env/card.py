@@ -76,6 +76,7 @@ class Card:
         :param int rank: int representation of rank
         :return: str representation of rank
         :rtype: str
+        :raise ValueError: if rank < 2 or 14 < rank.
         """
         if rank < 2 or 14 < rank:
             raise ValueError("card rank is from 2 to 14")
@@ -92,3 +93,24 @@ class Card:
             return 'A'
 
         return str(rank)
+
+    @classmethod
+    def rank_str_to_int(cls, rank: str) -> int:
+        """Convert str representation to int representation of rank.
+
+        :param str rank: str representation of rank
+        :return: int representation of rank
+        :rtype: int
+        """
+        if rank == "T":
+            return 10
+        elif rank == "J":
+            return 11
+        elif rank == "Q":
+            return 12
+        elif rank == "K":
+            return 13
+        elif rank == "A":
+            return 14
+        else:
+            return int(rank)

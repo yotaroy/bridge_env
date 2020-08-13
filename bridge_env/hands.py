@@ -6,20 +6,35 @@ from .card import Card
 class Hands:
     """Hands in contract bridge."""
 
-    def __init__(self, seed: int = None):
-        """
+    def __init__(self, seed: int = None, pbn_hands: str = None):
+        """ one of seed or pbn_hands must be not None.
 
         :param int seed: Random seed to create hands randomly.
+        :param str pbn_hands: Hands representation of pbn style.
         """
-        np.random.seed(seed)
-        hands_array = np.arange(52)
-        np.random.shuffle(hands_array)
-
-        self.hands = dict()
-        self.hands[Player.N] = np.sort(hands_array[:13])
-        self.hands[Player.E] = np.sort(hands_array[13:26])
-        self.hands[Player.S] = np.sort(hands_array[26:39])
-        self.hands[Player.W] = np.sort(hands_array[39:])
+        if pbn_hands is None:
+            np.random.seed(seed)
+            hands_array = np.arange(52)
+            np.random.shuffle(hands_array)
+            self.hands = dict()
+            self.hands[Player.N] = np.sort(hands_array[:13])
+            self.hands[Player.E] = np.sort(hands_array[13:26])
+            self.hands[Player.S] = np.sort(hands_array[26:39])
+            self.hands[Player.W] = np.sort(hands_array[39:])
+        else:
+            player = Player[pbn_hands[0]]
+            self.hands = {p: [] for p in Player}
+            num = 39
+            for s in pbn_hands[2:]:
+                if s == " ":
+                    player = player.next_player
+                    num = 39
+                elif s == ".":
+                    num -= 13
+                else:
+                    self.hands[player].append(Card.rank_str_to_int(s) + num - 2)
+            for p in Player:
+                self.hands[p] = np.array(sorted(self.hands[p]))
 
     def convert_binary(self) -> dict:
         """Convert hands to the binary vector representation.
@@ -53,8 +68,8 @@ class Hands:
             while 0 < bef:
                 pbn_hands += '.'
                 bef -= 1
-            pbn_hands += ' '        # TODO: the end with space. remove the end space?
+            if p is not Player.W:
+                pbn_hands += ' '
 
         return pbn_hands
 
-    # TODO: implement a class method to make Hands from pbn style.
