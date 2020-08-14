@@ -10,7 +10,7 @@ class Hands:
         """ one of seed or pbn_hands must be not None.
 
         :param int seed: Random seed to create hands randomly.
-        :param str pbn_hands: Hands representation of pbn style.
+        :param str pbn_hands: Hands representation of pbn style. http://www.tistis.nl/pbn/pbn_v20.txt
         """
         if pbn_hands is None:
             np.random.seed(seed)
@@ -62,14 +62,14 @@ class Hands:
             bef = 3
             for c in self.hands[p][::-1]:
                 while c // 13 < bef:
-                    pbn_hands += '.'
+                    pbn_hands += "."
                     bef -= 1
                 pbn_hands += Card.rank_int_to_str(c % 13 + 2)
             while 0 < bef:
-                pbn_hands += '.'
+                pbn_hands += "."
                 bef -= 1
             if p is not Player.W:
-                pbn_hands += ' '
+                pbn_hands += " "
 
         return pbn_hands
 
