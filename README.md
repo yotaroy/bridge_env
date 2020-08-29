@@ -43,6 +43,11 @@ dds = cdll.LoadLibrary(base_path+"/../../dds/src/libdds.so")    # change
 print('Loaded lib {0}'.format(dds))
 ```
 
+## Test
+```bash
+python -m pytest
+```
+
 ## `bridge_env`
 bridge environment package
 
