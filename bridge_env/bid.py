@@ -1,6 +1,8 @@
 from __future__ import annotations
-from .card import Suit
+
 from enum import Enum
+
+from .card import Suit
 
 
 class Bid(Enum):

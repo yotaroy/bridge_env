@@ -1,8 +1,9 @@
 from __future__ import annotations
+
 from enum import Enum
 
-from .vul import Vul
 from .pair import Pair
+from .vul import Vul
 
 
 class Player(Enum):

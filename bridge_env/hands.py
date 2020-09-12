@@ -1,16 +1,19 @@
 import numpy as np
-from .player import Player
+
 from .card import Card
+from .player import Player
 
 
 class Hands:
     """Hands in contract bridge."""
 
     def __init__(self, seed: int = None, pbn_hands: str = None):
-        """ one of seed or pbn_hands must be not None.
+        """One of seed or pbn_hands must be not None.
+
+        http://www.tistis.nl/pbn/pbn_v20.txt
 
         :param int seed: Random seed to create hands randomly.
-        :param str pbn_hands: Hands representation of pbn style. http://www.tistis.nl/pbn/pbn_v20.txt
+        :param str pbn_hands: Hands representation of pbn style.
         """
         if pbn_hands is None:
             np.random.seed(seed)
@@ -72,4 +75,3 @@ class Hands:
                 pbn_hands += " "
 
         return pbn_hands
-

@@ -11,9 +11,11 @@ class TestContract(unittest.TestCase):
         self.passed_out1 = Contract(Bid.Pass)
         self.passed_out2 = Contract(None)
 
-        self.contract_1CXX = Contract(Bid.C1, xx=True, vul=Vul.NONE, declarer=None)
+        self.contract_1CXX = Contract(Bid.C1, xx=True, vul=Vul.NONE,
+                                      declarer=None)
         self.contract_3NT = Contract(Bid.NT3, vul=Vul.NS, declarer=Player.W)
-        self.contract_5DX = Contract(Bid.D5, x=True, vul=Vul.EW, declarer=Player.E)
+        self.contract_5DX = Contract(Bid.D5, x=True, vul=Vul.EW,
+                                     declarer=Player.E)
         self.contract_6S = Contract(Bid.S6, vul=Vul.BOTH, declarer=Player.S)
 
     def test_is_passed_out(self):

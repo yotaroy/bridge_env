@@ -9,7 +9,8 @@ from .vul import Vul
 class Contract:
     """Contract in contract bridge."""
 
-    def __init__(self, final_bid: Union[Bid, None], x: bool = False, xx: bool = False, vul: Vul = Vul.NONE,
+    def __init__(self, final_bid: Union[Bid, None], x: bool = False,
+                 xx: bool = False, vul: Vul = Vul.NONE,
                  declarer: Player = None):
         """
 

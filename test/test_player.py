@@ -1,7 +1,7 @@
 import unittest
 
-from bridge_env import Player
 from bridge_env import Pair
+from bridge_env import Player
 from bridge_env import Vul
 
 
