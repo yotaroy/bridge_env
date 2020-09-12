@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from enum import Enum
 
 
@@ -7,10 +8,10 @@ class Vul(Enum):
 
     There are 4 types of vulnerability, "None", "NS", "EW" or "Both".
     """
-    NONE = 1    # None
+    NONE = 1  # None
     NS = 2
     EW = 3
-    BOTH = 4    # Both
+    BOTH = 4  # Both
 
     def __str__(self):
         """

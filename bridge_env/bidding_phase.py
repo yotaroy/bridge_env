@@ -1,12 +1,13 @@
-from typing import Union
-import numpy as np
 from enum import Enum
+from typing import Union
+
+import numpy as np
 
 from .bid import Bid
+from .card import Suit
 from .contract import Contract
 from .pair import Pair
 from .player import Player
-from .card import Suit
 from .vul import Vul
 
 
@@ -37,7 +38,8 @@ class BiddingPhase:
 
         self.__bid_history = []
         self.__players_bid_history = {player: [] for player in Player}
-        self.__declarer_check = {pair: {suit: None for suit in Suit} for pair in Pair}
+        self.__declarer_check = {pair: {suit: None for suit in Suit} for pair in
+                                 Pair}
 
         self.__available_bid = np.ones(38)
         self.__available_bid[-2:] = 0  # X and XX are set to be illegal
@@ -122,7 +124,8 @@ class BiddingPhase:
 
         if bid is Bid.Pass:  # Pass
             if len(self.__bid_history) >= 3:
-                if self.__bid_history[-1] is Bid.Pass and self.__bid_history[-2] is Bid.Pass:
+                if self.__bid_history[-1] is Bid.Pass and self.__bid_history[
+                    -2] is Bid.Pass:
                     self.__bid_history.append(bid)
                     self.__players_bid_history[self.__active_player].append(bid)
                     self.__active_player = None
@@ -136,8 +139,10 @@ class BiddingPhase:
             self.__last_bidder = self.__active_player
             self.__last_bid = bid
 
-            if self.__declarer_check[self.__active_player.pair][bid.suit] is None:
-                self.__declarer_check[self.__active_player.pair][bid.suit] = self.__active_player
+            if self.__declarer_check[self.__active_player.pair][
+                bid.suit] is None:
+                self.__declarer_check[self.__active_player.pair][
+                    bid.suit] = self.__active_player
 
             self.__called_x, self.__called_xx = False, False
             self.__available_bid[:bid.idx + 1] = 0
@@ -155,7 +160,9 @@ class BiddingPhase:
                 self.__available_bid[Bid.X.idx] = 0
 
             # check XX
-            if self.__called_x and (not self.__called_xx) and self.__active_player.is_partner(self.__last_bidder):
+            if self.__called_x and (
+                    not self.__called_xx) and self.__active_player.is_partner(
+                self.__last_bidder):
                 self.__available_bid[Bid.XX.idx] = 1
             else:
                 self.__available_bid[Bid.XX.idx] = 0
@@ -174,7 +181,10 @@ class BiddingPhase:
         if self.__last_bid is None:  # 4 consecutive passes
             return Contract(None, vul=self.__vul)  # Passed Out
         else:
-            contract = Contract(final_bid=self.__last_bid, x=self.__called_x, xx=self.__called_xx,
+            contract = Contract(final_bid=self.__last_bid, x=self.__called_x,
+                                xx=self.__called_xx,
                                 vul=self.__vul,
-                                declarer=self.__declarer_check[self.__last_bidder.pair][self.__last_bid.suit])
+                                declarer=
+                                self.__declarer_check[self.__last_bidder.pair][
+                                    self.__last_bid.suit])
         return contract

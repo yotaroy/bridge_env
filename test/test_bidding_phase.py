@@ -1,8 +1,8 @@
 import unittest
 
+from bridge_env import Bid
 from bridge_env import BiddingPhase
 from bridge_env import BiddingPhaseState
-from bridge_env import Bid
 from bridge_env import Contract
 from bridge_env import Player
 from bridge_env import Suit
