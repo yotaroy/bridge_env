@@ -109,9 +109,9 @@ class BiddingPhase:
         return self.__available_bid
 
     def has_done(self) -> bool:
-        """Checks whether the bidding phase is has_done.
+        """Checks whether the bidding phase has done.
 
-        :return: Whether the bidding phase is has_done.
+        :return: Whether the bidding phase has done.
         :rtype: bool
         """
         return self.__active_player is None
@@ -182,8 +182,8 @@ class BiddingPhase:
     def contract(self) -> Optional[Contract]:
         """Contract declared in the bidding phase.
 
-        :return: Contract declared in the bidding phase. If the bidding phase is
-            not has_done, returns None.
+        :return: Contract declared in the bidding phase. If the bidding phase
+            has not done, returns None.
         :rtype: Optional[Contract]
         """
         if not self.has_done():
