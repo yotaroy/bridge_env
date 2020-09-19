@@ -53,8 +53,13 @@ def calc_score(contract: Contract, taken_tricks: int) -> int:
     if contract.is_passed_out():  # 4 passes
         return 0
 
-    elif taken_tricks < contract.necessary_tricks():  # down
-        down_num = contract.necessary_tricks() - taken_tricks
+    necessary_tricks = contract.necessary_tricks()
+    assert necessary_tricks is not None
+    assert contract.level is not None
+    assert contract.trump is not None
+
+    if taken_tricks < necessary_tricks:  # down
+        down_num = necessary_tricks - taken_tricks
         if contract.xx:
             return _DOWN_XX[vul][down_num - 1]
         if contract.x:
@@ -92,7 +97,7 @@ def calc_score(contract: Contract, taken_tricks: int) -> int:
             up_make_point = _UP_MAKE[1][vul]
 
     # up make
-    point += up_make_point * max(0, taken_tricks - contract.necessary_tricks())
+    point += up_make_point * max(0, taken_tricks - necessary_tricks)
 
     return point
 

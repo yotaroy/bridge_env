@@ -54,6 +54,8 @@ class Contract:
         """
         if self.is_passed_out():
             return None
+        assert self.final_bid is not None
+
         return self.final_bid.level
 
     @property
@@ -65,6 +67,8 @@ class Contract:
         """
         if self.is_passed_out():
             return None
+        assert self.final_bid is not None
+
         return self.final_bid.suit
 
     def is_passed_out(self) -> bool:
@@ -75,12 +79,16 @@ class Contract:
         """
         return self.final_bid is Bid.Pass or self.final_bid is None
 
-    def necessary_tricks(self) -> int:
+    def necessary_tricks(self) -> Optional[int]:
         """Necessary tricks to take in the playing phase.
 
         :return: Necessary tricks to take.
-        :rtype: int
+        :rtype: int or None
         """
+        if self.is_passed_out():
+            return None
+        assert self.level is not None
+
         return self.level + 6
 
     def is_vul(self) -> bool:
