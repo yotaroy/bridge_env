@@ -28,14 +28,16 @@ class BiddingPhase:
             player to take a bid.
         :param Vul vul: Vulnerability setting.
         """
-        self.__dealer = dealer  # player who firstly take a bid (type: Player)
-        self.__vul = vul  # vulnerable (type: Vul)
-        self.__active_player = dealer  # player who take a bid in this turn.
+        self.__dealer: Player = dealer  # player who firstly take a bid.
+        self.__vul: Vul = vul  # vulnerable.
+
+        # player who take a bid in this turn.
+        self.__active_player: Player = dealer
 
         # player who take the last bid except Pass, X and XX.
         self.__last_bidder: Optional[Player] = None
 
-        # the last bid except Pass, X and XX (type: Bid)
+        # the last bid except Pass, X and XX
         self.__last_bid: Optional[Bid] = None
         self.__called_x: bool = False
         self.__called_xx: bool = False
