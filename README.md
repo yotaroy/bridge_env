@@ -398,9 +398,6 @@ Bidding phase class for not duplicated style but a single bidding phase
   - returns `Vul` object
 - `active_player`
   - returns `Player` object
-- `done`
-  - returns `bool`
-  - `True` when the bidding phase has ended
 - `bid_history`
   - returns `list` of `Bid` objects
 - `players_bid_history`
@@ -410,6 +407,9 @@ Bidding phase class for not duplicated style but a single bidding phase
 
 #### methods
 
+- `has_done()`
+  - returns `bool`
+  - `True` when the bidding phase has ended
 - `take_bid(bid)`
   - take a bid.
   - returns `BiddingPhaseState`

@@ -19,7 +19,7 @@ class TestScore(unittest.TestCase):
         bp.take_bid(Bid.Pass)
         bp.take_bid(Bid.Pass)
 
-        self.assertTrue(bp.done)  # bidding phase is over
+        self.assertTrue(bp.has_done)  # bidding phase is over
 
         contract = Contract(None, vul=Vul.NONE)
         result = bp.contract()
@@ -55,12 +55,12 @@ class TestScore(unittest.TestCase):
         # illegal contract check
         self.assertIsNone(bp.contract())
 
-        self.assertFalse(bp.done)
+        self.assertFalse(bp.has_done())
 
         # take a final bid
         self.assertEqual(bp.take_bid(Bid.Pass), BiddingPhaseState.finished)
 
-        self.assertTrue(bp.done)
+        self.assertTrue(bp.has_done())
 
         # dealer check
         self.assertEqual(bp.dealer, dealer)

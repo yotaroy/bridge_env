@@ -29,7 +29,8 @@ class Vul(Enum):
     def str_to_vul(cls, str_vul: str) -> Vul:
         """Convert str representation of vulnerability to Vul object.
 
-        :param str str_vul: str representation of vulnerability. "None", "NS", "EW" or "Both".
+        :param str str_vul: str representation of vulnerability.
+            "None", "NS", "EW" or "Both".
         :return: Vulnerability.
         :rtype: Vul
         """

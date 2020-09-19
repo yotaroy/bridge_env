@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Union
+from typing import Dict, List, Optional
 
 import numpy as np
 
@@ -24,30 +24,35 @@ class BiddingPhase:
     def __init__(self, dealer: Player = Player.N, vul: Vul = Vul.NONE):
         """
 
-        :param Player dealer: Dealer in the bidding phase. Dealer is the first player to take a bid.
+        :param Player dealer: Dealer in the bidding phase. Dealer is the first
+            player to take a bid.
         :param Vul vul: Vulnerability setting.
         """
-        self.__dealer = dealer  # player who firstly take a bid (type: Player)
-        self.__vul = vul  # vulnerable (type: Vul)
-        self.__active_player = self.__dealer  # player who take a bid in this turn (type: Player)
+        self.__dealer: Player = dealer  # player who firstly take a bid.
+        self.__vul: Vul = vul  # vulnerable.
 
-        self.__last_bidder = None  # player who take the last bid except Pass, X and XX (type: Player)
-        self.__last_bid = None  # the last bid except Pass, X and XX (type: Bid)
-        self.__called_x = False
-        self.__called_xx = False
+        # player who take a bid in this turn.
+        self.__active_player: Optional[Player] = dealer
 
-        self.__bid_history = []
-        self.__players_bid_history = {player: [] for player in Player}
-        self.__declarer_check = {pair: {suit: None for suit in Suit} for pair in
-                                 Pair}
+        # player who take the last bid except Pass, X and XX.
+        self.__last_bidder: Optional[Player] = None
 
-        self.__available_bid = np.ones(38)
-        self.__available_bid[-2:] = 0  # X and XX are set to be illegal
+        # the last bid except Pass, X and XX
+        self.__last_bid: Optional[Bid] = None
+        self.__called_x: bool = False
+        self.__called_xx: bool = False
 
-        self.__done = False  # a state whether bidding phase is over (type: bool)
+        self.__bid_history: List[Bid] = []
+        self.__players_bid_history: Dict[Player, List[Bid]] = \
+            {player: [] for player in Player}
+        self.__declarer_check: Dict[Pair, Dict[Suit, Optional[Player]]] = \
+            {pair: {suit: None for suit in Suit} for pair in Pair}
+
+        self.__available_bid: np.ndarray = np.ones(38)
+        self.__available_bid[-2:] = 0  # X and XX are set to be illegal.
 
     @property
-    def dealer(self):
+    def dealer(self) -> Player:
         """Dealer in the bidding phase.
         Dealer is the first player to take a bid.
 
@@ -57,7 +62,7 @@ class BiddingPhase:
         return self.__dealer
 
     @property
-    def vul(self):
+    def vul(self) -> Vul:
         """Vulnerability.
 
         :return: Vulnerability setting.
@@ -66,7 +71,7 @@ class BiddingPhase:
         return self.__vul
 
     @property
-    def active_player(self):
+    def active_player(self) -> Optional[Player]:
         """Active player. This player takes a bid.
 
         :return: Active player.
@@ -75,42 +80,41 @@ class BiddingPhase:
         return self.__active_player
 
     @property
-    def done(self):
-        """Checks whether the bidding phase is done.
-
-        :return: Whether the bidding phase is done.
-        :rtype: bool
-        """
-        return self.__done
-
-    @property
-    def bid_history(self):
+    def bid_history(self) -> List[Bid]:
         """History of bids.
 
         :return: History of bids.
-        :rtype: list
+        :rtype: List[Bid]
         """
         return self.__bid_history
 
     @property
-    def players_bid_history(self):
+    def players_bid_history(self) -> Dict[Player, List[Bid]]:
         """Each player's history of bids.
 
         :return: Players' history of bids.
-        :rtype: dict of (Player, list)
+        :rtype: Dict[Player, List[Bid]]
         """
         return self.__players_bid_history
 
     @property
-    def available_bid(self):
+    def available_bid(self) -> np.ndarray:
         """Binary vector of available bids.
         The index of vector corresponds to Bid object index.
         [0-34] are [1C-7NT], 35 is Pass, 36 is X, 37 is XX.
 
         :return: Binary vector of available bids.
-        :rtype: numpy array
+        :rtype: np.ndarray
         """
         return self.__available_bid
+
+    def has_done(self) -> bool:
+        """Checks whether the bidding phase is has_done.
+
+        :return: Whether the bidding phase is has_done.
+        :rtype: bool
+        """
+        return self.__active_player is None
 
     def take_bid(self, bid: Bid) -> BiddingPhaseState:
         """Takes a bid.
@@ -119,30 +123,36 @@ class BiddingPhase:
         :return: Whether the bid is legal, and whether the bidding phase ends.
         :rtype: BiddingPhaseState
         """
+        if self.has_done():
+            raise Exception('Bidding phase has already ended.')
+
+        assert self.__active_player is not None
+
         if self.__available_bid[bid.idx] == 0:  # illegal bids
             return BiddingPhaseState.illegal
 
         if bid is Bid.Pass:  # Pass
             if len(self.__bid_history) >= 3:
-                if self.__bid_history[-1] is Bid.Pass and self.__bid_history[
-                    -2] is Bid.Pass:
+                if self.__bid_history[-1] is Bid.Pass and \
+                        self.__bid_history[-2] is Bid.Pass:
                     self.__bid_history.append(bid)
                     self.__players_bid_history[self.__active_player].append(bid)
                     self.__active_player = None
-                    self.__done = True
                     return BiddingPhaseState.finished  # bidding phase end
         elif bid is Bid.X:  # X
             self.__called_x = True
         elif bid is Bid.XX:  # XX
             self.__called_xx = True
         else:  # regular bids
+            assert bid.suit is not None
+
             self.__last_bidder = self.__active_player
             self.__last_bid = bid
 
-            if self.__declarer_check[self.__active_player.pair][
-                bid.suit] is None:
-                self.__declarer_check[self.__active_player.pair][
-                    bid.suit] = self.__active_player
+            if self.__declarer_check[self.__active_player.pair][bid.suit] \
+                    is None:
+                self.__declarer_check[self.__active_player.pair][bid.suit] = \
+                    self.__active_player
 
             self.__called_x, self.__called_xx = False, False
             self.__available_bid[:bid.idx + 1] = 0
@@ -161,26 +171,30 @@ class BiddingPhase:
 
             # check XX
             if self.__called_x and (
-                    not self.__called_xx) and self.__active_player.is_partner(
-                self.__last_bidder):
+                    not self.__called_xx) and \
+                    self.__active_player.is_partner(self.__last_bidder):
                 self.__available_bid[Bid.XX.idx] = 1
             else:
                 self.__available_bid[Bid.XX.idx] = 0
 
         return BiddingPhaseState.ongoing
 
-    def contract(self) -> Union[Contract, None]:
+    def contract(self) -> Optional[Contract]:
         """Contract declared in the bidding phase.
 
-        :return: Contract declared in the bidding phase. If the bidding phase is not done, returns None.
-        :rtype: Contract or None
+        :return: Contract declared in the bidding phase. If the bidding phase is
+            not has_done, returns None.
+        :rtype: Optional[Contract]
         """
-        if not self.__done:
+        if not self.has_done():
             return None
 
         if self.__last_bid is None:  # 4 consecutive passes
             return Contract(None, vul=self.__vul)  # Passed Out
         else:
+            assert self.__last_bidder is not None
+            assert self.__last_bid.suit is not None
+
             contract = Contract(final_bid=self.__last_bid, x=self.__called_x,
                                 xx=self.__called_xx,
                                 vul=self.__vul,

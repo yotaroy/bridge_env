@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 
 from .bid import Bid
 from .player import Player
@@ -14,7 +14,8 @@ class Contract:
                  declarer: Player = None):
         """
 
-        :param  final_bid: The final bid of the bidding phase. Bid.Pass or None means "Passed Out".
+        :param  final_bid: The final bid of the bidding phase.
+            Bid.Pass or None means "Passed Out".
         :type final_bid: Bid or None
         :param bool x: Double.
         :param bool xx: Redouble.
@@ -45,7 +46,7 @@ class Contract:
         return contract
 
     @property
-    def level(self):
+    def level(self) -> Optional[int]:
         """A level of the contract.
 
         :return: A level of the contract. If passed out, return None.
@@ -56,7 +57,7 @@ class Contract:
         return self.final_bid.level
 
     @property
-    def trump(self):
+    def trump(self) -> Optional[Suit]:
         """A suit of the contract.
 
         :return: A suit of the contract. If passed out, return None.
@@ -96,7 +97,7 @@ class Contract:
             raise ValueError("declarer is None. set the declarer")
         return self.declarer.is_vul(self.vul)
 
-    def display(self):
+    def display(self) -> None:
         """Print contract information.
 
         :return: None.
