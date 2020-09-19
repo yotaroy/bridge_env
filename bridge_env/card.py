@@ -42,16 +42,18 @@ class Card:
     def __int__(self):
         """
 
-        :return: int representation of the card. [0, 51] (C2 - CA, D2 - DA, H2 - HA, S2 - SA)
+        :return: int representation of the card. [0, 51]
+            (C2 - CA, D2 - DA, H2 - HA, S2 - SA)
         :rtype: int
         """
         return self.rank - 2 + (self.suit.value - 1) * 13
 
-    def __eq__(self, card: Card):
+    def __eq__(self, card: Card) -> bool:  # type: ignore[override]
         """
 
         :param Card card: Target Card object to compare.
-        :return: Whether card rank and card suit are same, return True, else return False.
+        :return: Whether card rank and card suit are same, return True,
+            else return False.
         """
         return self.suit == card.suit and self.rank == card.rank
 

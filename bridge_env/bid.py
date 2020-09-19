@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Optional
 
 from .card import Suit
 
@@ -97,7 +98,7 @@ class Bid(Enum):
     X = 37  # double
     XX = 38  # redouble
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.value >= 36:
             return self.name
         return self.name[-1] + self.name[:-1]
@@ -124,7 +125,7 @@ class Bid(Enum):
         return self.value - 1
 
     @property
-    def level(self) -> int:
+    def level(self) -> Optional[int]:
         """A level of the bid.
 
         | Bid.C1, Bid.D1, Bid.H1, Bid.S1, Bid.NT1 -> 1,
@@ -141,7 +142,7 @@ class Bid(Enum):
         return self.idx // 5 + 1
 
     @property
-    def suit(self) -> Suit:
+    def suit(self) -> Optional[Suit]:
         """A suit of the bid.
 
         Bid.Pass.suit, Bid.X.suit, Bid.XX.suit returns None.

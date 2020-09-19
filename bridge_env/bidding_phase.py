@@ -32,7 +32,7 @@ class BiddingPhase:
         self.__vul: Vul = vul  # vulnerable.
 
         # player who take a bid in this turn.
-        self.__active_player: Player = dealer
+        self.__active_player: Optional[Player] = dealer
 
         # player who take the last bid except Pass, X and XX.
         self.__last_bidder: Optional[Player] = None
@@ -50,9 +50,6 @@ class BiddingPhase:
 
         self.__available_bid: np.ndarray = np.ones(38)
         self.__available_bid[-2:] = 0  # X and XX are set to be illegal.
-
-        # a state whether bidding phase is over.
-        self.__done: bool = False
 
     @property
     def dealer(self) -> Player:
@@ -74,22 +71,13 @@ class BiddingPhase:
         return self.__vul
 
     @property
-    def active_player(self) -> Player:
+    def active_player(self) -> Optional[Player]:
         """Active player. This player takes a bid.
 
         :return: Active player.
         :rtype: Player
         """
         return self.__active_player
-
-    @property
-    def done(self) -> bool:
-        """Checks whether the bidding phase is done.
-
-        :return: Whether the bidding phase is done.
-        :rtype: bool
-        """
-        return self.__done
 
     @property
     def bid_history(self) -> List[Bid]:
@@ -120,6 +108,14 @@ class BiddingPhase:
         """
         return self.__available_bid
 
+    def has_done(self) -> bool:
+        """Checks whether the bidding phase is has_done.
+
+        :return: Whether the bidding phase is has_done.
+        :rtype: bool
+        """
+        return self.__active_player is None
+
     def take_bid(self, bid: Bid) -> BiddingPhaseState:
         """Takes a bid.
 
@@ -127,6 +123,11 @@ class BiddingPhase:
         :return: Whether the bid is legal, and whether the bidding phase ends.
         :rtype: BiddingPhaseState
         """
+        if self.has_done():
+            raise Exception('Bidding phase has already ended.')
+
+        assert self.__active_player is not None
+
         if self.__available_bid[bid.idx] == 0:  # illegal bids
             return BiddingPhaseState.illegal
 
@@ -137,13 +138,14 @@ class BiddingPhase:
                     self.__bid_history.append(bid)
                     self.__players_bid_history[self.__active_player].append(bid)
                     self.__active_player = None
-                    self.__done = True
                     return BiddingPhaseState.finished  # bidding phase end
         elif bid is Bid.X:  # X
             self.__called_x = True
         elif bid is Bid.XX:  # XX
             self.__called_xx = True
         else:  # regular bids
+            assert bid.suit is not None
+
             self.__last_bidder = self.__active_player
             self.__last_bid = bid
 
@@ -181,15 +183,18 @@ class BiddingPhase:
         """Contract declared in the bidding phase.
 
         :return: Contract declared in the bidding phase. If the bidding phase is
-            not done, returns None.
+            not has_done, returns None.
         :rtype: Optional[Contract]
         """
-        if not self.__done:
+        if not self.has_done():
             return None
 
         if self.__last_bid is None:  # 4 consecutive passes
             return Contract(None, vul=self.__vul)  # Passed Out
         else:
+            assert self.__last_bidder is not None
+            assert self.__last_bid.suit is not None
+
             contract = Contract(final_bid=self.__last_bid, x=self.__called_x,
                                 xx=self.__called_xx,
                                 vul=self.__vul,

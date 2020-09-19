@@ -1,3 +1,5 @@
+from typing import Dict, Optional
+
 import numpy as np
 
 from .card import Card
@@ -7,7 +9,9 @@ from .player import Player
 class Hands:
     """Hands in contract bridge."""
 
-    def __init__(self, seed: int = None, pbn_hands: str = None):
+    def __init__(self,
+                 seed: Optional[int] = None,
+                 pbn_hands: Optional[str] = None):
         """One of seed or pbn_hands must be not None.
 
         http://www.tistis.nl/pbn/pbn_v20.txt
@@ -39,7 +43,7 @@ class Hands:
             for p in Player:
                 self.hands[p] = np.array(sorted(self.hands[p]))
 
-    def convert_binary(self) -> dict:
+    def convert_binary(self) -> Dict[Player, np.ndarray]:
         """Convert hands to the binary vector representation.
 
         :return: Binary vector of players' hands.
