@@ -5,6 +5,9 @@ from enum import Enum
 from bridge_env import Pair, Player
 
 
+# TODO: Consider to remove from default install of bridge_env.
+#  Introduce submodule for duplicate bridge.
+
 class Table(Enum):
     """Duplicate Bridge Table class."""
     TABLE1 = 1
