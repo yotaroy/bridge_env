@@ -372,8 +372,26 @@ tables for duplicate bridge
 
 |Table|str|
 | --- | --- |
-|`Table.table1`|`"table1"`|
-|`Table.table1`|`"table2"`|
+|`Table.TABLE1`|`"TABLE1"`|
+|`Table.TABLE2`|`"TABLE2"`|
+
+[table.py](./bridge_env/table.py)
+
+### CLASS `bridge_env.Team`
+
+Enum class
+
+teams for duplicate bridge
+
+|Team|str|
+| --- | --- |
+|`Team.TEAM1`|`"TEAM1"`|
+|`Team.TEAM2`|`"TEAM2"`|
+
+#### class methods
+
+- `belong(player: Player, table: Table)`
+    - returns `Team` object
 
 [table.py](./bridge_env/table.py)
 
