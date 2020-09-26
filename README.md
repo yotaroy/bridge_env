@@ -375,6 +375,11 @@ tables for duplicate bridge
 |`Table.TABLE1`|`"TABLE1"`|
 |`Table.TABLE2`|`"TABLE2"`|
 
+#### properties
+
+- `other`
+  - returns `Table` object
+
 [table.py](./bridge_env/table.py)
 
 ### CLASS `bridge_env.Team`
@@ -387,6 +392,11 @@ teams for duplicate bridge
 | --- | --- |
 |`Team.TEAM1`|`"TEAM1"`|
 |`Team.TEAM2`|`"TEAM2"`|
+
+#### properties
+
+- `opponent`
+  - returns `Team` object
 
 #### class methods
 
