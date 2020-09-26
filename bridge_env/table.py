@@ -16,6 +16,15 @@ class Table(Enum):
     def __str__(self):
         return self.name
 
+    @property
+    def other(self) -> Table:
+        """The other table.
+
+        :return: The other table.
+        :rtype Table
+        """
+        return Table(3 - self.value)
+
 
 class Team(Enum):
     """Duplicate Bridge Team class.
@@ -28,6 +37,15 @@ class Team(Enum):
 
     def __str__(self):
         return self.name
+
+    @property
+    def opponent(self) -> Team:
+        """The opponent team of the team.
+
+        :return: The opponent team.
+        :rtype Team
+        """
+        return Team(3 - self.value)
 
     @classmethod
     def belong(cls, player: Player, table: Table) -> Team:
