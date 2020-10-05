@@ -1,4 +1,5 @@
-from typing import Optional, Union
+from dataclasses import dataclass
+from typing import Optional
 
 from .bid import Bid
 from .player import Player
@@ -6,32 +7,29 @@ from .suit import Suit
 from .vul import Vul
 
 
+@dataclass(frozen=True)
 class Contract:
-    """Contract in contract bridge."""
+    """Contract in contract bridge.
 
-    def __init__(self, final_bid: Union[Bid, None], x: bool = False,
-                 xx: bool = False, vul: Vul = Vul.NONE,
-                 declarer: Player = None):
-        """
+    :param final_bid: The final bid of the bidding phase.
+        Bid.Pass or None means "Passed Out".
+    :param x: Double.
+    :param xx: Redouble.
+    :param vul: Vulnerability.
+    :param declarer: Declarer.
+    """
 
-        :param  final_bid: The final bid of the bidding phase.
-            Bid.Pass or None means "Passed Out".
-        :type final_bid: Bid or None
-        :param bool x: Double.
-        :param bool xx: Redouble.
-        :param Vul vul: Vulnerability.
-        :param Player declarer: Declarer.
-        """
-        if final_bid == Bid.X or final_bid == Bid.XX:
+    final_bid: Optional[Bid]  # Bid.Pass or None mean passed out
+    x: bool = False  # double
+    xx: bool = False  # redouble
+    vul: Vul = Vul.NONE  # vulnerable
+    declarer: Optional[Player] = None
+
+    def __post_init__(self):
+        if self.final_bid == Bid.X or self.final_bid == Bid.XX:
             raise ValueError("last_bid is a bid or Pass")
 
-        self.final_bid = final_bid  # Bid.Pass or None mean passed out
-        self.x = x  # double
-        self.xx = xx  # redouble
-        self.vul = vul  # vulnerable
-        self.declarer = declarer
-
-    def __str__(self):
+    def __str__(self) -> str:
         """
 
         :return: str representation of the contract.
