@@ -43,6 +43,23 @@ class TestCard(unittest.TestCase):
         self.assertEqual(Card.rank_int_to_str(13), "K")
         self.assertEqual(Card.rank_int_to_str(14), "A")
 
+    def test_equality(self):
+        s4_1 = Card(4, Suit.S)
+        s4_2 = Card(4, Suit.S)
+        self.assertNotEqual(id(s4_1), id(s4_2))
+        self.assertEqual(s4_1, s4_2)
+
+    def test_rank_exception(self):
+        with self.assertRaises(ValueError):
+            Card(1, Suit.C)
+
+        with self.assertRaises(ValueError):
+            Card(15, Suit.C)
+
+    def test_suit_exception(self):
+        with self.assertRaises(ValueError):
+            Card(2, Suit.NT)
+
 
 if __name__ == '__main__':
     unittest.main()
