@@ -1,25 +1,27 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from .suit import Suit
 
 
+@dataclass(frozen=True)
 class Card:
-    """Cards of playing cards."""
+    """Card of playing cards.
 
-    def __init__(self, rank: int, suit: Suit):
-        """
+    :param rank: Rank of the card. A value is from 2 to 14.
+        10 means T, 11 means J, 12 means Q, 13 means K, 14 means A.
+    :param suit: Suit of the card.
+    """
 
-        :param int rank: Rank of the card. A value is from 2 to 14.
-            10 means T, 11 means J, 12 means Q, 13 means K, 14 means A.
-        :param Suit suit: Suit of the card.
-        """
-        if rank < 2 or 14 < rank:
+    rank: int
+    suit: Suit
+
+    def __post_init__(self):
+        if self.rank < 2 or 14 < self.rank:
             raise ValueError("card rank is from 2 to 14")
-        if suit == Suit.NT:
+        if self.suit == Suit.NT:
             raise ValueError("card suit is not NT")
-
-        self.rank = rank  # int, 2 - 14
-        self.suit = suit  # Suit object
 
     def __str__(self):
         """
@@ -47,15 +49,6 @@ class Card:
         :rtype: int
         """
         return self.rank - 2 + (self.suit.value - 1) * 13
-
-    def __eq__(self, card: Card) -> bool:  # type: ignore[override]
-        """
-
-        :param Card card: Target Card object to compare.
-        :return: Whether card rank and card suit are same, return True,
-            else return False.
-        """
-        return self.suit == card.suit and self.rank == card.rank
 
     @classmethod
     def int_to_card(cls, x: int) -> Card:
