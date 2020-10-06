@@ -6,7 +6,8 @@ from bridge_env import Player
 
 
 class TestHands(unittest.TestCase):
-    pbn_hands = "N:.63.AKQ987.A9732 A8654.KQ5.T.QJT6 J973.J98742.3.K4 KQT2.AT.J6542.85"
+    pbn_hands = 'N:.63.AKQ987.A9732 A8654.KQ5.T.QJT6 ' \
+                'J973.J98742.3.K4 KQT2.AT.J6542.85'
     hands = Hands(pbn_hands=pbn_hands)
 
     def test_init(self):
