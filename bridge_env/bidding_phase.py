@@ -195,10 +195,12 @@ class BiddingPhase:
             assert self.__last_bidder is not None
             assert self.__last_bid.suit is not None
 
-            contract = Contract(final_bid=self.__last_bid, x=self.__called_x,
-                                xx=self.__called_xx,
-                                vul=self.__vul,
-                                declarer=
-                                self.__declarer_check[self.__last_bidder.pair][
-                                    self.__last_bid.suit])
+            contract = Contract(
+                final_bid=self.__last_bid,
+                x=self.__called_x,
+                xx=self.__called_xx,
+                vul=self.__vul,
+                declarer=self.__declarer_check[self.__last_bidder.pair][
+                    self.__last_bid.suit])
+
         return contract
