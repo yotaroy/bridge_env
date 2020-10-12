@@ -23,7 +23,8 @@ class SocketInterface:
         while True:
             c = self._socket.recv(1)
             if c == b'\r':
-                if s := self._socket.recv(1) != b'\n':
+                s = self._socket.recv(1)
+                if s != b'\n':
                     raise Exception(f'Received an unexpected letter {s}.')
                 break
             message += c
