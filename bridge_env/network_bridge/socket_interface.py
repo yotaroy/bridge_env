@@ -8,6 +8,7 @@ logger = getLogger(__file__)
 
 class SocketInterface:
     """Base class of Client and Server."""
+
     def __init__(self, ip_address: str, port: int):
         self.ip_address = ip_address
         self.port = port

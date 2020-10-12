@@ -2,10 +2,8 @@ import re
 from logging import getLogger
 from typing import Optional, Tuple
 
-from bridge_env import Card, Contract, Suit
-
 from .socket_interface import SocketInterface
-from .. import Pair, Player, Vul
+from .. import Bid, Card, Contract, Pair, Player, Suit, Vul
 
 logger = getLogger(__file__)
 
@@ -99,7 +97,7 @@ class Client(SocketInterface):
 
     @staticmethod
     def parse_cards(content: str, player_name: str) -> str:
-        pattern = f'{player_name}\'s cards : (.*)'
+        pattern = fr'{player_name}\'s cards : (.*)'
         match = re.match(pattern, content)
         if not match:
             raise Exception('Parse exception. '
@@ -122,6 +120,27 @@ class Client(SocketInterface):
                     continue
                 hand_list[int(Card(Card.rank_str_to_int(card), suit))] = 1
         return tuple(hand_list)
+
+    @staticmethod
+    def parse_bid(content: str, player_name: str) -> Bid:
+        bid_pattern = fr'{player_name} bids (\d)(C|D|H|S|NT)'
+        match = re.match(bid_pattern, content)
+        if match:
+            return Bid.level_suit_to_bid(level=int(match.group(1)),
+                                         suit=Suit[match.group(2)])
+        pattern = fr'{player_name} (.*)'
+        match = re.match(pattern, content)
+        if not match:
+            raise Exception('Parse exception. '
+                            f'Content "{content}" does not match the pattern.')
+        bid = match.group(1)
+        if bid == 'passes':
+            return Bid.Pass
+        elif bid == 'doubles':
+            return Bid.X
+        elif bid == 'redoubles':
+            return Bid.XX
+        raise Exception(f'Illegal bid received. {bid}')
 
     def _deal(self):
         super().send_message('ready for deal')
@@ -149,4 +168,3 @@ class Client(SocketInterface):
                 continue
 
             self.playing_phase(contract)
-

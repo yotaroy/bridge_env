@@ -1,5 +1,5 @@
 import pytest
-from bridge_env import Player, Vul
+from bridge_env import Bid, Player, Vul
 from bridge_env.network_bridge.client import Client
 
 
@@ -33,3 +33,13 @@ class TestClient:
     ])
     def test_parse_hand(self, content, expected):
         assert Client.parse_hand(content) == expected
+
+    @pytest.mark.parametrize(('content', 'player_name', 'expected'),[
+        ('North bids 2C', 'North', Bid.C2),
+        ('East bids 5NT', 'East', Bid.NT5),
+        ('South passes', 'South', Bid.Pass),
+        ('East doubles', 'East', Bid.X),
+        ('South redoubles', 'South', Bid.XX)
+    ])
+    def test_parse_bid(self, content, player_name, expected):
+        assert Client.parse_bid(content, player_name) == expected
