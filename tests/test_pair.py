@@ -1,34 +1,29 @@
-import unittest
+import pytest
 
-from bridge_env import Pair
-from bridge_env import Vul
-
-
-class TestPair(unittest.TestCase):
-    def test_str(self):
-        self.assertEqual(str(Pair.NS), "NS")
-        self.assertEqual(str(Pair.EW), "EW")
-
-    def test_opponent_pair(self):
-        self.assertEqual(Pair.NS.opponent_pair, Pair.EW)
-        self.assertEqual(Pair.EW.opponent_pair, Pair.NS)
-
-        self.assertNotEqual(Pair.NS.opponent_pair, Pair.NS)
-        self.assertNotEqual(Pair.EW.opponent_pair, Pair.EW)
-
-    def test_is_vul(self):
-        self.assertTrue(Pair.NS.is_vul(Vul.NS))
-        self.assertTrue(Pair.NS.is_vul(Vul.BOTH))
-
-        self.assertFalse(Pair.NS.is_vul(Vul.EW))
-        self.assertFalse(Pair.NS.is_vul(Vul.NONE))
-
-        self.assertTrue(Pair.EW.is_vul(Vul.EW))
-        self.assertTrue(Pair.EW.is_vul(Vul.BOTH))
-
-        self.assertFalse(Pair.EW.is_vul(Vul.NS))
-        self.assertFalse(Pair.EW.is_vul(Vul.NONE))
+from bridge_env import Pair, Vul
 
 
-if __name__ == '__main__':
-    unittest.main()
+class TestPair:
+    @pytest.mark.parametrize(('pair', 'expected'),
+                             [(Pair.NS, 'NS'),
+                              (Pair.EW, 'EW')])
+    def test_str(self, pair, expected):
+        assert str(pair) == expected
+
+    @pytest.mark.parametrize(('pair', 'expected'),
+                             [(Pair.NS, Pair.EW),
+                              (Pair.EW, Pair.NS)])
+    def test_opponent_pair(self, pair, expected):
+        assert pair.opponent_pair is expected
+
+    @pytest.mark.parametrize(('pair', 'vul', 'expected'),
+                             [(Pair.NS, Vul.BOTH, True),
+                              (Pair.NS, Vul.NS, True),
+                              (Pair.NS, Vul.EW, False),
+                              (Pair.NS, Vul.NONE, False),
+                              (Pair.EW, Vul.BOTH, True),
+                              (Pair.EW, Vul.NS, False),
+                              (Pair.EW, Vul.EW, True),
+                              (Pair.EW, Vul.NONE, False)])
+    def test_is_vul(self, pair, vul, expected):
+        assert pair.is_vul(vul) == expected

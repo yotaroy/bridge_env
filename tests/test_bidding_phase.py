@@ -1,15 +1,8 @@
-import unittest
-
-from bridge_env import Bid
-from bridge_env import BiddingPhase
-from bridge_env import BiddingPhaseState
-from bridge_env import Contract
-from bridge_env import Player
-from bridge_env import Suit
-from bridge_env import Vul
+from bridge_env import Bid, BiddingPhase, BiddingPhaseState, Contract, Player, \
+    Suit, Vul
 
 
-class TestScore(unittest.TestCase):
+class TestBiddingPhase:
     # test bidding_result in the case of passed out
     def test_passed_out(self):
         bp = BiddingPhase()
@@ -19,18 +12,18 @@ class TestScore(unittest.TestCase):
         bp.take_bid(Bid.Pass)
         bp.take_bid(Bid.Pass)
 
-        self.assertTrue(bp.has_done)  # bidding phase is over
+        assert bp.has_done()  # bidding phase is over
 
         contract = Contract(None, vul=Vul.NONE)
         result = bp.contract()
 
-        self.assertEqual(result.final_bid, contract.final_bid)
-        self.assertEqual(result.x, contract.x)
-        self.assertEqual(result.xx, contract.xx)
-        self.assertEqual(result.vul, contract.vul)
-        self.assertEqual(result.declarer, contract.declarer)
+        assert result.final_bid is contract.final_bid
+        assert result.x is contract.x
+        assert result.xx is contract.xx
+        assert result.vul is contract.vul
+        assert result.declarer is contract.declarer
 
-        self.assertTrue(result.is_passed_out())
+        assert result.is_passed_out()
 
     def test_bidding_phase1(self):
         dealer = Player.S
@@ -41,40 +34,35 @@ class TestScore(unittest.TestCase):
                     Bid.X, Bid.Pass, Bid.NT4, Bid.X,
                     Bid.XX, Bid.Pass, Bid.Pass, Bid.C6,
                     Bid.Pass, Bid.Pass]:
-            with self.subTest(bid=bid):
-                self.assertEqual(bp.active_player, active_player)
-                # take a bid
-                self.assertEqual(bp.take_bid(bid), BiddingPhaseState.ongoing)
+            assert bp.active_player is active_player
+            # take a bid
+            assert bp.take_bid(bid) is BiddingPhaseState.ongoing
 
-                active_player = active_player.next_player
+            active_player = active_player.next_player
 
         # take an illegal bid
-        self.assertEqual(bp.take_bid(Bid.S5), BiddingPhaseState.illegal)
-        self.assertEqual(bp.take_bid(Bid.XX), BiddingPhaseState.illegal)
+        assert bp.take_bid(Bid.S5) is BiddingPhaseState.illegal
+        assert bp.take_bid(Bid.XX) is BiddingPhaseState.illegal
 
         # illegal contract check
-        self.assertIsNone(bp.contract())
+        assert bp.contract() is None
 
-        self.assertFalse(bp.has_done())
+        assert not bp.has_done()
 
         # take a final bid
-        self.assertEqual(bp.take_bid(Bid.Pass), BiddingPhaseState.finished)
+        assert bp.take_bid(Bid.Pass) is BiddingPhaseState.finished
 
-        self.assertTrue(bp.has_done())
+        assert bp.has_done()
 
         # dealer check
-        self.assertEqual(bp.dealer, dealer)
+        assert bp.dealer is dealer
 
         # contract check
         contract = bp.contract()
-        self.assertEqual(contract.declarer, Player.E)
+        assert contract.declarer is Player.E
 
-        self.assertEqual(contract.declarer, Player.E)
-        self.assertEqual(contract.level, 6)
-        self.assertEqual(contract.trump, Suit.C)
-        self.assertFalse(contract.is_vul())
-        self.assertEqual(str(contract), "6C")
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert contract.declarer is Player.E
+        assert contract.level == 6
+        assert contract.trump is Suit.C
+        assert not contract.is_vul()
+        assert str(contract) == '6C'

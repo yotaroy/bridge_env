@@ -1,79 +1,93 @@
-import unittest
+import pytest
 
-from bridge_env import Pair
-from bridge_env import Player
-from bridge_env import Vul
+from bridge_env import Pair, Player, Vul
 
 
-class TestPlayer(unittest.TestCase):
-    def test_str(self):
-        self.assertEqual(str(Player.N), "N")
-        self.assertEqual(str(Player.E), "E")
-        self.assertEqual(str(Player.S), "S")
-        self.assertEqual(str(Player.W), "W")
+class TestPlayer:
+    @pytest.mark.parametrize(('player', 'expected'),
+                             [(Player.N, 'N'),
+                              (Player.E, 'E'),
+                              (Player.S, 'S'),
+                              (Player.W, 'W')])
+    def test_str(self, player, expected):
+        assert str(player) == expected
 
-    def test_next_player(self):
-        self.assertEqual(Player.N.next_player, Player.E)
-        self.assertEqual(Player.E.next_player, Player.S)
-        self.assertEqual(Player.S.next_player, Player.W)
-        self.assertEqual(Player.W.next_player, Player.N)
+    @pytest.mark.parametrize(('player', 'expected'),
+                             [(Player.N, Player.E),
+                              (Player.E, Player.S),
+                              (Player.S, Player.W),
+                              (Player.W, Player.N)])
+    def test_next_player(self, player, expected):
+        assert player.next_player is expected
 
-        self.assertNotEqual(Player.N.next_player, Player.S)
-        self.assertNotEqual(Player.N.next_player, Player.W)
-        self.assertNotEqual(Player.S.next_player, Player.N)
+    @pytest.mark.parametrize(('player', 'expected'),
+                             [(Player.N, Player.S),
+                              (Player.E, Player.W),
+                              (Player.S, Player.N),
+                              (Player.W, Player.E)])
+    def test_teammate(self, player, expected):
+        assert player.partner is expected
 
-    def test_teammate(self):
-        self.assertEqual(Player.N.partner, Player.S)
-        self.assertEqual(Player.W.partner, Player.E)
-        self.assertEqual(Player.E.partner, Player.W)
-        self.assertEqual(Player.S.partner, Player.N)
+    @pytest.mark.parametrize(('player', 'expected'),
+                             [(Player.N, Player.W),
+                              (Player.E, Player.N),
+                              (Player.S, Player.E),
+                              (Player.W, Player.S)])
+    def test_right(self, player, expected):
+        assert player.right is expected
 
-        self.assertNotEqual(Player.N.partner, Player.N)
-        self.assertNotEqual(Player.E.partner, Player.N)
+    @pytest.mark.parametrize(('player', 'expected'),
+                             [(Player.N, Pair.NS),
+                              (Player.E, Pair.EW),
+                              (Player.S, Pair.NS),
+                              (Player.W, Pair.EW)])
+    def test_pair(self, player, expected):
+        assert player.pair is expected
 
-    def test_right(self):
-        self.assertEqual(Player.N.right, Player.W)
-        self.assertEqual(Player.E.right, Player.N)
-        self.assertEqual(Player.S.right, Player.E)
-        self.assertEqual(Player.W.right, Player.S)
+    @pytest.mark.parametrize(('player', 'expected'),
+                             [(Player.N, Pair.EW),
+                              (Player.E, Pair.NS),
+                              (Player.S, Pair.EW),
+                              (Player.W, Pair.NS)])
+    def test_opponent_pair(self, player, expected):
+        assert player.opponent_pair is expected
 
-    def test_pair(self):
-        self.assertEqual(Player.N.pair, Pair.NS)
-        self.assertEqual(Player.E.pair, Pair.EW)
-        self.assertEqual(Player.S.pair, Pair.NS)
-        self.assertEqual(Player.W.pair, Pair.EW)
+    @pytest.mark.parametrize(('player', 'target_player', 'expected'),
+                             [(Player.N, Player.N, True),
+                              (Player.N, Player.S, True),
+                              (Player.S, Player.N, True),
+                              (Player.S, Player.S, True),
+                              (Player.E, Player.E, True),
+                              (Player.E, Player.W, True),
+                              (Player.W, Player.E, True),
+                              (Player.W, Player.W, True),
+                              (Player.N, Player.E, False),
+                              (Player.N, Player.W, False),
+                              (Player.E, Player.N, False),
+                              (Player.E, Player.S, False),
+                              (Player.S, Player.E, False),
+                              (Player.S, Player.W, False),
+                              (Player.W, Player.N, False),
+                              (Player.W, Player.S, False)])
+    def test_is_teammate(self, player, target_player, expected):
+        assert player.is_partner(target_player) == expected
 
-    def test_opponent_pair(self):
-        self.assertEqual(Player.N.opponent_pair, Pair.EW)
-        self.assertEqual(Player.E.opponent_pair, Pair.NS)
-        self.assertEqual(Player.S.opponent_pair, Pair.EW)
-        self.assertEqual(Player.W.opponent_pair, Pair.NS)
-
-    def test_is_teammate(self):
-        self.assertTrue(Player.N.is_partner(Player.N))
-        self.assertTrue(Player.N.is_partner(Player.S))
-        self.assertTrue(Player.S.is_partner(Player.S))
-
-        self.assertTrue(Player.E.is_partner(Player.E))
-        self.assertTrue(Player.E.is_partner(Player.W))
-        self.assertTrue(Player.W.is_partner(Player.W))
-
-        self.assertFalse(Player.N.is_partner(Player.E))
-        self.assertFalse(Player.N.is_partner(Player.W))
-
-    def test_is_vul(self):
-        self.assertTrue(Player.N.is_vul(Vul.NS))
-        self.assertTrue(Player.N.is_vul(Vul.BOTH))
-
-        self.assertFalse(Player.N.is_vul(Vul.EW))
-        self.assertFalse(Player.N.is_vul(Vul.NONE))
-
-        self.assertTrue(Player.E.is_vul(Vul.EW))
-        self.assertTrue(Player.E.is_vul(Vul.BOTH))
-
-        self.assertFalse(Player.E.is_vul(Vul.NS))
-        self.assertFalse(Player.E.is_vul(Vul.NONE))
-
-
-if __name__ == '__main__':
-    unittest.main()
+    @pytest.mark.parametrize(('player', 'vul', 'expected'),
+                             [(Player.N, Vul.BOTH, True),
+                              (Player.N, Vul.NS, True),
+                              (Player.N, Vul.EW, False),
+                              (Player.N, Vul.NONE, False),
+                              (Player.E, Vul.BOTH, True),
+                              (Player.E, Vul.NS, False),
+                              (Player.E, Vul.EW, True),
+                              (Player.E, Vul.NONE, False),
+                              (Player.S, Vul.BOTH, True),
+                              (Player.S, Vul.NS, True),
+                              (Player.S, Vul.EW, False),
+                              (Player.S, Vul.NONE, False),
+                              (Player.W, Vul.BOTH, True),
+                              (Player.W, Vul.NS, False),
+                              (Player.W, Vul.EW, True),
+                              (Player.W, Vul.NONE, False)])
+    def test_is_vul(self, player, vul, expected):
+        assert player.is_vul(vul) == expected

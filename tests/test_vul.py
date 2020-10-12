@@ -1,21 +1,21 @@
-import unittest
+import pytest
 
 from bridge_env import Vul
 
 
-class TestVul(unittest.TestCase):
-    def test_str(self):
-        self.assertEqual(str(Vul.NONE), "None")
-        self.assertEqual(str(Vul.NS), "NS")
-        self.assertEqual(str(Vul.EW), "EW")
-        self.assertEqual(str(Vul.BOTH), "Both")
+class TestVul:
+    @pytest.mark.parametrize(('vul', 'expected'),
+                             [(Vul.NONE, 'None'),
+                              (Vul.NS, 'NS'),
+                              (Vul.EW, 'EW'),
+                              (Vul.BOTH, 'Both')])
+    def test_str(self, vul, expected):
+        assert str(vul) == expected
 
-    def test_str_to_vul(self):
-        self.assertEqual(Vul.str_to_vul("None"), Vul.NONE)
-        self.assertEqual(Vul.str_to_vul("NS"), Vul.NS)
-        self.assertEqual(Vul.str_to_vul("EW"), Vul.EW)
-        self.assertEqual(Vul.str_to_vul("Both"), Vul.BOTH)
-
-
-if __name__ == '__main__':
-    unittest.main()
+    @pytest.mark.parametrize(('str_vul', 'expected'),
+                             [('None', Vul.NONE),
+                              ('NS', Vul.NS),
+                              ('EW', Vul.EW),
+                              ('Both', Vul.BOTH)])
+    def test_str_to_vul(self, str_vul, expected):
+        assert Vul.str_to_vul(str_vul) is expected

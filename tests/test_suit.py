@@ -1,23 +1,23 @@
-import unittest
+import pytest
 
 from bridge_env import Suit
 
 
-class TestSuit(unittest.TestCase):
-    def test_is_minor(self):
-        self.assertTrue(Suit.C.is_minor())
-        self.assertTrue(Suit.D.is_minor())
-        self.assertFalse(Suit.H.is_minor())
-        self.assertFalse(Suit.S.is_minor())
-        self.assertFalse(Suit.NT.is_minor())
+class TestSuit:
+    @pytest.mark.parametrize(('suit', 'expected'),
+                             [(Suit.C, True),
+                              (Suit.D, True),
+                              (Suit.H, False),
+                              (Suit.S, False),
+                              (Suit.NT, False)])
+    def test_is_minor(self, suit, expected):
+        assert suit.is_minor() == expected
 
-    def test_is_major(self):
-        self.assertFalse(Suit.C.is_major())
-        self.assertFalse(Suit.D.is_major())
-        self.assertTrue(Suit.H.is_major())
-        self.assertTrue(Suit.S.is_major())
-        self.assertFalse(Suit.NT.is_major())
-
-
-if __name__ == '__main__':
-    unittest.main()
+    @pytest.mark.parametrize(('suit', 'expected'),
+                             [(Suit.C, False),
+                              (Suit.D, False),
+                              (Suit.H, True),
+                              (Suit.S, True),
+                              (Suit.NT, False)])
+    def test_is_major(self, suit, expected):
+        assert suit.is_major() == expected
