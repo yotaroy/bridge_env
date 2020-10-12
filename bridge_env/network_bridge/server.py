@@ -22,18 +22,18 @@ class Server(SocketInterface):
         :param port: The port numbers should be within the standard range of
             1024 to 5000.
         """
-        self.ip_address = ip_address
-        self.port = port
+        super().__init__(ip_address=ip_address, port=port)
 
     def _deal_cards(self, seed: Optional[int] = None):
         pass
 
     def run(self):
-        self._socket.bind((self.ip_address, self.port))
-        self._socket.listen(4)
+        """Runs the server."""
+        super()._socket.bind((super().ip_address, super().port))
+        super()._socket.listen(4)
 
         while True:
-            connection, address = self._socket.accept()
+            connection, address = super()._socket.accept()
             with connection:
                 while True:
                     data = connection.recv(1024)
