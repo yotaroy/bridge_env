@@ -2,8 +2,11 @@ import re
 from logging import getLogger
 from typing import Optional, Tuple
 
+from .bidding_system import BiddingSystem
+from .playing_system import PlayingSystem
 from .socket_interface import SocketInterface
-from .. import Bid, Card, Contract, Pair, Player, Suit, Vul
+from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Pair, \
+    Player, Suit, Vul
 
 logger = getLogger(__file__)
 
@@ -20,11 +23,15 @@ class Client(SocketInterface):
     def __init__(self,
                  player: Player,
                  team_name: str,
+                 bidding_system: BiddingSystem,
+                 playing_system: PlayingSystem,
                  ip_address: str,
                  port: int):
         super().__init__(ip_address=ip_address, port=port)
         self.player = player
         self.team_name = team_name
+        self.bidding_system = bidding_system
+        self.playing_system = playing_system
 
         # assigned in self._connection()
         self.opponent_team_name: Optional[str] = None
@@ -152,7 +159,22 @@ class Client(SocketInterface):
         self.hand = self.parse_hand(hand_str)
 
     def bidding_phase(self) -> Contract:
-        pass
+        env = BiddingPhase(dealer=self.dealer, vul=self.vul)
+        while not env.has_done():
+            if env.active_player is self.player:
+                # take an action
+                bid = self.bidding_system.bid(self.hand, env)
+            else:
+                message = super().receive_message()
+                bid = self.parse_bid(message,
+                                     self.convert_player(env.active_player))
+            bidding_phase_state = env.take_bid(bid)
+            if bidding_phase_state is BiddingPhaseState.illegal:
+                raise Exception('')
+            elif bidding_phase_state is BiddingPhaseState.finished:
+                break
+
+        return env.contract()
 
     def playing_phase(self, contract: Contract):
         pass
