@@ -13,6 +13,14 @@ class TestPlayer:
         assert str(player) == expected
 
     @pytest.mark.parametrize(('player', 'expected'),
+                             [(Player.N, 'North'),
+                              (Player.E, 'East'),
+                              (Player.S, 'South'),
+                              (Player.W, 'West')])
+    def test_formal_name(self, player, expected):
+        assert player.formal_name == expected
+
+    @pytest.mark.parametrize(('player', 'expected'),
                              [(Player.N, Player.E),
                               (Player.E, Player.S),
                               (Player.S, Player.W),
@@ -91,3 +99,15 @@ class TestPlayer:
                               (Player.W, Vul.NONE, False)])
     def test_is_vul(self, player, vul, expected):
         assert player.is_vul(vul) == expected
+
+    @pytest.mark.parametrize(('formal_name', 'expected'),
+                             [('North', Player.N),
+                              ('East', Player.E),
+                              ('South', Player.S),
+                              ('West', Player.W)])
+    def test_convert_formal_name(self, formal_name, expected):
+        assert Player.convert_formal_name(formal_name) is expected
+
+    def test_convert_formal_name_exception(self):
+        with pytest.raises(ValueError):
+            Player.convert_formal_name('N')
