@@ -36,18 +36,19 @@ class Client(SocketInterface):
         # assigned in self._connection()
         self.opponent_team_name: Optional[str] = None
 
-        self.player_name: str = super().convert_player(self.player)
-
     def _connect(self) -> None:
         """Connects with the server."""
-        super()._socket.connect((super().ip_address, super().port))
+        self._socket.connect((self.ip_address, self.port))
         super().send_message(f'Connecting "{self.team_name}" as '
-                             f'{self.player_name} using '
+                             f'{self.player.formal_name} using '
                              f'protocol version {self.PROTOCOL_VERSION}')
 
         reply = super().receive_message()
-        if reply != f'{self.player_name} ("{self.team_name}") seated':
+        if reply != f'{self.player.formal_name} {self.team_name} seated' and \
+                reply != f'{self.player.formal_name} ("{self.team_name}") seated':
             raise Exception(f'Unexpected message received. {reply}')
+
+        super().send_message(f'{self.team_name} ready for teams')
 
         team_ns, team_ew = self.parse_team_names(super().receive_message())
         if self.player.pair is Pair.NS:
@@ -59,7 +60,7 @@ class Client(SocketInterface):
                 raise Exception('')
             self.opponent_team_name = team_ns
 
-        super().send_message(f'{self.team_name} ready for teams')
+        super().send_message(f'{self.player.formal_name} ready to start')
 
     @staticmethod
     def parse_team_names(content: str) -> Tuple[str, str]:
@@ -71,7 +72,7 @@ class Client(SocketInterface):
         :param content: Message to be parsed.
         :return: Team names of NS pair and EW pair.
         """
-        pattern = r'Teams : N/S : "(.*)". E/W : "(.*)"'
+        pattern = r'Teams : N/S : "(.*)".? E/W : "(.*)"'
         match = re.match(pattern, content)
         if not match:
             raise Exception('Parse exception. '
@@ -87,7 +88,7 @@ class Client(SocketInterface):
             raise Exception('Parse exception. '
                             f'Content "{content}" does not match the pattern.')
         board_num = int(match.group(1))
-        dealer = SocketInterface.convert_player_name(match.group(2))
+        dealer = Player.convert_formal_name(match.group(2))
         str_vulnerable = match.group(3)
         vul: Vul
         if str_vulnerable == 'Neither':
@@ -114,7 +115,7 @@ class Client(SocketInterface):
 
     @staticmethod
     def parse_hand(content: str) -> Tuple[int, ...]:
-        pattern = r'S (.*)\. H (.*)\. D (.*)\. C (.*)\.'
+        pattern = r'S (.*)\. H (.*)\. D (.*)\. C (.*)\.\s?'
         match = re.match(pattern, content)
         if not match:
             raise Exception('Parse exception. '
@@ -150,13 +151,26 @@ class Client(SocketInterface):
         raise Exception(f'Illegal bid received. {bid}')
 
     def _deal(self):
-        super().send_message('ready for deal')
+        super().send_message(f'{self.player.formal_name} ready for deal')
         self.board_num, self.dealer, self.vul = self.parse_board(
             super().receive_message())
-        self.send_message('ready for cards')
+        self.send_message(f'{self.player.formal_name} ready for cards')
 
-        hand_str = self.parse_cards(super().receive_message(), self.team_name)
+        hand_str = self.parse_cards(super().receive_message(),
+                                    self.player.formal_name)
         self.hand = self.parse_hand(hand_str)
+
+    @staticmethod
+    def create_bid_message(bid: Bid, player_name: str) -> str:
+        if bid is Bid.Pass:
+            str_bid = 'passes'
+        elif bid is Bid.X:
+            str_bid = 'doubles'
+        elif bid is Bid.XX:
+            str_bid = 'redoubles'
+        else:
+            str_bid = f'bids {bid}'
+        return f'{player_name} {str_bid}'
 
     def bidding_phase(self) -> Contract:
         env = BiddingPhase(dealer=self.dealer, vul=self.vul)
@@ -165,13 +179,18 @@ class Client(SocketInterface):
                 # take an action
                 bid = self.bidding_system.bid(self.hand, env)
             else:
+                super().send_message(f'{self.player.formal_name} ready '
+                                     f'for {env.active_player.formal_name}')
                 message = super().receive_message()
                 bid = self.parse_bid(message,
-                                     self.convert_player(env.active_player))
+                                     env.active_player.formal_name)
             bidding_phase_state = env.take_bid(bid)
             if bidding_phase_state is BiddingPhaseState.illegal:
                 raise Exception('')
-            elif bidding_phase_state is BiddingPhaseState.finished:
+            if env.active_player is self.player:
+                super().send_message(
+                    self.create_bid_message(bid, self.player.formal_name))
+            if bidding_phase_state is BiddingPhaseState.finished:
                 break
 
         return env.contract()
@@ -181,6 +200,7 @@ class Client(SocketInterface):
 
     def run(self):
         """Runs the client."""
+        print('run')
         self._connect()
         while super().receive_message() == 'Start of Board':
             self._deal()

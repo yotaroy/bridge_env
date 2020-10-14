@@ -29,11 +29,11 @@ class Server(SocketInterface):
 
     def run(self):
         """Runs the server."""
-        super()._socket.bind((super().ip_address, super().port))
-        super()._socket.listen(4)
+        self._socket.bind((self.ip_address, self.port))
+        self._socket.listen(4)
 
         while True:
-            connection, address = super()._socket.accept()
+            connection, address = self._socket.accept()
             with connection:
                 while True:
                     data = connection.recv(1024)
