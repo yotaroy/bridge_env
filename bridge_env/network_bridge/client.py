@@ -173,6 +173,17 @@ class Client(SocketInterface):
         return f'{player_name} {str_bid}'
 
     def bidding_phase(self) -> Contract:
+        """Bidding phase.
+
+            If the Table Manager (Server) receives an illegal bid, it will
+            ignore it and respond "illegal Bid". It is assumed that playing
+            programs will ensure that playing programs will ensure that they do
+            not make illegal bids. The protocol does not define what will then
+            happen.
+
+        :return: Contract of the bidding phase.
+        """
+        # TODO: Consider alerting
         env = BiddingPhase(dealer=self.dealer, vul=self.vul)
         while not env.has_done():
             if env.active_player is self.player:
@@ -195,8 +206,31 @@ class Client(SocketInterface):
 
         return env.contract()
 
+    @staticmethod
+    def parse_leader_message(content: str, dummy: Player) -> Player:
+        pattern = r'(.*) to lead'
+        match = re.match(pattern, content)
+        if not match:
+            raise Exception('Parse exception. '
+                            f'Content "{content}" does not match the pattern.')
+        player_name = match.group(1)
+        if player_name == 'Dummy':
+            return dummy
+        return Player.convert_formal_name(player_name)
+
     def playing_phase(self, contract: Contract):
-        pass
+        assert not contract.is_passed_out()
+        declarer = contract.declarer
+        assert declarer is not None
+        dummy = contract.declarer.partner
+
+        # env =
+        #
+        # if self.player is dummy:
+        #     return
+        #
+        # while not env.has_done():
+        #     leader = self.parse_leader_message(super().receive_message(), dummy)
 
     def run(self):
         """Runs the client."""

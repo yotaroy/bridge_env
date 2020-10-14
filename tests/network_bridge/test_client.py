@@ -61,3 +61,10 @@ class TestClient:
     ])
     def test_create_bid_message(self, bid, player_name, expected):
         assert Client.create_bid_message(bid, player_name) == expected
+
+    @pytest.mark.parametrize(('content', 'dummy', 'expected'),
+                             [('North to lead', Player.S, Player.N),
+                              ('East to lead', Player.N, Player.E),
+                              ('Dummy to lead', Player.W, Player.W)])
+    def test_parse_leader_message(self, content, dummy, expected):
+        assert Client.parse_leader_message(content, dummy) == expected
