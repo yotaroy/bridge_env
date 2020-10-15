@@ -50,7 +50,7 @@ class PlayingHistory:
         return tuple(self._history)
 
 
-class BasePlayingPhase:
+class PlayingPhase:
     def __init__(self, contract: Contract):
         if contract.is_passed_out():
             raise Exception('Passed out exception. '
@@ -158,7 +158,7 @@ class BasePlayingPhase:
                              f'but {self.active_player}')
 
 
-class PlayingPhase(BasePlayingPhase):
+class PlayingPhaseWithHands(PlayingPhase):
     def __init__(self,
                  contract: Contract,
                  hands: Dict[Player, Set[Card]]):
@@ -177,7 +177,7 @@ class PlayingPhase(BasePlayingPhase):
         super().play_card(card)
 
 
-class ObservedPlayingPhase(BasePlayingPhase):
+class ObservedPlayingPhase(PlayingPhase):
     def __init__(self,
                  contract: Contract,
                  player: Player,

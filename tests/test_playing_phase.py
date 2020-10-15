@@ -1,7 +1,7 @@
 import pytest
 from bridge_env import Bid, Card, Contract, Player, Suit
-from bridge_env.playing_phase import BasePlayingPhase, PlayingHistory, \
-    PlayingPhase, TrickHistory, ObservedPlayingPhase
+from bridge_env.playing_phase import PlayingPhase, PlayingHistory, \
+    PlayingPhaseWithHands, TrickHistory, ObservedPlayingPhase
 from pytest_mock import MockFixture
 
 
@@ -73,7 +73,7 @@ class TestPlayingHistory:
                                                     self.TRICK_HISTORY3)
 
 
-class TestBasePlayingPhase:
+class TestPlayingPhase:
     @pytest.fixture(scope='function')
     def mock_playing_history_instance(self, mocker: MockFixture):
         mock = mocker.patch('bridge_env.playing_phase.PlayingHistory')
@@ -81,7 +81,7 @@ class TestBasePlayingPhase:
 
     @pytest.fixture(scope='function')
     def base_playing_phase(self, contract_1c_n):
-        return BasePlayingPhase(contract_1c_n)
+        return PlayingPhase(contract_1c_n)
 
     @pytest.mark.parametrize(('suit', 'cards', 'expected'), [
         (Suit.C, [Card(2, Suit.C), Card(8, Suit.C),
@@ -94,7 +94,7 @@ class TestBasePlayingPhase:
                   Card(12, Suit.D), Card(7, Suit.C)], -1),
     ])
     def test_calc_highest(self, suit, cards, expected):
-        assert BasePlayingPhase.calc_highest(suit, cards) == expected
+        assert PlayingPhase.calc_highest(suit, cards) == expected
 
     @pytest.mark.parametrize(
         ('cards', 'trick_num', 'leader', 'active_player'),
@@ -171,11 +171,11 @@ class TestBasePlayingPhase:
         assert base_playing_phase.trick_num == trick_num + 1
 
 
-class TestPlayingPhase:
+class TestPlayingPhaseWithHands:
 
     @pytest.fixture(scope='function')
     def playing_phase(self, contract_1c_n, hands):
-        return PlayingPhase(contract_1c_n, hands)
+        return PlayingPhaseWithHands(contract_1c_n, hands)
 
     def test_play_card_by_player_active_player_error(self, playing_phase):
         with pytest.raises(ValueError):
@@ -189,24 +189,20 @@ class TestPlayingPhase:
 class TestObservedPlayingPhase:
 
     @pytest.fixture(scope='function')
-    def observed_playing_phase(self, contract_1c_n, hands):
+    def playing_phase(self, contract_1c_n, hands):
         return ObservedPlayingPhase(contract_1c_n, Player.N, hands[Player.N])
 
-    def test_play_card_by_player_active_player_error(self,
-                                                     observed_playing_phase):
+    def test_play_card_by_player_active_player_error(self, playing_phase):
         with pytest.raises(ValueError):
-            observed_playing_phase.play_card_by_player(Card(2, Suit.C),
-                                                       Player.N)
+            playing_phase.play_card_by_player(Card(2, Suit.C), Player.N)
 
-    def test_play_card_by_player_has_card_error(self, observed_playing_phase):
+    def test_play_card_by_player_has_card_error(self, playing_phase):
         with pytest.raises(ValueError):
-            observed_playing_phase.play_card_by_player(Card(3, Suit.C),
-                                                       Player.N)
+            playing_phase.play_card_by_player(Card(3, Suit.C), Player.N)
 
     def test_play_card_by_player_has_card_error_dummy(self,
-                                                      observed_playing_phase,
+                                                      playing_phase,
                                                       hands):
-        observed_playing_phase.set_dummy_hand(hands[Player.S])
+        playing_phase.set_dummy_hand(hands[Player.S])
         with pytest.raises(ValueError):
-            observed_playing_phase.play_card_by_player(Card(3, Suit.C),
-                                                       Player.S)
+            playing_phase.play_card_by_player(Card(3, Suit.C), Player.S)
