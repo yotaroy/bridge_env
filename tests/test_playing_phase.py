@@ -1,12 +1,12 @@
 import pytest
 from bridge_env import Bid, Card, Contract, Player, Suit
 from bridge_env.playing_phase import BasePlayingPhase, PlayingHistory, \
-    PlayingPhase, TrickHistory
+    PlayingPhase, TrickHistory, ObservedPlayingPhase
 from pytest_mock import MockFixture
 
 
 @pytest.fixture(scope='module')
-def bid_1c():
+def contract_1c_n():
     return Contract(final_bid=Bid.C1, declarer=Player.N)
 
 
@@ -35,36 +35,54 @@ def hands():
 
 
 class TestPlayingHistory:
+    TRICK_HISTORY1 = TrickHistory(leader=Player.E,
+                                  cards=(Card(rank=10, suit=Suit.D),
+                                         Card(rank=12, suit=Suit.D),
+                                         Card(rank=4, suit=Suit.D),
+                                         Card(rank=5, suit=Suit.D)))
+    TRICK_HISTORY2 = TrickHistory(leader=Player.S,
+                                  cards=(Card(rank=9, suit=Suit.S),
+                                         Card(rank=14, suit=Suit.S),
+                                         Card(rank=10, suit=Suit.S),
+                                         Card(rank=2, suit=Suit.C)))
+    TRICK_HISTORY3 = TrickHistory(leader=Player.E,
+                                  cards=(Card(rank=3, suit=Suit.H),
+                                         Card(rank=8, suit=Suit.H),
+                                         Card(rank=14, suit=Suit.H),
+                                         Card(rank=3, suit=Suit.C)))
+
     @pytest.fixture(scope='function')
-    def playing_history(self, bid_1c):
-        return PlayingHistory(bid_1c)
+    def playing_history(self, contract_1c_n):
+        return PlayingHistory(contract_1c_n)
 
-    def test_record(self, playing_history):
-        trick_history1 = TrickHistory(leader=Player.E,
-                                      cards=(Card(rank=10, suit=Suit.D),
-                                             Card(rank=12, suit=Suit.D),
-                                             Card(rank=4, suit=Suit.D),
-                                             Card(rank=5, suit=Suit.D)))
-        playing_history.record(1, trick_history1)
-        trick_history2 = TrickHistory(leader=Player.S,
-                                      cards=(Card(rank=9, suit=Suit.S),
-                                             Card(rank=14, suit=Suit.S),
-                                             Card(rank=10, suit=Suit.S),
-                                             Card(rank=2, suit=Suit.C)))
-        playing_history.record(2, trick_history2)
-        trick_history3 = TrickHistory(leader=Player.E,
-                                      cards=(Card(rank=3, suit=Suit.H),
-                                             Card(rank=8, suit=Suit.H),
-                                             Card(rank=14, suit=Suit.H),
-                                             Card(rank=3, suit=Suit.C)))
-        playing_history.record(3, trick_history3)
+    @pytest.fixture(scope='function')
+    def recorded_playing_history(self, playing_history):
+        playing_history.record(1, self.TRICK_HISTORY1)
+        playing_history.record(2, self.TRICK_HISTORY2)
+        playing_history.record(3, self.TRICK_HISTORY3)
+        return playing_history
 
-        assert playing_history.history == (trick_history1,
-                                           trick_history2,
-                                           trick_history3)
+    def test_getitem(self, recorded_playing_history):
+        assert recorded_playing_history[0] == self.TRICK_HISTORY1
+        assert recorded_playing_history[1] == self.TRICK_HISTORY2
+        assert recorded_playing_history[2] == self.TRICK_HISTORY3
+
+    def test_history(self, recorded_playing_history):
+        assert recorded_playing_history.history == (self.TRICK_HISTORY1,
+                                                    self.TRICK_HISTORY2,
+                                                    self.TRICK_HISTORY3)
 
 
 class TestBasePlayingPhase:
+    @pytest.fixture(scope='function')
+    def mock_playing_history_instance(self, mocker: MockFixture):
+        mock = mocker.patch('bridge_env.playing_phase.PlayingHistory')
+        return mock.return_value
+
+    @pytest.fixture(scope='function')
+    def base_playing_phase(self, contract_1c_n):
+        return BasePlayingPhase(contract_1c_n)
+
     @pytest.mark.parametrize(('suit', 'cards', 'expected'), [
         (Suit.C, [Card(2, Suit.C), Card(8, Suit.C),
                   Card(12, Suit.C), Card(7, Suit.C)], 2),
@@ -78,46 +96,94 @@ class TestBasePlayingPhase:
     def test_calc_highest(self, suit, cards, expected):
         assert BasePlayingPhase.calc_highest(suit, cards) == expected
 
+    @pytest.mark.parametrize(
+        ('cards', 'trick_num', 'leader', 'active_player'),
+        [([Card(3, Suit.C), Card(5, Suit.S), Card(10, Suit.C)],
+          1, Player.E, Player.S)])
+    def test_play_card_not_last(self,
+                                cards,
+                                trick_num,
+                                leader,
+                                active_player,
+                                mock_playing_history_instance,
+                                base_playing_phase,
+                                mocker: MockFixture):
+        # setting
+        base_playing_phase._trick_cards = cards[:-1]
+        base_playing_phase.trick_num = trick_num
+        base_playing_phase.leader = leader
+        base_playing_phase.active_player = active_player.S
+        base_playing_phase.user_cards = mocker.Mock()
+
+        base_playing_phase.play_card(cards[-1])
+
+        mock_playing_history_instance.record.assert_not_called()
+
+        # not changed
+        assert base_playing_phase.leader == leader
+
+        # player next to the previous player
+        assert base_playing_phase.active_player == active_player.next_player
+
+        # not changed
+        assert base_playing_phase.trick_num == trick_num
+
+    @pytest.mark.parametrize(
+        ('cards', 'trick_num', 'leader', 'active_player', 'next_leader'),
+        [([Card(3, Suit.C), Card(5, Suit.S), Card(10, Suit.C), Card(2, Suit.C)],
+          1, Player.E, Player.N, Player.W)])
+    def test_play_card_last(self,
+                            cards,
+                            trick_num,
+                            leader,
+                            active_player,
+                            next_leader,
+                            mock_playing_history_instance,
+                            base_playing_phase,
+                            mocker: MockFixture):
+        base_playing_phase._trick_cards = cards[:-1]
+        base_playing_phase.trick_num = trick_num
+        base_playing_phase.leader = leader
+        base_playing_phase.active_player = active_player
+        base_playing_phase.user_cards = mocker.Mock()
+
+        base_playing_phase.play_card(cards[-1])
+
+        # _record()
+        mock_playing_history_instance.record.assert_called_once_with(
+            1, TrickHistory(leader, tuple(cards))
+        )
+
+        # _set_next_leader()
+        assert base_playing_phase.leader == next_leader
+
+        # same as leader
+        assert base_playing_phase.active_player == next_leader
+
+        # incremented
+        assert base_playing_phase.trick_num == trick_num + 1
+
 
 class TestPlayingPhase:
-    @pytest.fixture(scope='function')
-    def mock_playing_history(self, mocker: MockFixture):
-        mock = mocker.patch('bridge_env.playing_phase.PlayingHistory')
-        return mock.return_value
 
     @pytest.fixture(scope='function')
-    def playing_phase(self, bid_1c, hands):
-        return PlayingPhase(bid_1c, hands)
-
-    # playing_history in playing_phase is mocked (see mock_playing_history()).
-    # Parameters order can not be exchanged.
-    def test_play_card(self, mock_playing_history, playing_phase):
-        # declarer N, dummy S
-        # leader E
-        assert playing_phase.active_player is Player.E
-
-        playing_phase.play_card(Card(2, Suit.C), Player.E)
-        assert playing_phase.active_player is Player.S
-
-        playing_phase.play_card(Card(7, Suit.C), Player.S)
-        assert playing_phase.active_player is Player.W
-
-        playing_phase.play_card(Card(12, Suit.C), Player.W)
-        assert playing_phase.active_player is Player.N
-
-        playing_phase.play_card(Card(3, Suit.C), Player.N)
-        assert playing_phase.leader is Player.W
-        assert playing_phase.active_player is Player.W
-
-        mock_playing_history.record.assert_called_once_with(
-            1, TrickHistory(Player.E,
-                            (Card(2, Suit.C), Card(7, Suit.C), Card(12, Suit.C),
-                             Card(3, Suit.C))))
+    def playing_phase(self, contract_1c_n, hands):
+        return PlayingPhase(contract_1c_n, hands)
 
     def test_check_active_player_error(self, playing_phase):
         with pytest.raises(ValueError):
-            playing_phase.play_card(Card(2, Suit.C), Player.N)
+            playing_phase.play_card_by_player(Card(2, Suit.C), Player.N)
 
     def test_check_has_card_error(self, playing_phase):
         with pytest.raises(ValueError):
-            playing_phase.play_card(Card(3, Suit.C), Player.E)
+            playing_phase.play_card_by_player(Card(3, Suit.C), Player.E)
+
+
+class TestObservedPlayingPhase:
+
+    @pytest.fixture(scope='function')
+    def observed_playing_phase(self, contract_1c_n, hands):
+        return ObservedPlayingPhase(contract_1c_n, Player.N, hands[Player.N])
+
+    def test_play_card(self, mocker: MockFixture):
+        pass

@@ -1,4 +1,3 @@
-from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -51,7 +50,7 @@ class PlayingHistory:
         return tuple(self._history)
 
 
-class BasePlayingPhase(metaclass=ABCMeta):
+class BasePlayingPhase:
     def __init__(self, contract: Contract):
         if contract.is_passed_out():
             raise Exception('Passed out exception. '
@@ -66,7 +65,7 @@ class BasePlayingPhase(metaclass=ABCMeta):
         self.leader: Player = self.declarer.next_player
 
         self.active_player: Player = self.leader
-        self.trick_cards: List[Card] = list()
+        self._trick_cards: List[Card] = list()
         self.trick_num: int = 1
 
         self.playing_history = PlayingHistory(contract)
@@ -80,8 +79,19 @@ class BasePlayingPhase(metaclass=ABCMeta):
         """
         return self.trick_num > 13
 
-    @abstractmethod
-    def play_card(self, card: Card, player: Player) -> None:
+    def play_card(self, card: Card) -> None:
+        self._trick_cards.append(card)
+        self.used_cards.add(card)
+
+        if len(self._trick_cards) == 4:
+            self._record()
+            self._set_next_leader()
+            self.active_player = self.leader
+            self.trick_num += 1
+        else:
+            self.active_player = self.active_player.next_player
+
+    def play_card_by_player(self, card: Card, player: Player) -> None:
         """Plays card by the player.
 
         :param card: Card to be played.
@@ -89,21 +99,22 @@ class BasePlayingPhase(metaclass=ABCMeta):
             a dummy player, player is same as the dummy, not the declarer.
         :return: None.
         """
-        raise NotImplementedError()
+        self._check_active_player(player)
+        self.play_card(card)
 
     def _record(self):
         self.playing_history.record(
             self.trick_num,
-            TrickHistory(self.leader, tuple(self.trick_cards)))
+            TrickHistory(self.leader, tuple(self._trick_cards)))
 
     def _set_next_leader(self) -> None:
-        if len(self.trick_cards) != 4:
+        if len(self._trick_cards) != 4:
             raise Exception('Next leader is not decided.')
 
-        highest_idx = self.calc_highest(self.trump, self.trick_cards)
+        highest_idx = self.calc_highest(self.trump, self._trick_cards)
         if highest_idx < 0:
-            highest_idx = self.calc_highest(self.trick_cards[0].suit,
-                                            self.trick_cards)
+            highest_idx = self.calc_highest(self._trick_cards[0].suit,
+                                            self._trick_cards)
 
         for _ in range(highest_idx):
             self.leader = self.leader.next_player
@@ -141,17 +152,6 @@ class BasePlayingPhase(metaclass=ABCMeta):
                              f'Active player is not {player} '
                              f'but {self.active_player}')
 
-    def _post_processing(self, card):
-        self.trick_cards.append(card)
-        self.used_cards.add(card)
-
-        if len(self.trick_cards) == 4:
-            self._record()
-            self._set_next_leader()
-            self.active_player = self.leader
-        else:
-            self.active_player = self.active_player.next_player
-
 
 class PlayingPhase(BasePlayingPhase):
     def __init__(self,
@@ -161,11 +161,15 @@ class PlayingPhase(BasePlayingPhase):
 
         self._hands = hands
 
-    def play_card(self, card: Card, player: Player) -> None:
+    def play_card_by_player(self, card: Card, player: Player) -> None:
         self._check_active_player(player)
         self._check_has_card(player, self._hands[player], card)
         self._hands[player].remove(card)
-        self._post_processing(card)
+        super().play_card(card)
+
+    @property
+    def hands(self):
+        return self._hands
 
 
 class ObservedPlayingPhase(BasePlayingPhase):
@@ -182,7 +186,7 @@ class ObservedPlayingPhase(BasePlayingPhase):
     def set_dummy_hand(self, dummy_hand: Set[Card]):
         self.dummy_hand = dummy_hand
 
-    def play_card(self, card: Card, player: Player) -> None:
+    def play_card_by_player(self, card: Card, player: Player) -> None:
         self._check_active_player(player)
 
         if player is self._player:
@@ -193,4 +197,4 @@ class ObservedPlayingPhase(BasePlayingPhase):
             self._check_has_card(self.dummy, self.dummy_hand, card)
             self.dummy_hand.remove(card)
 
-        self._post_processing(card)
+        super().play_card(card)
