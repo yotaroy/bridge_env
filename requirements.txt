@@ -2,3 +2,4 @@ flake8
 numpy==1.19.1
 mypy
 pytest
+pytest-mock
