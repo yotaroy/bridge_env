@@ -166,6 +166,13 @@ class PlayingPhase:
     @staticmethod
     def available_cards(hand: Set[Card],
                         first_card: Optional[Card] = None) -> Set[Card]:
+        """Returns a set of cards which can be played.
+
+        :param hand: Hand of the player.
+        :param first_card: Firstly played card on the trick.
+            None if the player is a leader.
+        :return: Set of cards which can be played from the hand.
+        """
         if first_card is None:
             return hand
         suit = first_card.suit
@@ -195,12 +202,17 @@ class PlayingPhaseWithHands(PlayingPhase):
         return self._hands
 
     def play_card_by_player(self, card: Card, player: Player) -> None:
-        self._check_active_player(player)
-        self._check_has_card(player, self._hands[player], card)
+        super()._check_active_player(player)
+        super()._check_has_card(player, self._hands[player], card)
         self._hands[player].remove(card)
         super().play_card(card)
 
     def available_cards_in_hand(self, player: Player) -> Set[Card]:
+        """Returns a set of cards which can be played by a player.
+
+        :param player: Player to play a card.
+        :return: Set of cards which can be played by the player.
+        """
         if len(self._trick_cards) == 0:
             return self._hands[player]
         return super().available_cards(self._hands[player],
@@ -249,14 +261,31 @@ class ObservedPlayingPhase(PlayingPhase):
         self._dummy_hand = dummy_hand
 
     def play_card_by_player(self, card: Card, player: Player) -> None:
-        self._check_active_player(player)
+        super()._check_active_player(player)
 
         if player is self._player:
             self._check_has_card(self._player, self._hand, card)
             self._hand.remove(card)
         elif player is self.dummy:
-            assert self._dummy_hand is not None
+            if self._dummy_hand is None:
+                raise Exception('Dummy hand is not set.')
             self._check_has_card(self.dummy, self._dummy_hand, card)
             self._dummy_hand.remove(card)
 
         super().play_card(card)
+
+    def available_cards_in_hand(self) -> Set[Card]:
+        """Returns a set of cards which can be played by the player.
+
+        :return: None.
+        """
+        return super().available_cards(self._hand, self._trick_cards[0])
+
+    def available_cards_in_dummy_hand(self) -> Set[Card]:
+        """Returns a set of cards which can be played by the dummy.
+
+        :return: None.
+        """
+        if self._dummy_hand is None:
+            raise Exception('Dummy hand is not set.')
+        return super().available_cards(self._dummy_hand, self._trick_cards[0])
