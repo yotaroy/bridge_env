@@ -179,7 +179,8 @@ class PlayingPhaseWithHands(PlayingPhase):
     """Playing phase environment with hands information of 4 players.
 
     :param contract: Contract of the board.
-    :param hands: Hands of 4 players.
+    :param hands: Hands of 4 players. Played cards are removed from the hands.
+        If you don't want to change the hands set, passes the copy of the hands.
     """
 
     def __init__(self,
@@ -211,7 +212,8 @@ class ObservedPlayingPhase(PlayingPhase):
 
     :param contract: Contract of the board.
     :param player: Player to play.
-    :param hand: Hand of the player.
+    :param hand: Hand of the player. Played cards are removed from the hand.
+        If you don't want to change the hand set, passes the copy of the hand.
     """
 
     def __init__(self,
@@ -239,7 +241,9 @@ class ObservedPlayingPhase(PlayingPhase):
     def set_dummy_hand(self, dummy_hand: Set[Card]) -> None:
         """Set dummy hand
 
-        :param dummy_hand: Hand of the dummy, which is opened.
+        :param dummy_hand: Hand of the dummy, which is opened. Played cards are
+            removed from the hand. If you don't want to change the hand set,
+            passes the copy of the hand.
         :return: None.
         """
         self._dummy_hand = dummy_hand

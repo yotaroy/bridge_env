@@ -10,34 +10,34 @@ def contract_1c_n():
     return Contract(final_bid=Bid.C1, declarer=Player.N)
 
 
-HAND_N = {Card(3, Suit.C), Card(9, Suit.C), Card(11, Suit.C),
-          Card(14, Suit.C), Card(2, Suit.D), Card(4, Suit.D),
-          Card(11, Suit.D), Card(14, Suit.D), Card(12, Suit.H),
-          Card(14, Suit.H), Card(3, Suit.S), Card(4, Suit.S),
-          Card(7, Suit.S)}
-HAND_E = {Card(2, Suit.C), Card(4, Suit.C), Card(10, Suit.C),
-          Card(6, Suit.D), Card(8, Suit.D), Card(13, Suit.D),
-          Card(2, Suit.H), Card(6, Suit.H), Card(7, Suit.H),
-          Card(13, Suit.H), Card(2, Suit.S), Card(5, Suit.S),
-          Card(11, Suit.S)}
-HAND_S = {Card(6, Suit.C), Card(7, Suit.C), Card(8, Suit.C),
-          Card(3, Suit.D), Card(5, Suit.D), Card(10, Suit.D),
-          Card(3, Suit.H), Card(8, Suit.H), Card(9, Suit.H),
-          Card(11, Suit.H), Card(8, Suit.S), Card(9, Suit.S),
-          Card(14, Suit.S)}
-HAND_W = {Card(5, Suit.C), Card(12, Suit.C), Card(13, Suit.C),
-          Card(7, Suit.D), Card(9, Suit.D), Card(12, Suit.D),
-          Card(4, Suit.H), Card(5, Suit.H), Card(10, Suit.H),
-          Card(6, Suit.S), Card(10, Suit.S), Card(12, Suit.S),
-          Card(13, Suit.S)}
+HAND_N = frozenset([Card(3, Suit.C), Card(9, Suit.C), Card(11, Suit.C),
+                    Card(14, Suit.C), Card(2, Suit.D), Card(4, Suit.D),
+                    Card(11, Suit.D), Card(14, Suit.D), Card(12, Suit.H),
+                    Card(14, Suit.H), Card(3, Suit.S), Card(4, Suit.S),
+                    Card(7, Suit.S)])
+HAND_E = frozenset([Card(2, Suit.C), Card(4, Suit.C), Card(10, Suit.C),
+                    Card(6, Suit.D), Card(8, Suit.D), Card(13, Suit.D),
+                    Card(2, Suit.H), Card(6, Suit.H), Card(7, Suit.H),
+                    Card(13, Suit.H), Card(2, Suit.S), Card(5, Suit.S),
+                    Card(11, Suit.S)])
+HAND_S = frozenset([Card(6, Suit.C), Card(7, Suit.C), Card(8, Suit.C),
+                    Card(3, Suit.D), Card(5, Suit.D), Card(10, Suit.D),
+                    Card(3, Suit.H), Card(8, Suit.H), Card(9, Suit.H),
+                    Card(11, Suit.H), Card(8, Suit.S), Card(9, Suit.S),
+                    Card(14, Suit.S)])
+HAND_W = frozenset([Card(5, Suit.C), Card(12, Suit.C), Card(13, Suit.C),
+                    Card(7, Suit.D), Card(9, Suit.D), Card(12, Suit.D),
+                    Card(4, Suit.H), Card(5, Suit.H), Card(10, Suit.H),
+                    Card(6, Suit.S), Card(10, Suit.S), Card(12, Suit.S),
+                    Card(13, Suit.S)])
 
 
 @pytest.fixture(scope='function')
 def hands():
-    return {Player.N: HAND_N.copy(),
-            Player.E: HAND_E.copy(),
-            Player.S: HAND_S.copy(),
-            Player.W: HAND_W.copy()}
+    return {Player.N: set(HAND_N),
+            Player.E: set(HAND_E),
+            Player.S: set(HAND_S),
+            Player.W: set(HAND_W)}
 
 
 class TestPlayingHistory:
@@ -195,9 +195,9 @@ class TestPlayingPhase:
         assert len(base_playing_phase._trick_cards) == 0
 
     @pytest.mark.parametrize(('hand', 'first_card', 'expected'), [
-        (HAND_N, None, HAND_N),
-        (HAND_N, Card(8, Suit.D), {Card(2, Suit.D), Card(4, Suit.D),
-                                   Card(11, Suit.D), Card(14, Suit.D)}),
+        (set(HAND_N), None, set(HAND_N)),
+        (set(HAND_N), Card(8, Suit.D), {Card(2, Suit.D), Card(4, Suit.D),
+                                        Card(11, Suit.D), Card(14, Suit.D)}),
         ({Card(3, Suit.C), Card(7, Suit.D), Card(2, Suit.S), Card(6, Suit.S)},
          Card(13, Suit.H),
          {Card(3, Suit.C), Card(7, Suit.D), Card(2, Suit.S), Card(6, Suit.S)}),
