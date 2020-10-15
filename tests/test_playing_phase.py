@@ -99,7 +99,8 @@ class TestBasePlayingPhase:
     @pytest.mark.parametrize(
         ('cards', 'trick_num', 'leader', 'active_player'),
         [([Card(3, Suit.C), Card(5, Suit.S), Card(10, Suit.C)],
-          1, Player.E, Player.S)])
+          1, Player.E, Player.S),
+         ([Card(2, Suit.S), Card(5, Suit.C)], 5, Player.S, Player.S)])
     def test_play_card_not_last(self,
                                 cards,
                                 trick_num,
@@ -129,11 +130,15 @@ class TestBasePlayingPhase:
         assert base_playing_phase.trick_num == trick_num
 
     @pytest.mark.parametrize(
-        ('cards', 'trick_num', 'leader', 'active_player', 'next_leader'),
+        ('cards', 'trump', 'trick_num', 'leader', 'active_player',
+         'next_leader'),
         [([Card(3, Suit.C), Card(5, Suit.S), Card(10, Suit.C), Card(2, Suit.C)],
-          1, Player.E, Player.N, Player.W)])
+          Suit.C, 1, Player.E, Player.N, Player.W),
+         ([Card(2, Suit.H), Card(10, Suit.C), Card(4, Suit.D), Card(3, Suit.H)],
+          Suit.S, 12, Player.S, Player.S, Player.E)])
     def test_play_card_last(self,
                             cards,
+                            trump,
                             trick_num,
                             leader,
                             active_player,
@@ -141,7 +146,9 @@ class TestBasePlayingPhase:
                             mock_playing_history_instance,
                             base_playing_phase,
                             mocker: MockFixture):
+        # setting
         base_playing_phase._trick_cards = cards[:-1]
+        base_playing_phase.trump = trump
         base_playing_phase.trick_num = trick_num
         base_playing_phase.leader = leader
         base_playing_phase.active_player = active_player
@@ -151,7 +158,7 @@ class TestBasePlayingPhase:
 
         # _record()
         mock_playing_history_instance.record.assert_called_once_with(
-            1, TrickHistory(leader, tuple(cards))
+            trick_num, TrickHistory(leader, tuple(cards))
         )
 
         # _set_next_leader()
@@ -170,11 +177,11 @@ class TestPlayingPhase:
     def playing_phase(self, contract_1c_n, hands):
         return PlayingPhase(contract_1c_n, hands)
 
-    def test_check_active_player_error(self, playing_phase):
+    def test_play_card_by_player_active_player_error(self, playing_phase):
         with pytest.raises(ValueError):
             playing_phase.play_card_by_player(Card(2, Suit.C), Player.N)
 
-    def test_check_has_card_error(self, playing_phase):
+    def test_play_card_by_player_has_card_error(self, playing_phase):
         with pytest.raises(ValueError):
             playing_phase.play_card_by_player(Card(3, Suit.C), Player.E)
 
@@ -185,5 +192,21 @@ class TestObservedPlayingPhase:
     def observed_playing_phase(self, contract_1c_n, hands):
         return ObservedPlayingPhase(contract_1c_n, Player.N, hands[Player.N])
 
-    def test_play_card(self, mocker: MockFixture):
-        pass
+    def test_play_card_by_player_active_player_error(self,
+                                                     observed_playing_phase):
+        with pytest.raises(ValueError):
+            observed_playing_phase.play_card_by_player(Card(2, Suit.C),
+                                                       Player.N)
+
+    def test_play_card_by_player_has_card_error(self, observed_playing_phase):
+        with pytest.raises(ValueError):
+            observed_playing_phase.play_card_by_player(Card(3, Suit.C),
+                                                       Player.N)
+
+    def test_play_card_by_player_has_card_error_dummy(self,
+                                                      observed_playing_phase,
+                                                      hands):
+        observed_playing_phase.set_dummy_hand(hands[Player.S])
+        with pytest.raises(ValueError):
+            observed_playing_phase.play_card_by_player(Card(3, Suit.C),
+                                                       Player.S)

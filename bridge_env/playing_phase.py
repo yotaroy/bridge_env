@@ -80,6 +80,11 @@ class BasePlayingPhase:
         return self.trick_num > 13
 
     def play_card(self, card: Card) -> None:
+        """Plays card.
+
+        :param card: Card to be played by self.active_player.
+        :return: None.
+        """
         self._trick_cards.append(card)
         self.used_cards.add(card)
 
@@ -102,7 +107,7 @@ class BasePlayingPhase:
         self._check_active_player(player)
         self.play_card(card)
 
-    def _record(self):
+    def _record(self) -> None:
         self.playing_history.record(
             self.trick_num,
             TrickHistory(self.leader, tuple(self._trick_cards)))
@@ -140,13 +145,13 @@ class BasePlayingPhase:
         return n
 
     @staticmethod
-    def _check_has_card(player, hand, card):
+    def _check_has_card(player, hand, card) -> None:
         if card not in hand:
             raise ValueError(f'Card not found error. '
                              f'Player {player} does not have card '
                              f'{card}.')
 
-    def _check_active_player(self, player):
+    def _check_active_player(self, player) -> None:
         if player is not self.active_player:
             raise ValueError('Active player error. '
                              f'Active player is not {player} '
@@ -161,15 +166,15 @@ class PlayingPhase(BasePlayingPhase):
 
         self._hands = hands
 
+    @property
+    def hands(self) -> Dict[Player, Set[Card]]:
+        return self._hands
+
     def play_card_by_player(self, card: Card, player: Player) -> None:
         self._check_active_player(player)
         self._check_has_card(player, self._hands[player], card)
         self._hands[player].remove(card)
         super().play_card(card)
-
-    @property
-    def hands(self):
-        return self._hands
 
 
 class ObservedPlayingPhase(BasePlayingPhase):
@@ -179,22 +184,39 @@ class ObservedPlayingPhase(BasePlayingPhase):
                  hand: Set[Card]):
         super().__init__(contract)
         self._player = player
-        self.hand = hand
+        self._hand = hand
 
-        self.dummy_hand: Optional[Set[Card]] = None
+        self._dummy_hand: Optional[Set[Card]] = None
 
-    def set_dummy_hand(self, dummy_hand: Set[Card]):
-        self.dummy_hand = dummy_hand
+    @property
+    def player(self) -> Player:
+        return self._player
+
+    @property
+    def hand(self) -> Set[Card]:
+        return self._hand
+
+    @property
+    def dummy_hand(self) -> Optional[Set[Card]]:
+        return self._dummy_hand
+
+    def set_dummy_hand(self, dummy_hand: Set[Card]) -> None:
+        """Set dummy hand
+
+        :param dummy_hand: Hand of the dummy, which is opened.
+        :return: None.
+        """
+        self._dummy_hand = dummy_hand
 
     def play_card_by_player(self, card: Card, player: Player) -> None:
         self._check_active_player(player)
 
         if player is self._player:
-            self._check_has_card(self._player, self.hand, card)
-            self.hand.remove(card)
+            self._check_has_card(self._player, self._hand, card)
+            self._hand.remove(card)
         elif player is self.dummy:
-            assert self.dummy_hand is not None
-            self._check_has_card(self.dummy, self.dummy_hand, card)
-            self.dummy_hand.remove(card)
+            assert self._dummy_hand is not None
+            self._check_has_card(self.dummy, self._dummy_hand, card)
+            self._dummy_hand.remove(card)
 
         super().play_card(card)
