@@ -10,28 +10,34 @@ def contract_1c_n():
     return Contract(final_bid=Bid.C1, declarer=Player.N)
 
 
+HAND_N = {Card(3, Suit.C), Card(9, Suit.C), Card(11, Suit.C),
+          Card(14, Suit.C), Card(2, Suit.D), Card(4, Suit.D),
+          Card(11, Suit.D), Card(14, Suit.D), Card(12, Suit.H),
+          Card(14, Suit.H), Card(3, Suit.S), Card(4, Suit.S),
+          Card(7, Suit.S)}
+HAND_E = {Card(2, Suit.C), Card(4, Suit.C), Card(10, Suit.C),
+          Card(6, Suit.D), Card(8, Suit.D), Card(13, Suit.D),
+          Card(2, Suit.H), Card(6, Suit.H), Card(7, Suit.H),
+          Card(13, Suit.H), Card(2, Suit.S), Card(5, Suit.S),
+          Card(11, Suit.S)}
+HAND_S = {Card(6, Suit.C), Card(7, Suit.C), Card(8, Suit.C),
+          Card(3, Suit.D), Card(5, Suit.D), Card(10, Suit.D),
+          Card(3, Suit.H), Card(8, Suit.H), Card(9, Suit.H),
+          Card(11, Suit.H), Card(8, Suit.S), Card(9, Suit.S),
+          Card(14, Suit.S)}
+HAND_W = {Card(5, Suit.C), Card(12, Suit.C), Card(13, Suit.C),
+          Card(7, Suit.D), Card(9, Suit.D), Card(12, Suit.D),
+          Card(4, Suit.H), Card(5, Suit.H), Card(10, Suit.H),
+          Card(6, Suit.S), Card(10, Suit.S), Card(12, Suit.S),
+          Card(13, Suit.S)}
+
+
 @pytest.fixture(scope='function')
 def hands():
-    return {Player.N: {Card(3, Suit.C), Card(9, Suit.C), Card(11, Suit.C),
-                       Card(14, Suit.C), Card(2, Suit.D), Card(4, Suit.D),
-                       Card(11, Suit.D), Card(14, Suit.D), Card(12, Suit.H),
-                       Card(14, Suit.H), Card(3, Suit.S), Card(4, Suit.S),
-                       Card(7, Suit.S)},
-            Player.E: {Card(2, Suit.C), Card(4, Suit.C), Card(10, Suit.C),
-                       Card(6, Suit.D), Card(8, Suit.D), Card(13, Suit.D),
-                       Card(2, Suit.H), Card(6, Suit.H), Card(7, Suit.H),
-                       Card(13, Suit.H), Card(2, Suit.S), Card(5, Suit.S),
-                       Card(11, Suit.S)},
-            Player.S: {Card(6, Suit.C), Card(7, Suit.C), Card(8, Suit.C),
-                       Card(3, Suit.D), Card(5, Suit.D), Card(10, Suit.D),
-                       Card(3, Suit.H), Card(8, Suit.H), Card(9, Suit.H),
-                       Card(11, Suit.H), Card(8, Suit.S), Card(9, Suit.S),
-                       Card(14, Suit.S)},
-            Player.W: {Card(5, Suit.C), Card(12, Suit.C), Card(13, Suit.C),
-                       Card(7, Suit.D), Card(9, Suit.D), Card(12, Suit.D),
-                       Card(4, Suit.H), Card(5, Suit.H), Card(10, Suit.H),
-                       Card(6, Suit.S), Card(10, Suit.S), Card(12, Suit.S),
-                       Card(13, Suit.S)}}
+    return {Player.N: HAND_N.copy(),
+            Player.E: HAND_E.copy(),
+            Player.S: HAND_S.copy(),
+            Player.W: HAND_W.copy()}
 
 
 class TestPlayingHistory:
@@ -74,6 +80,7 @@ class TestPlayingHistory:
 
 
 class TestPlayingPhase:
+
     @pytest.fixture(scope='function')
     def mock_playing_history_instance(self, mocker: MockFixture):
         mock = mocker.patch('bridge_env.playing_phase.PlayingHistory')
@@ -109,15 +116,21 @@ class TestPlayingPhase:
                                 mock_playing_history_instance,
                                 base_playing_phase,
                                 mocker: MockFixture):
-        # setting
+        # mock setting
+        mock_used_cards = mocker.MagicMock()
+        base_playing_phase.used_cards = mock_used_cards
+
+        # variable setting
         base_playing_phase._trick_cards = cards[:-1]
         base_playing_phase.trick_num = trick_num
         base_playing_phase.leader = leader
         base_playing_phase.active_player = active_player.S
-        base_playing_phase.user_cards = mocker.Mock()
 
         base_playing_phase.play_card(cards[-1])
 
+        # check mock calls
+        assert base_playing_phase._trick_cards[-1] == cards[-1]
+        mock_used_cards.add.assert_called_once_with(cards[-1])
         mock_playing_history_instance.record.assert_not_called()
 
         # not changed
@@ -128,6 +141,9 @@ class TestPlayingPhase:
 
         # not changed
         assert base_playing_phase.trick_num == trick_num
+
+        # not initialized
+        assert len(base_playing_phase._trick_cards) == len(cards)
 
     @pytest.mark.parametrize(
         ('cards', 'trump', 'trick_num', 'leader', 'active_player',
@@ -146,15 +162,20 @@ class TestPlayingPhase:
                             mock_playing_history_instance,
                             base_playing_phase,
                             mocker: MockFixture):
-        # setting
+        # mock setting
+        mock_used_cards = mocker.MagicMock()
+        base_playing_phase.used_cards = mock_used_cards
+
+        # variable setting
         base_playing_phase._trick_cards = cards[:-1]
         base_playing_phase.trump = trump
         base_playing_phase.trick_num = trick_num
         base_playing_phase.leader = leader
         base_playing_phase.active_player = active_player
-        base_playing_phase.user_cards = mocker.Mock()
 
         base_playing_phase.play_card(cards[-1])
+
+        mock_used_cards.add.assert_called_once_with(cards[-1])
 
         # _record()
         mock_playing_history_instance.record.assert_called_once_with(
@@ -169,6 +190,20 @@ class TestPlayingPhase:
 
         # incremented
         assert base_playing_phase.trick_num == trick_num + 1
+
+        # initialized
+        assert len(base_playing_phase._trick_cards) == 0
+
+    @pytest.mark.parametrize(('hand', 'first_card', 'expected'), [
+        (HAND_N, None, HAND_N),
+        (HAND_N, Card(8, Suit.D), {Card(2, Suit.D), Card(4, Suit.D),
+                                   Card(11, Suit.D), Card(14, Suit.D)}),
+        ({Card(3, Suit.C), Card(7, Suit.D), Card(2, Suit.S), Card(6, Suit.S)},
+         Card(13, Suit.H),
+         {Card(3, Suit.C), Card(7, Suit.D), Card(2, Suit.S), Card(6, Suit.S)}),
+    ])
+    def test_available_cards(self, hand, first_card, expected):
+        assert PlayingPhase.available_cards(hand, first_card) == expected
 
 
 class TestPlayingPhaseWithHands:

@@ -51,6 +51,11 @@ class PlayingHistory:
 
 
 class PlayingPhase:
+    """Playing phase environment without hands information.
+
+    :param contract: Contract of the board.
+    """
+
     def __init__(self, contract: Contract):
         if contract.is_passed_out():
             raise Exception('Passed out exception. '
@@ -93,6 +98,7 @@ class PlayingPhase:
             self._set_next_leader()
             self.active_player = self.leader
             self.trick_num += 1
+            self._trick_cards = list()
         else:
             self.active_player = self.active_player.next_player
 
@@ -157,8 +163,25 @@ class PlayingPhase:
                              f'Active player is not {player} '
                              f'but {self.active_player}')
 
+    @staticmethod
+    def available_cards(hand: Set[Card],
+                        first_card: Optional[Card] = None) -> Set[Card]:
+        if first_card is None:
+            return hand
+        suit = first_card.suit
+        same_suit_cards = {card for card in hand if card.suit is suit}
+        if len(same_suit_cards) == 0:
+            return hand
+        return same_suit_cards
+
 
 class PlayingPhaseWithHands(PlayingPhase):
+    """Playing phase environment with hands information of 4 players.
+
+    :param contract: Contract of the board.
+    :param hands: Hands of 4 players.
+    """
+
     def __init__(self,
                  contract: Contract,
                  hands: Dict[Player, Set[Card]]):
@@ -176,8 +199,21 @@ class PlayingPhaseWithHands(PlayingPhase):
         self._hands[player].remove(card)
         super().play_card(card)
 
+    def available_cards_in_hand(self, player: Player) -> Set[Card]:
+        if len(self._trick_cards) == 0:
+            return self._hands[player]
+        return super().available_cards(self._hands[player],
+                                       self._trick_cards[0])
+
 
 class ObservedPlayingPhase(PlayingPhase):
+    """Playing phase environment with hands information of a player and dummy.
+
+    :param contract: Contract of the board.
+    :param player: Player to play.
+    :param hand: Hand of the player.
+    """
+
     def __init__(self,
                  contract: Contract,
                  player: Player,
