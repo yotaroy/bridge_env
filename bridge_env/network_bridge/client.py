@@ -1,6 +1,8 @@
 import re
 from logging import getLogger
-from typing import Optional, Tuple
+from typing import Optional, Set, Tuple
+
+from bridge_env.playing_phase import ObservedPlayingPhase
 
 from .bidding_system import BiddingSystem
 from .playing_system import PlayingSystem
@@ -114,20 +116,23 @@ class Client(SocketInterface):
         return hand_str
 
     @staticmethod
-    def parse_hand(content: str) -> Tuple[int, ...]:
+    def parse_hand(content: str) -> Tuple[Set[Card], Tuple[int, ...]]:
         pattern = r'S (.*)\. H (.*)\. D (.*)\. C (.*)\.\s?'
         match = re.match(pattern, content)
         if not match:
             raise Exception('Parse exception. '
                             f'Content "{content}" does not match the pattern.')
         hand_list = [0] * 52
-        for cards, suit in zip(map(lambda s: s.split(' '), match.groups()),
+        hand_set = set()
+        for ranks, suit in zip(map(lambda s: s.split(' '), match.groups()),
                                [Suit.S, Suit.H, Suit.D, Suit.C]):
-            for card in cards:
-                if card == '-':
+            for rank in ranks:
+                if rank == '-':
                     continue
-                hand_list[int(Card(Card.rank_str_to_int(card), suit))] = 1
-        return tuple(hand_list)
+                card = Card(Card.rank_str_to_int(rank), suit)
+                hand_set.add(card)
+                hand_list[int(card)] = 1
+        return hand_set, tuple(hand_list)
 
     @staticmethod
     def parse_bid(content: str, player_name: str) -> Bid:
@@ -158,7 +163,7 @@ class Client(SocketInterface):
 
         hand_str = self.parse_cards(super().receive_message(),
                                     self.player.formal_name)
-        self.hand = self.parse_hand(hand_str)
+        self.hand_set, self.hand_binary = self.parse_hand(hand_str)
 
     @staticmethod
     def create_bid_message(bid: Bid, player_name: str) -> str:
@@ -188,7 +193,7 @@ class Client(SocketInterface):
         while not env.has_done():
             if env.active_player is self.player:
                 # take an action
-                bid = self.bidding_system.bid(self.hand, env)
+                bid = self.bidding_system.bid(self.hand_binary, env)
             else:
                 super().send_message(f'{self.player.formal_name} ready '
                                      f'for {env.active_player.formal_name}')
@@ -218,21 +223,18 @@ class Client(SocketInterface):
             return dummy
         return Player.convert_formal_name(player_name)
 
-    def playing_phase(self, contract: Contract):
+    def playing_phase(self, contract: Contract) -> None:
         assert not contract.is_passed_out()
         declarer = contract.declarer
         assert declarer is not None
         dummy = contract.declarer.partner
+        env = ObservedPlayingPhase(contract=contract,
+                                   player=self.player,
+                                   hand=self.hand_set)
+        while not env.has_done():
+            leader = self.parse_leader_message(super().receive_message(), dummy)
 
-        # env =
-        #
-        # if self.player is dummy:
-        #     return
-        #
-        # while not env.has_done():
-        #     leader = self.parse_leader_message(super().receive_message(), dummy)
-
-    def run(self):
+    def run(self) -> None:
         """Runs the client."""
         print('run')
         self._connect()

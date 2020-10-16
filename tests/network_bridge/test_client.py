@@ -1,5 +1,5 @@
 import pytest
-from bridge_env import Bid, Player, Vul
+from bridge_env import Bid, Card, Player, Suit, Vul
 from bridge_env.network_bridge.client import Client
 
 
@@ -32,15 +32,19 @@ class TestClient:
     def test_parse_cards(self, content, player_name, expected):
         assert Client.parse_cards(content, player_name) == expected
 
-    @pytest.mark.parametrize(('content', 'expected'), [
+    @pytest.mark.parametrize(('content', 'expected1', 'expected2'), [
         ('S K T 4. H A J 9 3 2. D -. C Q J T 9 2.',
+         {Card(2, Suit.C), Card(9, Suit.C), Card(10, Suit.C), Card(11, Suit.C),
+          Card(12, Suit.C), Card(2, Suit.H), Card(3, Suit.H), Card(9, Suit.H),
+          Card(11, Suit.H), Card(14, Suit.H), Card(4, Suit.S), Card(10, Suit.S),
+          Card(13, Suit.S)},
          (1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0,
           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
           1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1,
           0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0)),
     ])
-    def test_parse_hand(self, content, expected):
-        assert Client.parse_hand(content) == expected
+    def test_parse_hand(self, content, expected1, expected2):
+        assert Client.parse_hand(content) == (expected1, expected2)
 
     @pytest.mark.parametrize(('content', 'player_name', 'expected'), [
         ('North bids 2C', 'North', Bid.C2),

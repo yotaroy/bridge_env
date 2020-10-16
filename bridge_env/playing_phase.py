@@ -94,6 +94,7 @@ class PlayingPhase:
         self.used_cards.add(card)
 
         if len(self._trick_cards) == 4:
+            # TODO: Count the number of taken tricks by each team.
             self._record()
             self._set_next_leader()
             self.active_player = self.leader
