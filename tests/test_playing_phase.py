@@ -1,7 +1,7 @@
 import pytest
 from bridge_env import Bid, Card, Contract, Player, Suit
-from bridge_env.playing_phase import PlayingPhase, PlayingHistory, \
-    PlayingPhaseWithHands, TrickHistory, ObservedPlayingPhase
+from bridge_env.playing_phase import ObservedPlayingPhase, PlayingHistory, \
+    PlayingPhase, PlayingPhaseWithHands, TrickHistory
 from pytest_mock import MockFixture
 
 
@@ -87,7 +87,7 @@ class TestPlayingPhase:
         return mock.return_value
 
     @pytest.fixture(scope='function')
-    def base_playing_phase(self, contract_1c_n):
+    def playing_phase(self, contract_1c_n):
         return PlayingPhase(contract_1c_n)
 
     @pytest.mark.parametrize(('suit', 'cards', 'expected'), [
@@ -114,36 +114,36 @@ class TestPlayingPhase:
                                 leader,
                                 active_player,
                                 mock_playing_history_instance,
-                                base_playing_phase,
+                                playing_phase,
                                 mocker: MockFixture):
         # mock setting
         mock_used_cards = mocker.MagicMock()
-        base_playing_phase.used_cards = mock_used_cards
+        playing_phase.used_cards = mock_used_cards
 
         # variable setting
-        base_playing_phase._trick_cards = cards[:-1]
-        base_playing_phase.trick_num = trick_num
-        base_playing_phase.leader = leader
-        base_playing_phase.active_player = active_player.S
+        playing_phase._trick_cards = cards[:-1]
+        playing_phase.trick_num = trick_num
+        playing_phase.leader = leader
+        playing_phase.active_player = active_player.S
 
-        base_playing_phase.play_card(cards[-1])
+        playing_phase.play_card(cards[-1])
 
         # check mock calls
-        assert base_playing_phase._trick_cards[-1] == cards[-1]
+        assert playing_phase._trick_cards[-1] == cards[-1]
         mock_used_cards.add.assert_called_once_with(cards[-1])
         mock_playing_history_instance.record.assert_not_called()
 
         # not changed
-        assert base_playing_phase.leader == leader
+        assert playing_phase.leader == leader
 
         # player next to the previous player
-        assert base_playing_phase.active_player == active_player.next_player
+        assert playing_phase.active_player == active_player.next_player
 
         # not changed
-        assert base_playing_phase.trick_num == trick_num
+        assert playing_phase.trick_num == trick_num
 
         # not initialized
-        assert len(base_playing_phase._trick_cards) == len(cards)
+        assert len(playing_phase._trick_cards) == len(cards)
 
     @pytest.mark.parametrize(
         ('cards', 'trump', 'trick_num', 'leader', 'active_player',
@@ -160,20 +160,20 @@ class TestPlayingPhase:
                             active_player,
                             next_leader,
                             mock_playing_history_instance,
-                            base_playing_phase,
+                            playing_phase,
                             mocker: MockFixture):
         # mock setting
         mock_used_cards = mocker.MagicMock()
-        base_playing_phase.used_cards = mock_used_cards
+        playing_phase.used_cards = mock_used_cards
 
         # variable setting
-        base_playing_phase._trick_cards = cards[:-1]
-        base_playing_phase.trump = trump
-        base_playing_phase.trick_num = trick_num
-        base_playing_phase.leader = leader
-        base_playing_phase.active_player = active_player
+        playing_phase._trick_cards = cards[:-1]
+        playing_phase.trump = trump
+        playing_phase.trick_num = trick_num
+        playing_phase.leader = leader
+        playing_phase.active_player = active_player
 
-        base_playing_phase.play_card(cards[-1])
+        playing_phase.play_card(cards[-1])
 
         mock_used_cards.add.assert_called_once_with(cards[-1])
 
@@ -183,16 +183,16 @@ class TestPlayingPhase:
         )
 
         # _set_next_leader()
-        assert base_playing_phase.leader == next_leader
+        assert playing_phase.leader == next_leader
 
         # same as leader
-        assert base_playing_phase.active_player == next_leader
+        assert playing_phase.active_player == next_leader
 
         # incremented
-        assert base_playing_phase.trick_num == trick_num + 1
+        assert playing_phase.trick_num == trick_num + 1
 
         # initialized
-        assert len(base_playing_phase._trick_cards) == 0
+        assert len(playing_phase._trick_cards) == 0
 
     @pytest.mark.parametrize(('hand', 'first_card', 'expected'), [
         (set(HAND_N), None, set(HAND_N)),
@@ -204,6 +204,20 @@ class TestPlayingPhase:
     ])
     def test_available_cards(self, hand, first_card, expected):
         assert PlayingPhase.available_cards(hand, first_card) == expected
+
+    @pytest.mark.parametrize(('hand', 'trick_cards', 'arg_first_card'), [
+        (set(HAND_N), list(), None),
+        (set(HAND_N), [Card(2, Suit.C), Card(2, Suit.S)], Card(2, Suit.C)),
+    ])
+    def test_current_available_cards(self, hand, trick_cards, arg_first_card,
+                                     playing_phase, mocker: MockFixture):
+        mock = mocker.MagicMock()
+        playing_phase.available_cards = mock
+        playing_phase._trick_cards = trick_cards
+
+        playing_phase.current_available_cards(hand)
+
+        mock.assert_called_once_with(hand, arg_first_card)
 
 
 class TestPlayingPhaseWithHands:

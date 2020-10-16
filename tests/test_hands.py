@@ -1,5 +1,3 @@
-import pytest
-
 import numpy as np
 from bridge_env import Hands
 from bridge_env import Player

@@ -7,6 +7,7 @@ from .. import Bid, BiddingPhase
 class BiddingSystem(metaclass=ABCMeta):
     @abstractmethod
     def bid(self, hand: Tuple[int, ...], bidding_phase: BiddingPhase) -> Bid:
+        # hand is 52 dims binary vector
         # TODO: hand should be Hands (Hand?) object
         raise NotImplementedError()
 
