@@ -2,13 +2,12 @@ import re
 from logging import getLogger
 from typing import Optional, Set, Tuple
 
-from bridge_env.playing_phase import ObservedPlayingPhase
-
 from .bidding_system import BiddingSystem
 from .playing_system import PlayingSystem
 from .socket_interface import SocketInterface
 from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Pair, \
     Player, Suit, Vul
+from ..playing_phase import ObservedPlayingPhase
 
 logger = getLogger(__file__)
 

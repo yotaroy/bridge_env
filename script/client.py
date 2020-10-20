@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from bridge_env import Player
-from bridge_env.network_bridge.bidding_system import AlwaysPass, WeakBid
+from bridge_env.network_bridge.bidding_system import WeakBid
 from bridge_env.network_bridge.client import Client
 from bridge_env.network_bridge.playing_system import RandomPlay
 
