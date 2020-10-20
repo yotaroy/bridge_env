@@ -177,6 +177,7 @@ class Client(SocketInterface):
             str_bid = f'bids {bid}'
         return f'{player_name} {str_bid}'
 
+    # TODO: unit test
     def bidding_phase(self) -> Contract:
         """Bidding phase.
 
@@ -195,6 +196,7 @@ class Client(SocketInterface):
                 # take an action
                 bid = self.bidding_system.bid(self.hand_binary, env)
             else:
+                assert env.active_player is not None
                 super().send_message(f'{self.player.formal_name} ready '
                                      f'for {env.active_player.formal_name}')
                 message = super().receive_message()
@@ -209,7 +211,10 @@ class Client(SocketInterface):
             if bidding_phase_state is BiddingPhaseState.finished:
                 break
 
-        return env.contract()
+        contract = env.contract()
+        assert contract is not None
+        # TODO: Consider not to return None when env is not finished.
+        return contract
 
     @staticmethod
     def parse_leader_message(content: str, dummy: Player) -> Player:
@@ -223,22 +228,107 @@ class Client(SocketInterface):
             return dummy
         return Player.convert_formal_name(player_name)
 
+    # TODO: unit test
+    @staticmethod
+    def card_str(card: Card) -> str:
+        """Convert card object to str of format [value] + [suit].
+
+            an alternative suggestion is [suit] + [value] format, which is same
+            as str(card).
+
+        :param card: Card instance.
+        :return: [value] + [suit] format.
+        """
+        return Card.rank_int_to_str(card.rank) + card.suit.name
+
+    # TODO: unit test
+    @staticmethod
+    def parse_card(content: str, player: Player) -> Card:
+        pattern = f'{player.formal_name} plays (.*)'
+        match = re.match(pattern, content)
+        if not match:
+            raise Exception('Parse exception. '
+                            f'Content "{content}" does not match the pattern.')
+        card_str = match.group(1)
+        if card_str[0] in {'S', 'H', 'D', 'C'}:
+            return Card(Card.rank_str_to_int(card_str[1]), Suit[card_str[0]])
+        return Card(Card.rank_str_to_int(card_str[0]), Suit[card_str[1]])
+
+    # TODO: unit test
+    @staticmethod
+    def parse_timing(content: str):
+        pattern = r'Timing - N/S : this board (*.), total (*.). ' \
+                  r'E/W : this board (*.), total (.*)'
+        match = re.match(pattern, content)
+        if not match:
+            raise Exception('Parse exception. '
+                            f'Content "{content}" does not match the pattern.')
+        # TODO: process matched pattern
+
+    # TODO: unit test
     def playing_phase(self, contract: Contract) -> None:
         assert not contract.is_passed_out()
         declarer = contract.declarer
         assert declarer is not None
-        dummy = contract.declarer.partner
+        dummy = declarer.partner
+
         env = ObservedPlayingPhase(contract=contract,
                                    player=self.player,
                                    hand=self.hand_set)
+        hand_open = False
         while not env.has_done():
             leader = self.parse_leader_message(super().receive_message(), dummy)
+            for _ in range(4):
+
+                # open dummy's hand
+                if env.active_player is dummy and not hand_open:
+                    hand_open = True
+                    if dummy is not self.player:
+                        super().send_message(f'{self.player.formal_name} '
+                                             f'ready for dummy')
+                        dummy_hand, _ = self.parse_hand(
+                            self.parse_cards(super().receive_message(),
+                                             'Dummy'))
+                        env.set_dummy_hand(dummy_hand)
+
+                message = super().receive_message()
+                if leader is self.player and self.player is not dummy:
+                    if message != f'{self.player.formal_name} to lead':
+                        raise Exception()
+                    card = self.playing_system.play(self.hand_set, env)
+                    env.play_card(card)
+                    super().send_message(
+                        f'{self.player.formal_name} plays {self.card_str(card)}')
+                elif env.active_player is dummy and self.player is declarer:
+                    if message != f'Dummy to lead':
+                        raise Exception()
+                    card = self.playing_system.play(self.hand_set, env)
+                    env.play_card(card)
+                    super().send_message(
+                        f'{dummy.formal_name} plays {self.card_str(card)}')
+                else:
+                    active_player_name = env.active_player.formal_name if \
+                        env.active_player is not dummy else 'dummy'
+                    super().send_message(
+                        f'{self.player.formal_name} ready for '
+                        f'{active_player_name}\'s card to '
+                        f'trick {env.trick_num}')
+                    card = self.parse_card(super().receive_message(),
+                                           env.active_player)
+                    env.play_card(card)
+                    continue
 
     def run(self) -> None:
         """Runs the client."""
         print('run')
         self._connect()
-        while super().receive_message() == 'Start of Board':
+
+        message = super().receive_message()
+        board_num = 1
+        while True:
+            if message != 'Start of Board':
+                raise Exception()
+
             self._deal()
 
             contract = self.bidding_phase()
@@ -246,3 +336,8 @@ class Client(SocketInterface):
                 continue
 
             self.playing_phase(contract)
+
+            message = super().receive_message()
+            if message == 'End of session':
+                break
+            board_num += 1

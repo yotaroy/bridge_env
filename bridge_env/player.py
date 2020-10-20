@@ -45,6 +45,7 @@ class Player(Enum):
             return 'South'
         elif self.name == 'W':
             return 'West'
+        raise ValueError(f'Unexpected value {self.name} is used.')
 
     @property
     def next_player(self) -> Player:
