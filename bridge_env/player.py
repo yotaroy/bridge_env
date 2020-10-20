@@ -30,6 +30,24 @@ class Player(Enum):
         return self.name
 
     @property
+    def formal_name(self) -> str:
+        """The formal name of the player.
+
+        :return: The formal name of the player.
+            'North', 'East', 'South' or 'West'.
+        :rtype: str
+        """
+        if self.name == 'N':
+            return 'North'
+        elif self.name == 'E':
+            return 'East'
+        elif self.name == 'S':
+            return 'South'
+        elif self.name == 'W':
+            return 'West'
+        raise ValueError(f'Unexpected value {self.name} is used.')
+
+    @property
     def next_player(self) -> Player:
         """The next player of the player
 
@@ -100,3 +118,15 @@ class Player(Enum):
         :rtype: bool
         """
         return self.pair.is_vul(vul)
+
+    @classmethod
+    def convert_formal_name(cls, formal_name: str) -> Player:
+        if formal_name == 'North':
+            return cls.N
+        elif formal_name == 'East':
+            return cls.E
+        elif formal_name == 'South':
+            return cls.S
+        elif formal_name == 'West':
+            return cls.W
+        raise ValueError(f'Player\'s formal name is not correct: {formal_name}')

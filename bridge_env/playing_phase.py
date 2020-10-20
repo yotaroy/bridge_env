@@ -94,6 +94,7 @@ class PlayingPhase:
         self.used_cards.add(card)
 
         if len(self._trick_cards) == 4:
+            # TODO: Count the number of taken tricks by each team.
             self._record()
             self._set_next_leader()
             self.active_player = self.leader
@@ -181,6 +182,16 @@ class PlayingPhase:
             return hand
         return same_suit_cards
 
+    def current_available_cards(self, hand: Set[Card]) -> Set[Card]:
+        """Returns a set of cards which can be played in the current state.
+
+        :param hand: Hand of the player.
+        :return: Set of cards which can be played from the hand.
+        """
+        first_card = None if len(self._trick_cards) == 0 else self._trick_cards[
+            0]
+        return self.available_cards(hand, first_card)
+
 
 class PlayingPhaseWithHands(PlayingPhase):
     """Playing phase environment with hands information of 4 players.
@@ -207,16 +218,14 @@ class PlayingPhaseWithHands(PlayingPhase):
         self._hands[player].remove(card)
         super().play_card(card)
 
-    def available_cards_in_hand(self, player: Player) -> Set[Card]:
-        """Returns a set of cards which can be played by a player.
+    def current_available_cards_in_hand(self, player: Player) -> Set[Card]:
+        """Returns a set of cards which can be played by a player in the
+        current state.
 
         :param player: Player to play a card.
         :return: Set of cards which can be played by the player.
         """
-        if len(self._trick_cards) == 0:
-            return self._hands[player]
-        return super().available_cards(self._hands[player],
-                                       self._trick_cards[0])
+        return super().current_available_cards(self._hands[player])
 
 
 class ObservedPlayingPhase(PlayingPhase):
@@ -274,18 +283,20 @@ class ObservedPlayingPhase(PlayingPhase):
 
         super().play_card(card)
 
-    def available_cards_in_hand(self) -> Set[Card]:
-        """Returns a set of cards which can be played by the player.
+    def current_available_cards_in_hand(self) -> Set[Card]:
+        """Returns a set of cards which can be played by the player in the
+        current state.
 
         :return: None.
         """
-        return super().available_cards(self._hand, self._trick_cards[0])
+        return super().current_available_cards(self._hand)
 
-    def available_cards_in_dummy_hand(self) -> Set[Card]:
-        """Returns a set of cards which can be played by the dummy.
+    def current_available_cards_in_dummy_hand(self) -> Set[Card]:
+        """Returns a set of cards which can be played by the dummy in the
+        current state.
 
         :return: None.
         """
         if self._dummy_hand is None:
             raise Exception('Dummy hand is not set.')
-        return super().available_cards(self._dummy_hand, self._trick_cards[0])
+        return super().current_available_cards(self._dummy_hand)
