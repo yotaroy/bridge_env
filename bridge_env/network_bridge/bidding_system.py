@@ -15,3 +15,10 @@ class BiddingSystem(metaclass=ABCMeta):
 class AlwaysPass(BiddingSystem):
     def bid(self, hand: Tuple[int, ...], bidding_phase: BiddingPhase) -> Bid:
         return Bid.Pass
+
+
+class WeakBid(BiddingSystem):
+    def bid(self, hand: Tuple[int, ...], bidding_phase: BiddingPhase) -> Bid:
+        if bidding_phase.available_bid[0] == 1:
+            return Bid.C1
+        return Bid.Pass

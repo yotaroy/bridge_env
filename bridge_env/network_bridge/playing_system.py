@@ -1,3 +1,4 @@
+import random
 from abc import ABCMeta, abstractmethod
 from typing import Set
 
@@ -13,4 +14,4 @@ class PlayingSystem(metaclass=ABCMeta):
 
 class RandomPlay(PlayingSystem):
     def play(self, hand: Set[Card], playing_phase: PlayingPhase) -> Card:
-        return playing_phase.current_available_cards(hand).pop()
+        return random.choice(list(playing_phase.current_available_cards(hand)))

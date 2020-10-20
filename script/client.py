@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from bridge_env import Player
-from bridge_env.network_bridge.bidding_system import AlwaysPass
+from bridge_env.network_bridge.bidding_system import AlwaysPass, WeakBid
 from bridge_env.network_bridge.client import Client
 from bridge_env.network_bridge.playing_system import RandomPlay
 
@@ -17,11 +17,16 @@ if __name__ == '__main__':
                         default='localhost',
                         type=str,
                         help='')
+    parser.add_argument('-l', '--location',
+                        default='N',
+                        type=str,
+                        help='Player (N, E, S or W)')
 
     args = parser.parse_args()
-    with Client(player=Player.N,
-                team_name='teamNS',
-                bidding_system=AlwaysPass(),
+    player = Player[args.location]
+    with Client(player=player,
+                team_name=str(player.pair),
+                bidding_system=WeakBid(),
                 playing_system=RandomPlay(),
                 ip_address=args.ip_address,
                 port=args.port) as client:

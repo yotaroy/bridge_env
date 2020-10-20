@@ -1,8 +1,6 @@
 import socket
 from logging import getLogger
 
-from .. import Player
-
 logger = getLogger(__file__)
 
 

@@ -146,7 +146,7 @@ class Client(SocketInterface):
         if not match:
             raise Exception('Parse exception. '
                             f'Content "{content}" does not match the pattern.')
-        bid = match.group(1)
+        bid = match.group(1).lower()
         if bid == 'passes':
             return Bid.Pass
         elif bid == 'doubles':
@@ -164,6 +164,10 @@ class Client(SocketInterface):
         hand_str = self.parse_cards(super().receive_message(),
                                     self.player.formal_name)
         self.hand_set, self.hand_binary = self.parse_hand(hand_str)
+
+        logger.info(f'board num #{self.board_num}, dealer = {self.dealer}, '
+                    f'vul = {self.vul}, hand = {self.hand_set} '
+                    f'({self.hand_binary})')
 
     @staticmethod
     def create_bid_message(bid: Bid, player_name: str) -> str:
@@ -191,23 +195,24 @@ class Client(SocketInterface):
         """
         # TODO: Consider alerting
         env = BiddingPhase(dealer=self.dealer, vul=self.vul)
+        logger.info(f'player: {self.player}')
         while not env.has_done():
+            logger.info(f'active player: {env.active_player}')
             if env.active_player is self.player:
                 # take an action
                 bid = self.bidding_system.bid(self.hand_binary, env)
+                super().send_message(
+                    self.create_bid_message(bid, self.player.formal_name))
             else:
                 assert env.active_player is not None
                 super().send_message(f'{self.player.formal_name} ready '
-                                     f'for {env.active_player.formal_name}')
+                                     f'for {env.active_player.formal_name}\'s bid')
                 message = super().receive_message()
                 bid = self.parse_bid(message,
                                      env.active_player.formal_name)
             bidding_phase_state = env.take_bid(bid)
             if bidding_phase_state is BiddingPhaseState.illegal:
                 raise Exception('')
-            if env.active_player is self.player:
-                super().send_message(
-                    self.create_bid_message(bid, self.player.formal_name))
             if bidding_phase_state is BiddingPhaseState.finished:
                 break
 
@@ -228,7 +233,6 @@ class Client(SocketInterface):
             return dummy
         return Player.convert_formal_name(player_name)
 
-    # TODO: unit test
     @staticmethod
     def card_str(card: Card) -> str:
         """Convert card object to str of format [value] + [suit].
@@ -241,7 +245,6 @@ class Client(SocketInterface):
         """
         return Card.rank_int_to_str(card.rank) + card.suit.name
 
-    # TODO: unit test
     @staticmethod
     def parse_card(content: str, player: Player) -> Card:
         pattern = f'{player.formal_name} plays (.*)'
@@ -249,12 +252,13 @@ class Client(SocketInterface):
         if not match:
             raise Exception('Parse exception. '
                             f'Content "{content}" does not match the pattern.')
-        card_str = match.group(1)
+        card_str = match.group(1).upper()
         if card_str[0] in {'S', 'H', 'D', 'C'}:
             return Card(Card.rank_str_to_int(card_str[1]), Suit[card_str[0]])
         return Card(Card.rank_str_to_int(card_str[0]), Suit[card_str[1]])
 
     # TODO: unit test
+    # Use this function?
     @staticmethod
     def parse_timing(content: str):
         pattern = r'Timing - N/S : this board (*.), total (*.). ' \
@@ -277,9 +281,13 @@ class Client(SocketInterface):
                                    hand=self.hand_set)
         hand_open = False
         while not env.has_done():
-            leader = self.parse_leader_message(super().receive_message(), dummy)
-            for _ in range(4):
+            if (env.active_player is self.player and self.player is not dummy) \
+                    or (env.active_player is dummy and self.player is declarer):
+                leader = self.parse_leader_message(super().receive_message(),
+                                                   dummy)
+                assert leader is env.active_player
 
+            for _ in range(4):
                 # open dummy's hand
                 if env.active_player is dummy and not hand_open:
                     hand_open = True
@@ -291,19 +299,15 @@ class Client(SocketInterface):
                                              'Dummy'))
                         env.set_dummy_hand(dummy_hand)
 
-                message = super().receive_message()
-                if leader is self.player and self.player is not dummy:
-                    if message != f'{self.player.formal_name} to lead':
-                        raise Exception()
+                if env.active_player is self.player and self.player is not dummy:
                     card = self.playing_system.play(self.hand_set, env)
-                    env.play_card(card)
+                    env.play_card_by_player(card, self.player)
                     super().send_message(
                         f'{self.player.formal_name} plays {self.card_str(card)}')
                 elif env.active_player is dummy and self.player is declarer:
-                    if message != f'Dummy to lead':
-                        raise Exception()
-                    card = self.playing_system.play(self.hand_set, env)
-                    env.play_card(card)
+                    assert env.dummy_hand is not None
+                    card = self.playing_system.play(env.dummy_hand, env)
+                    env.play_card_by_player(card, dummy)
                     super().send_message(
                         f'{dummy.formal_name} plays {self.card_str(card)}')
                 else:
@@ -315,8 +319,7 @@ class Client(SocketInterface):
                         f'trick {env.trick_num}')
                     card = self.parse_card(super().receive_message(),
                                            env.active_player)
-                    env.play_card(card)
-                    continue
+                    env.play_card_by_player(card, env.active_player)
 
     def run(self) -> None:
         """Runs the client."""
@@ -334,6 +337,7 @@ class Client(SocketInterface):
             contract = self.bidding_phase()
             if contract.is_passed_out():
                 continue
+            logger.info(f'contract is {contract}')
 
             self.playing_phase(contract)
 
