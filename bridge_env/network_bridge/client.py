@@ -4,7 +4,7 @@ from typing import Optional, Set, Tuple
 
 from .bidding_system import BiddingSystem
 from .playing_system import PlayingSystem
-from .socket_interface import SocketInterface
+from .socket_interface import MessageInterface, SocketInterface
 from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Pair, \
     Player, Suit, Vul
 from ..playing_phase import ObservedPlayingPhase
@@ -12,7 +12,7 @@ from ..playing_phase import ObservedPlayingPhase
 logger = getLogger(__file__)
 
 
-class Client(SocketInterface):
+class Client(SocketInterface, MessageInterface):
     """Client of network computer bridge programs.
     Four clients play each hand.
 
@@ -28,7 +28,8 @@ class Client(SocketInterface):
                  playing_system: PlayingSystem,
                  ip_address: str,
                  port: int):
-        super().__init__(ip_address=ip_address, port=port)
+        SocketInterface.__init__(self, ip_address=ip_address, port=port)
+
         self.player = player
         self.team_name = team_name
         self.bidding_system = bidding_system
@@ -37,9 +38,14 @@ class Client(SocketInterface):
         # assigned in self._connection()
         self.opponent_team_name: Optional[str] = None
 
+    def __enter__(self):
+        SocketInterface.__enter__(self)
+        MessageInterface.__init__(self, connection_socket=super().get_socket())
+        return self
+
     def _connect(self) -> None:
         """Connects with the server."""
-        self._socket.connect((self.ip_address, self.port))
+        super().connect_socket()
         super().send_message(f'Connecting "{self.team_name}" as '
                              f'{self.player.formal_name} using '
                              f'protocol version {self.PROTOCOL_VERSION}')
@@ -328,7 +334,9 @@ class Client(SocketInterface):
         message = super().receive_message()
         board_num = 1
         while True:
-            if message != 'Start of Board':
+            if message.lower() != 'start of board':
+                # protocol: "Start of board"
+                # bridge_monitor: "Start of Board"
                 raise Exception()
 
             self._deal()
@@ -342,5 +350,6 @@ class Client(SocketInterface):
 
             message = super().receive_message()
             if message == 'End of session':
+                logger.info('End of session is detected ')
                 break
             board_num += 1
