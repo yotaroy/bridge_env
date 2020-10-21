@@ -9,6 +9,9 @@ from .suit import Suit
 class Card:
     """Card of playing cards.
 
+    Card is comparable. The order is C2 < ... <  CA < D2 < ... <  DA < H2 < ...
+    <  HA < S2 < ... <  SA, which is base on the index (int(card)) of the card.
+
     :param rank: Rank of the card. A value is from 2 to 14.
         10 means T, 11 means J, 12 means Q, 13 means K, 14 means A.
     :param suit: Suit of the card.
@@ -49,6 +52,26 @@ class Card:
         :rtype: int
         """
         return self.rank - 2 + (self.suit.value - 1) * 13
+
+    def __lt__(self, other: Card) -> bool:
+        if not isinstance(other, self.__class__):
+            raise NotImplementedError
+        return int(self) < int(other)
+
+    def __le__(self, other: Card) -> bool:
+        if not isinstance(other, self.__class__):
+            raise NotImplementedError
+        return int(self) <= int(other)
+
+    def __gt__(self, other: Card) -> bool:
+        if not isinstance(other, self.__class__):
+            raise NotImplementedError
+        return int(self) > int(other)
+
+    def __ge__(self, other: Card) -> bool:
+        if not isinstance(other, self.__class__):
+            raise NotImplementedError
+        return int(self) >= int(other)
 
     @classmethod
     def int_to_card(cls, x: int) -> Card:

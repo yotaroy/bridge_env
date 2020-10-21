@@ -1,5 +1,6 @@
-import pytest
+import operator
 
+import pytest
 from bridge_env import Card, Suit
 
 
@@ -50,6 +51,17 @@ class TestCard:
                               (14, "A")])
     def test_rank_int_to_str(self, num, expected):
         assert Card.rank_int_to_str(num) == expected
+
+    @pytest.mark.parametrize(('left', 'right', 'op'),
+                             [(Card(3, Suit.C), Card(5, Suit.C), operator.lt),
+                              (Card(4, Suit.H), Card(4, Suit.C), operator.gt),
+                              (Card(13, Suit.H), Card(2, Suit.S), operator.le),
+                              (Card(6, Suit.S), Card(6, Suit.S), operator.le),
+                              (Card(4, Suit.S), Card(3, Suit.H), operator.ge),
+                              (Card(6, Suit.S), Card(6, Suit.S), operator.ge),
+                              ])
+    def test_compare(self, left, right, op):
+        assert op(left, right)
 
     def test_equality(self):
         s4_1 = Card(4, Suit.S)
