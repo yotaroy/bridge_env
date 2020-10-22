@@ -29,20 +29,21 @@ class SocketInterface:
 
 class MessageInterface:
     def __init__(self, connection_socket: socket.socket):
-        self.connect_socket = connection_socket
+        self.connection_socket = connection_socket
 
     def send_message(self, message: str) -> None:
-        self.connect_socket.sendall(f'{message}\r\n'.encode('utf-8'))
+        self.connection_socket.sendall(f'{message}\r\n'.encode('utf-8'))
         logger.info(f'SEND MESSAGE: {message}')
 
     def receive_message(self) -> str:
         byte_message = b''
         while True:
-            c = self.connect_socket.recv(1)
+            c = self.connection_socket.recv(1)
             if c == b'\r':
-                s = self.connect_socket.recv(1)
+                s = self.connection_socket.recv(1)
                 if s != b'\n':
-                    raise Exception(f'Received an unexpected letter {s}.')
+                    raise Exception(
+                        'Received an unexpected letter {!r}.'.format(s))
                 break
             byte_message += c
         message = byte_message.decode('utf-8')

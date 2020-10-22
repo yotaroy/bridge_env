@@ -222,7 +222,7 @@ class Server(SocketInterface):
     def _sync_event(players_event: Dict[Player, Event],
                     condition: Condition):
         # condition have to be already acquired.
-        for _, event in players_event:
+        for _, event in players_event.items():
             event.wait()
         condition.notifyAll()
 
