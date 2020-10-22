@@ -5,15 +5,13 @@ import re
 import time
 from logging import getLogger
 from queue import Queue
-from threading import Condition, Thread, Event
-from typing import Dict, Optional, Set, Tuple, NamedTuple
-
-from bridge_env.playing_phase import PlayingPhaseWithHands
+from threading import Condition, Event, Thread
+from typing import Dict, NamedTuple, Optional, Set, Tuple
 
 from .socket_interface import MessageInterface, SocketInterface
-from .. import BiddingPhase, Card, Player, Suit, Vul
-from .. import BiddingPhaseState
-from .. import Contract
+from .. import BiddingPhase, BiddingPhaseState, Card, Contract, Player, Suit, \
+    Vul
+from ..playing_phase import PlayingPhaseWithHands
 
 logger = getLogger(__file__)
 
@@ -185,15 +183,43 @@ class ThreadHandler(Thread, MessageInterface):
         declarer = Player.convert_formal_name(self.receive_message_from_queue())
         dummy = declarer.partner
 
-        for _ in range(13):
-            leader = Player.convert_formal_name(
+        for trick_num in range(1, 14):
+            # gets leader
+            active_player = Player.convert_formal_name(
                 self.receive_message_from_queue())
-            if self.player is leader and self.player is not dummy:
-                super().send_message(f'{self.player.formal_name} to lead')
-            elif self.player is declarer and leader is dummy:
-                super().send_message(f'Dummy to lead')
-            else:
-                pass
+            for i in range(4):
+                if self.player is active_player and self.player is not dummy:
+                    if i == 0:
+                        super().send_message(
+                            f'{self.player.formal_name} to lead')
+                    # receives played card, and sends it to queue
+                    self.send_message_to_queue(super().receive_message())
+
+                elif self.player is declarer and active_player is dummy:
+                    if i == 0:
+                        super().send_message(f'Dummy to lead')
+                    # receives played card, and sends it to queue
+                    self.send_message_to_queue(super().receive_message())
+
+                else:
+                    player_name = active_player.formal_name if \
+                        self.player is not dummy else 'dummy'
+                    self._check_message(
+                        f'{self.player.formal_name} ready for '
+                        f'{player_name}\'s card to trick {trick_num}')
+                    # sends a played card message
+                    super().send_message(self.receive_message_from_queue())
+
+                active_player = active_player.next_player
+
+                # opens dummy's hand
+                if trick_num == 1 and i == 0:
+                    if self.player is dummy:
+                        continue
+                    self._check_message(
+                        f'{self.player.formal_name} ready for dummy')
+                    # sends dummy's hand message
+                    super().send_message(self.receive_message_from_queue())
 
         return True
 
@@ -248,6 +274,7 @@ class Server(SocketInterface):
         ERROR: str = 'error detected'
         PASSED_OUT: str = 'passed out'
         NULL: str = 'nothing happens'
+        END_SESSION: str = 'End of session'
 
     def __init__(self, ip_address: str, port: int):
         """
@@ -439,8 +466,35 @@ class Server(SocketInterface):
             self.sent_message_queues[player].put(
                 playing_env.declarer.formal_name)
 
-        while playing_env.has_done():
+        for trick_num in range(1, 14):
             time.sleep(1)
             leader = playing_env.leader
             for player in Player:
                 self.sent_message_queues[player].put(leader.formal_name)
+
+            for i in range(4):
+                played_player = playing_env.active_player if \
+                    playing_env.active_player is not playing_env.dummy else \
+                    playing_env.declarer
+
+                message = self.received_message_queues[played_player].get()
+                card = MessageInterface.parse_card(
+                    content=message,
+                    player=playing_env.active_player)
+
+                # TODO: Consider error handling of illegal card played
+                playing_env.play_card_by_player(card, playing_env.active_player)
+                for player in Player:
+                    if player is played_player:
+                        continue
+                    self.sent_message_queues[player].put(message)
+
+                # opens dummy's hand
+                if trick_num == 1 and i == 0:
+                    dummy_hand_message = 'Dummy\'s cards : ' + self.hand_to_str(
+                        cards[playing_env.dummy])
+
+                    for player in Player:
+                        if player is playing_env.dummy:
+                            continue
+                        self.sent_message_queues[player].put(dummy_hand_message)

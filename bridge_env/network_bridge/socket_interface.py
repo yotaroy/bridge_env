@@ -2,7 +2,7 @@ import re
 import socket
 from logging import getLogger
 
-from .. import Bid, Suit, Player, Card
+from .. import Bid, Card, Player, Suit
 
 logger = getLogger(__file__)
 
