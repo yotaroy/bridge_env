@@ -1,12 +1,17 @@
+from __future__ import annotations
+
 import random
 import re
 from logging import getLogger
 from queue import Queue
 from threading import Condition, Thread, Event
-from typing import Dict, Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple, NamedTuple
+
+from bridge_env import Contract
 
 from .socket_interface import MessageInterface, SocketInterface
 from .. import BiddingPhase, Card, Player, Suit, Vul
+from .. import BiddingPhaseState
 
 logger = getLogger(__file__)
 
@@ -28,9 +33,15 @@ class ThreadHandler(Thread, MessageInterface):
         self.address = address
         self.condition = condition
         self.team_names = team_names
-        self.sent_message_queue = sent_message_queues
-        self.received_message_queues = received_message_queues
+        self._sent_message_queues = sent_message_queues
+        self._received_message_queues = received_message_queues
         self.players_event = players_event
+
+    def send_message_to_queue(self, message: str):
+        self._sent_message_queues[self.player].put(message)
+
+    def receive_message_from_queue(self) -> str:
+        return self._received_message_queues[self.player].get()
 
     def _check_message(self, message: str) -> bool:
         received_message = super().receive_message()
@@ -123,7 +134,7 @@ class ThreadHandler(Thread, MessageInterface):
         self._sync_event()
 
         # send deal information.
-        super().send_message(self.received_message_queues[self.player].get())
+        super().send_message(self.receive_message_from_queue())
 
         if not self._check_message(f'{self.player.formal_name} ready for '
                                    f'cards'):
@@ -134,15 +145,41 @@ class ThreadHandler(Thread, MessageInterface):
         self._sync_event()
 
         # sends hand
-        super().send_message(self.received_message_queues[self.player].get())
+        super().send_message(self.receive_message_from_queue())
         return True
 
     def _bidding_phase(self) -> bool:
         # TODO: Consider alerting
 
-        if not self._check_message(f'{self.player.formal_name} ready'):
-            return False
+        while True:
+            message = self.receive_message_from_queue()
+            if message is Server.Message.NULL:
+                break
+            elif message is Server.Message.ILLEGAL_BID:
+                self._handle_error(
+                    message_to_send=Server.Message.ILLEGAL_BID,
+                    log_message=f'illegal bid detected.')
+                return False
+            elif message is Server.Message.ERROR:
+                self._handle_error(
+                    message_to_send=Server.Message.ERROR,
+                    log_message=f'server error.')
+                return False
 
+            active_player = Player.convert_formal_name(message)
+
+            if self.player is active_player:
+                # self.player takes a bid
+                self.send_message_to_queue(super().receive_message())
+            else:
+                # self.player doesn't take a bid
+                self._check_message(f'{self.player.formal_name} ready for '
+                                    f'{active_player.formal_name}\'s bid')
+                super().send_message(self.receive_message_from_queue())
+
+        return True
+
+    def _playing_phase(self) -> bool:
         return True
 
     @staticmethod
@@ -170,6 +207,17 @@ class ThreadHandler(Thread, MessageInterface):
             if not self._bidding_phase():
                 return
 
+            message = self.receive_message_from_queue()
+            if message is Server.Message.PASSED_OUT:
+                continue
+            elif message is not Server.Message.NULL:
+                # TODO: Consider error handling
+                # close connection
+                raise Exception('Server error')
+
+            if not self._playing_phase():
+                return
+
 
 class Server(SocketInterface):
     """Server of network computer bridge programs.
@@ -180,6 +228,12 @@ class Server(SocketInterface):
     """
     PROTOCOL_VERSION = 18
 
+    class Message(NamedTuple):
+        ILLEGAL_BID: str = 'illegal bid'
+        ERROR: str = 'error detected'
+        PASSED_OUT: str = 'passed out'
+        NULL: str = 'nothing happens'
+
     def __init__(self, ip_address: str, port: int):
         """
 
@@ -189,7 +243,18 @@ class Server(SocketInterface):
         """
         super().__init__(ip_address=ip_address, port=port)
 
-        # self.clients: Dict[Player, ] = dict()
+        self.sent_message_queues: Dict[Player, Queue] = {Player.N: Queue(),
+                                                         Player.E: Queue(),
+                                                         Player.S: Queue(),
+                                                         Player.W: Queue()}
+        self.received_message_queues: Dict[Player, Queue] = {Player.N: Queue(),
+                                                             Player.E: Queue(),
+                                                             Player.S: Queue(),
+                                                             Player.W: Queue()}
+        self.players_event: Dict[Player, Event] = {Player.N: Event(),
+                                                   Player.E: Event(),
+                                                   Player.S: Event(),
+                                                   Player.W: Event()}
 
     @staticmethod
     def _deal_cards(seed: Optional[int] = None) -> Dict[Player, Set[Card]]:
@@ -243,23 +308,10 @@ class Server(SocketInterface):
         self._socket.bind((self.ip_address, self.port))
         self._socket.listen(4)
 
-        sent_message_queues: Dict[Player, Queue] = {Player.N: Queue(),
-                                                    Player.E: Queue(),
-                                                    Player.S: Queue(),
-                                                    Player.W: Queue()}
-        received_message_queues: Dict[Player, Queue] = {Player.N: Queue(),
-                                                        Player.E: Queue(),
-                                                        Player.S: Queue(),
-                                                        Player.W: Queue()}
         team_names: Dict[Player, Optional[str]] = {Player.N: None,
                                                    Player.E: None,
                                                    Player.S: None,
                                                    Player.W: None}
-
-        players_event: Dict[Player, Event] = {Player.N: Event(),
-                                              Player.E: Event(),
-                                              Player.S: Event(),
-                                              Player.W: Event()}
 
         threads = []
 
@@ -276,46 +328,94 @@ class Server(SocketInterface):
                     connection=connection,
                     address=address,
                     condition=condition,
-                    sent_message_queues=received_message_queues,
-                    received_message_queues=sent_message_queues,
-                    players_event=players_event,
+                    sent_message_queues=self.received_message_queues,
+                    received_message_queues=self.sent_message_queues,
+                    players_event=self.players_event,
                     team_names=team_names)
                 threads.append(thread)
                 thread.start()
 
             # waits all players are seated
-            self._sync_event(players_event, condition)
+            self._sync_event(self.players_event, condition)
 
-            board_number = 1
-            while True:
+            for board_number in range(1, 101):
                 cards = self._deal_cards()
                 vul = Vul.NONE  # TODO: How to set? Random?
                 dealer = Player.N  # TODO: How to set?
 
-                # dealing
-                for player in Player:
-                    sent_message_queues[player].put(
-                        f'Board number {board_number}. '
-                        f'Dealer {dealer.formal_name}. '
-                        f'{self.convert_vul(vul)} '
-                        f'vulnerable.')
-                    sent_message_queues[player].put(
-                        f'{player.formal_name}\'s cards : '
-                        f'{self.hand_to_str(cards[player])}')
+                self.deal(board_number, dealer, vul, cards, condition)
 
-                # wait to be ready for deal
-                self._sync_event(players_event, condition)
+                # TODO: Consider to deal with exception
+                contract = self.bidding_phase(dealer, vul)
+                if contract.is_passed_out():
+                    continue
 
-                # wait to be ready for cards
-                self._sync_event(players_event, condition)
-
-                # bidding
-                # TODO: Consider alerting
-                bidding_env = BiddingPhase(dealer=dealer, vul=vul)
-                while not bidding_env.has_done():
-                    pass
-
-                board_number += 1
+                self.playing_phase(contract)
 
             for thread in threads:
                 thread.join()
+
+    def deal(self,
+             board_number: int,
+             dealer: Player,
+             vul: Vul,
+             cards: Dict[Player, Set[Card]],
+             condition: Condition) -> None:
+        for player in Player:
+            self.sent_message_queues[player].put(
+                f'Board number {board_number}. '
+                f'Dealer {dealer.formal_name}. '
+                f'{self.convert_vul(vul)} '
+                f'vulnerable.')
+            self.sent_message_queues[player].put(
+                f'{player.formal_name}\'s cards : '
+                f'{self.hand_to_str(cards[player])}')
+
+        # wait to be ready for deal
+        self._sync_event(self.players_event, condition)
+
+        # wait to be ready for cards
+        self._sync_event(self.players_event, condition)
+
+    def bidding_phase(self, dealer: Player, vul: Vul) -> Contract:
+        # TODO: Consider alerting
+        bidding_env = BiddingPhase(dealer=dealer, vul=vul)
+
+        while not bidding_env.has_done():
+            active_player = bidding_env.active_player
+            assert active_player is not None
+            for player in Player:
+                self.sent_message_queues[player].put(active_player.formal_name)
+            bid_message = self.received_message_queues[active_player].get()
+            bid = MessageInterface.parse_bid(bid_message,
+                                             active_player.formal_name)
+            bidding_phase_state = bidding_env.take_bid(bid)
+
+            # illegal bid detected
+            if bidding_phase_state is BiddingPhaseState.illegal:
+                for player in Player:
+                    if player is active_player:
+                        self.sent_message_queues[player].put(
+                            self.Message.ILLEGAL_BID)
+                    else:
+                        # TODO: Consider an error message
+                        self.sent_message_queues[player].put(self.Message.ERROR)
+                raise Exception('Illegal bid is detected.')
+
+            for player in Player:
+                if player is not active_player:
+                    self.sent_message_queues[player].put(bid_message)
+
+        contract = bidding_env.contract()
+        assert contract is not None
+
+        for player in Player:
+            self.sent_message_queues[player].put(self.Message.NULL)
+            self.sent_message_queues[player].put(
+                self.Message.PASSED_OUT if contract.is_passed_out() else
+                self.Message.NULL)
+
+        return contract
+
+    def playing_phase(self, contract: Contract):
+        pass

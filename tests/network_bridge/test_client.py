@@ -46,19 +46,6 @@ class TestClient:
     def test_parse_hand(self, content, expected1, expected2):
         assert Client.parse_hand(content) == (expected1, expected2)
 
-    @pytest.mark.parametrize(('content', 'player_name', 'expected'), [
-        ('North bids 2C', 'North', Bid.C2),
-        ('East bids 5NT', 'East', Bid.NT5),
-        ('South passes', 'South', Bid.Pass),
-        ('East doubles', 'East', Bid.X),
-        ('South redoubles', 'South', Bid.XX),
-        ('North Passes', 'North', Bid.Pass),
-        ('East Doubles', 'East', Bid.X),
-        ('South Redoubles', 'South', Bid.XX)
-    ])
-    def test_parse_bid(self, content, player_name, expected):
-        assert Client.parse_bid(content, player_name) == expected
-
     @pytest.mark.parametrize(('bid', 'player_name', 'expected'), [
         (Bid.Pass, 'North', 'North passes'),
         (Bid.X, 'East', 'East doubles'),

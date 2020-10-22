@@ -1,5 +1,8 @@
+import re
 import socket
 from logging import getLogger
+
+from bridge_env import Bid, Suit
 
 logger = getLogger(__file__)
 
@@ -49,3 +52,25 @@ class MessageInterface:
         message = byte_message.decode('utf-8')
         logger.info(f'RECEIVE MESSAGE: {message}')
         return message
+
+    @staticmethod
+    def parse_bid(content: str, player_name: str) -> Bid:
+        bid_pattern = fr'{player_name} bids (\d)(C|D|H|S|NT)'
+        match = re.match(bid_pattern, content)
+        if match:
+            return Bid.level_suit_to_bid(level=int(match.group(1)),
+                                         suit=Suit[match.group(2)])
+        pattern = fr'{player_name} (.*)'
+        match = re.match(pattern, content)
+        if not match:
+            raise Exception('Parse exception. '
+                            f'Content "{content}" does not match the pattern.')
+        bid = match.group(1).lower()
+        if bid == 'passes':
+            return Bid.Pass
+        elif bid == 'doubles':
+            return Bid.X
+        elif bid == 'redoubles':
+            return Bid.XX
+        raise Exception(f'Illegal bid received. {bid}')
+

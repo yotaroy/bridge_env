@@ -139,27 +139,6 @@ class Client(SocketInterface, MessageInterface):
                 hand_list[int(card)] = 1
         return hand_set, tuple(hand_list)
 
-    @staticmethod
-    def parse_bid(content: str, player_name: str) -> Bid:
-        bid_pattern = fr'{player_name} bids (\d)(C|D|H|S|NT)'
-        match = re.match(bid_pattern, content)
-        if match:
-            return Bid.level_suit_to_bid(level=int(match.group(1)),
-                                         suit=Suit[match.group(2)])
-        pattern = fr'{player_name} (.*)'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
-        bid = match.group(1).lower()
-        if bid == 'passes':
-            return Bid.Pass
-        elif bid == 'doubles':
-            return Bid.X
-        elif bid == 'redoubles':
-            return Bid.XX
-        raise Exception(f'Illegal bid received. {bid}')
-
     def _deal(self):
         super().send_message(f'{self.player.formal_name} ready for deal')
         self.board_num, self.dealer, self.vul = self.parse_board(
@@ -213,8 +192,8 @@ class Client(SocketInterface, MessageInterface):
                 super().send_message(f'{self.player.formal_name} ready '
                                      f'for {env.active_player.formal_name}\'s bid')
                 message = super().receive_message()
-                bid = self.parse_bid(message,
-                                     env.active_player.formal_name)
+                bid = super().parse_bid(message,
+                                        env.active_player.formal_name)
             bidding_phase_state = env.take_bid(bid)
             if bidding_phase_state is BiddingPhaseState.illegal:
                 raise Exception('')
