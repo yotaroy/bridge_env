@@ -2,12 +2,11 @@ import random
 import re
 from logging import getLogger
 from queue import Queue
-from threading import Condition, Thread
+from threading import Condition, Thread, Event
 from typing import Dict, Optional, Set, Tuple
 
-from bridge_env import BiddingPhase, Card, Player, Suit
-
 from .socket_interface import MessageInterface, SocketInterface
+from .. import BiddingPhase, Card, Player, Suit, Vul
 
 logger = getLogger(__file__)
 
@@ -21,6 +20,7 @@ class ThreadHandler(Thread, MessageInterface):
                  condition: Condition,
                  sent_message_queues: Dict[Player, Queue],
                  received_message_queues: Dict[Player, Queue],
+                 players_event: Dict[Player, Event],
                  team_names: Dict[Player, Optional[str]]):
         Thread.__init__(self, daemon=True)
         MessageInterface.__init__(self, connection_socket=connection)
@@ -30,48 +30,77 @@ class ThreadHandler(Thread, MessageInterface):
         self.team_names = team_names
         self.sent_message_queue = sent_message_queues
         self.received_message_queues = received_message_queues
+        self.players_event = players_event
 
     def _check_message(self, message: str) -> bool:
-        if super().receive_message() != message:
-            super().send_message('ERROR: Unexpected message received.')
-            self.connection.close()
+        received_message = super().receive_message()
+        if received_message != message:
+            self._handle_error(
+                message_to_send='ERROR: Unexpected message received.',
+                log_message=f'Unexpected message received. '
+                            f'expected : "{message}", '
+                            f'actual : "{received_message}"')
             return False
         return True
+
+    def _handle_error(self, message_to_send, log_message):
+        super().send_message(message_to_send)
+        logger.error(log_message)
+        self.connection.close()
+        logger.info('Connection is closed.')
+
+    def _sync_event(self):
+        # sets my Event True, and notify the main thread that getting ready
+        self.players_event[self.player].set()
+        # waits until the main thread confirms all players are ready
+        self.condition.wait()
+        # sets (initialize) my Event False for next _sync_event
+        self.players_event[self.player].clear()
 
     def _connect(self) -> bool:
         team_name, self.player, protocol_version = \
             self.parse_connection_info(super().receive_message())
 
+        # checks protocol version
         if protocol_version != self.PROTOCOL_VERSION:
-            super().send_message(f'ERROR: Protocol version is not '
-                                 f'{self.PROTOCOL_VERSION} but '
-                                 f'{protocol_version}.')
-            self.connection.close()
+            self._handle_error(
+                message_to_send=f'ERROR: Protocol version is not '
+                                f'{self.PROTOCOL_VERSION} but '
+                                f'{protocol_version}.',
+                log_message=f'Protocol version is not correct.'
+                            f'expected : {self.PROTOCOL_VERSION}, '
+                            f'actual: {protocol_version}')
             return False
 
+        # checks duplicate players
         if self.team_names[self.player] is not None:
-            super().send_message(f'ERROR: Player {self.player.formal_name} is '
-                                 f'already seated.')
-            self.connection.close()
+            self._handle_error(
+                message_to_send=f'ERROR: Player {self.player.formal_name} is '
+                                f'already seated.',
+                log_message=f'Player {self.player.formal_name} is '
+                            f'already seated.')
             return False
 
+        # checks a team name named by the partner
         partner_team_name = self.team_names[self.player.partner]
         if partner_team_name is not None and partner_team_name != team_name:
-            super().send_message(f'ERROR: Team name "{team_name}" is not '
-                                 f'same as partner\'s team name '
-                                 f'"{partner_team_name}".')
-            self.connection.close()
+            self._handle_error(
+                message_to_send=f'ERROR: Team name "{team_name}" is not '
+                                f'same as partner\'s team name '
+                                f'"{partner_team_name}".',
+                log_message=f'Team name "{team_name}" is not same as '
+                            f'partner\'s team name "{partner_team_name}".')
             return False
 
         self.team_names[self.player] = team_name
-        super().send_message(
-            f'{self.player.formal_name} {team_name} seated')
+        super().send_message(f'{self.player.formal_name} {team_name} seated')
 
         if not self._check_message(
                 f'{self.player.formal_name} ready for teams'):
             return False
 
-        self.condition.wait()
+        # waits until other players are seat
+        self._sync_event()
 
         # before E/W, do it need period?
         super().send_message(f'Teams : N/S : "{self.team_names[Player.N]}" '
@@ -80,12 +109,18 @@ class ThreadHandler(Thread, MessageInterface):
         if not self._check_message(f'{self.player.formal_name} ready to start'):
             return False
 
+        # names the thread name
+        self.name = f'Thread_{self.player.formal_name}_({team_name})'
+
         return True
 
     def _deal(self) -> bool:
         if not self._check_message(f'{self.player.formal_name} ready for deal'):
             return False
-        # TODO: wait
+
+        # notifies the main thread that the player is ready for deal, and
+        # waits until other players are ready for deal
+        self._sync_event()
 
         # send deal information.
         super().send_message(self.received_message_queues[self.player].get())
@@ -93,18 +128,23 @@ class ThreadHandler(Thread, MessageInterface):
         if not self._check_message(f'{self.player.formal_name} ready for '
                                    f'cards'):
             return False
-        # TODO: wait
 
-        # send hand
+        # notifies the main thread that the player is ready for cards, and
+        # waits until other players are ready for cards
+        self._sync_event()
+
+        # sends hand
         super().send_message(self.received_message_queues[self.player].get())
         return True
 
     def _bidding_phase(self) -> bool:
         # TODO: Consider alerting
 
-        if not self._check_message(f'{self.player.formal_name} ready')
+        if not self._check_message(f'{self.player.formal_name} ready'):
+            return False
 
-    # TODO: unit test
+        return True
+
     @staticmethod
     def parse_connection_info(content: str) -> Tuple[str, Player, int]:
         pattern = r'Connecting "(.*)" as (.*) using protocol version (\d+)'
@@ -179,6 +219,14 @@ class Server(SocketInterface):
                '. C ' + (' '.join(club) if len(club) != 0 else '-') + '.'
 
     @staticmethod
+    def _sync_event(players_event: Dict[Player, Event],
+                    condition: Condition):
+        # condition have to be already acquired.
+        for _, event in players_event:
+            event.wait()
+        condition.notifyAll()
+
+    @staticmethod
     def convert_vul(vul: Vul) -> str:
         if vul is Vul.NONE:
             return 'Neither'
@@ -208,51 +256,66 @@ class Server(SocketInterface):
                                                    Player.S: None,
                                                    Player.W: None}
 
+        players_event: Dict[Player, Event] = {Player.N: Event(),
+                                              Player.E: Event(),
+                                              Player.S: Event(),
+                                              Player.W: Event()}
+
         threads = []
 
         all_connected = lambda: all(
             [name is not None for _, name in team_names.items()])
 
         condition = Condition()
+        with condition:
+            while all_connected():
+                connection, address = self._socket.accept()
 
-        while all_connected():
-            connection, address = self._socket.accept()
+                assert self.PROTOCOL_VERSION == ThreadHandler.PROTOCOL_VERSION
+                thread = ThreadHandler(
+                    connection=connection,
+                    address=address,
+                    condition=condition,
+                    sent_message_queues=received_message_queues,
+                    received_message_queues=sent_message_queues,
+                    players_event=players_event,
+                    team_names=team_names)
+                threads.append(thread)
+                thread.start()
 
-            assert self.PROTOCOL_VERSION == ThreadHandler.PROTOCOL_VERSION
-            thread = ThreadHandler(connection=connection,
-                                   address=address,
-                                   condition=condition,
-                                   sent_message_queues=received_message_queues,
-                                   received_message_queues=sent_message_queues,
-                                   team_names=team_names)
-            threads.append(thread)
-            thread.start()
+            # waits all players are seated
+            self._sync_event(players_event, condition)
 
-        condition.notifyAll()
+            board_number = 1
+            while True:
+                cards = self._deal_cards()
+                vul = Vul.NONE  # TODO: How to set? Random?
+                dealer = Player.N  # TODO: How to set?
 
-        board_number = 1
-        while True:
-            cards = self._deal_cards()
-            vul = Vul.NONE  # TODO: How to set? Random?
-            dealer = Player.N # TODO: How to set?
+                # dealing
+                for player in Player:
+                    sent_message_queues[player].put(
+                        f'Board number {board_number}. '
+                        f'Dealer {dealer.formal_name}. '
+                        f'{self.convert_vul(vul)} '
+                        f'vulnerable.')
+                    sent_message_queues[player].put(
+                        f'{player.formal_name}\'s cards : '
+                        f'{self.hand_to_str(cards[player])}')
 
-            # dealing
-            for player in Player:
-                sent_message_queues[player].put(f'Board number {board_number}. '
-                                                f'Dealer {dealer.formal_name}. '
-                                                f'{self.convert_vul(vul)} '
-                                                f'vulnerable.')
-                sent_message_queues[player].put(
-                    f'{player.formal_name}\'s cards : '
-                    f'{self.hand_to_str(cards[player])}')
+                # wait to be ready for deal
+                self._sync_event(players_event, condition)
 
-            # bidding
-            # TODO: Consider alerting
-            bidding_env = BiddingPhase(dealer=dealer, vul=vul)
-            while not bidding_env.has_done():
+                # wait to be ready for cards
+                self._sync_event(players_event, condition)
 
+                # bidding
+                # TODO: Consider alerting
+                bidding_env = BiddingPhase(dealer=dealer, vul=vul)
+                while not bidding_env.has_done():
+                    pass
 
-            board_number += 1
+                board_number += 1
 
-        for thread in threads:
-            thread.join()
+            for thread in threads:
+                thread.join()
