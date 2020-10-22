@@ -21,6 +21,10 @@ if __name__ == '__main__':
                         default='N',
                         type=str,
                         help='Player (N, E, S or W)')
+    parser.add_argument('-t', '--team_name',
+                        default='teamNS',
+                        type=str,
+                        help='Team name')
 
     args = parser.parse_args()
     player = Player[args.location]

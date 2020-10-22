@@ -22,7 +22,8 @@ class ThreadHandler(Thread, MessageInterface):
     def __init__(self,
                  connection,
                  address,
-                 event: Event,
+                 event_sync: Event,
+                 event_thread: Event,
                  sent_message_queues: Dict[Player, Queue],
                  received_message_queues: Dict[Player, Queue],
                  players_event: Dict[Player, Event],
@@ -31,7 +32,8 @@ class ThreadHandler(Thread, MessageInterface):
         MessageInterface.__init__(self, connection_socket=connection)
         self.connection = connection
         self.address = address
-        self.event = event
+        self.event_sync = event_sync
+        self.event_thread = event_thread
         self.team_names = team_names
         self._sent_message_queues = sent_message_queues
         self._received_message_queues = received_message_queues
@@ -65,7 +67,7 @@ class ThreadHandler(Thread, MessageInterface):
         self.players_event[self.player].set()
         logger.debug('set')
         # waits until the main thread confirms all players are ready
-        self.event.wait()
+        self.event_sync.wait()
         logger.debug('wait')
         # sets (initialize) my Event False for next _sync_event
         self.players_event[self.player].clear()
@@ -84,7 +86,7 @@ class ThreadHandler(Thread, MessageInterface):
                 log_message=f'Protocol version is not correct.'
                             f'expected : {self.PROTOCOL_VERSION}, '
                             f'actual: {protocol_version}')
-            self.event.set()
+            self.event_thread.set()
             return False
 
         # checks duplicate players
@@ -94,7 +96,7 @@ class ThreadHandler(Thread, MessageInterface):
                                 f'already seated.',
                 log_message=f'Player {self.player.formal_name} is '
                             f'already seated.')
-            self.event.set()
+            self.event_thread.set()
             return False
 
         # checks a team name named by the partner
@@ -106,7 +108,7 @@ class ThreadHandler(Thread, MessageInterface):
                                 f'"{partner_team_name}".',
                 log_message=f'Team name "{team_name}" is not same as '
                             f'partner\'s team name "{partner_team_name}".')
-            self.event.set()
+            self.event_thread.set()
             return False
 
         self.team_names[self.player] = team_name
@@ -114,11 +116,11 @@ class ThreadHandler(Thread, MessageInterface):
 
         if not self._check_message(
                 f'{self.player.formal_name} ready for teams'):
-            self.event.set()
+            self.event_thread.set()
             return False
 
         # waits until team name is registered
-        self.event.set()
+        self.event_thread.set()
 
         # waits until other players are seat
         self._sync_event()
@@ -251,6 +253,7 @@ class ThreadHandler(Thread, MessageInterface):
             return
 
         while True:
+            # "Start of Board" is better?
             super().send_message('Start of board')
 
             logger.info('Dealing')
@@ -370,7 +373,7 @@ class Server(SocketInterface):
              dealer: Player,
              vul: Vul,
              cards: Dict[Player, Set[Card]],
-             event: Event) -> None:
+             event_sync: Event) -> None:
         for player in Player:
             self.sent_message_queues[player].put(
                 f'Board number {board_number}. '
@@ -382,11 +385,11 @@ class Server(SocketInterface):
                 f'{self.hand_to_str(cards[player])}')
 
         # wait to be ready for deal
-        self._sync_event(self.players_event, event)
+        self._sync_event(self.players_event, event_sync)
 
-        event.clear()
+        event_sync.clear()
         # wait to be ready for cards
-        self._sync_event(self.players_event, event)
+        self._sync_event(self.players_event, event_sync)
 
     def bidding_phase(self, dealer: Player, vul: Vul) -> Contract:
         # TODO: Consider alerting
@@ -485,7 +488,8 @@ class Server(SocketInterface):
             [name is not None for _, name in team_names.items()])
 
         # Consider to use queue
-        event = Event()
+        event_sync = Event()
+        event_thread = Event()
         while not all_connected():
             connection, address = self._socket.accept()
 
@@ -494,7 +498,8 @@ class Server(SocketInterface):
             thread = ThreadHandler(
                 connection=connection,
                 address=address,
-                event=event,
+                event_sync=event_sync,
+                event_thread=event_thread,
                 sent_message_queues=self.received_message_queues,
                 received_message_queues=self.sent_message_queues,
                 players_event=self.players_event,
@@ -502,26 +507,26 @@ class Server(SocketInterface):
             thread.start()
             logger.debug('thread is created')
 
-            event.wait()
+            event_thread.wait()
             time.sleep(1)
             if thread.is_alive():
                 threads.append(thread)
             else:
                 logger.debug('thread is closed')
-            event.clear()
+            event_thread.clear()
 
         logger.debug(f'Four players have been seated. {team_names}')
 
         # waits all players are seated
-        self._sync_event(self.players_event, event)
+        self._sync_event(self.players_event, event_sync)
 
         for board_number in range(1, 101):
             cards = self._deal_cards()
             vul = Vul.NONE  # TODO: How to set? Random?
             dealer = Player.N  # TODO: How to set?
 
-            event.clear()
-            self.deal(board_number, dealer, vul, cards, event)
+            event_sync.clear()
+            self.deal(board_number, dealer, vul, cards, event_sync)
 
             # TODO: Consider to deal with exception
             contract = self.bidding_phase(dealer, vul)
