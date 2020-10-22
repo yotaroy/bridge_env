@@ -56,7 +56,7 @@ class Client(SocketInterface, MessageInterface):
                 reply != f'{self.player.formal_name} ("{self.team_name}") seated':
             raise Exception(f'Unexpected message received. {reply}')
 
-        super().send_message(f'{self.team_name} ready for teams')
+        super().send_message(f'{self.player.formal_name} ready for teams')
 
         team_ns, team_ew = self.parse_team_names(super().receive_message())
         if self.player.pair is Pair.NS:
