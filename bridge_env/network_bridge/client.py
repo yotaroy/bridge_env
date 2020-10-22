@@ -2,12 +2,13 @@ import re
 from logging import getLogger
 from typing import Optional, Set, Tuple
 
+from bridge_env.playing_phase import ObservedPlayingPhase
+
 from .bidding_system import BiddingSystem
 from .playing_system import PlayingSystem
 from .socket_interface import MessageInterface, SocketInterface
 from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Pair, \
     Player, Suit, Vul
-from ..playing_phase import ObservedPlayingPhase
 
 logger = getLogger(__file__)
 
@@ -229,18 +230,6 @@ class Client(SocketInterface, MessageInterface):
         """
         return Card.rank_int_to_str(card.rank) + card.suit.name
 
-    @staticmethod
-    def parse_card(content: str, player: Player) -> Card:
-        pattern = f'{player.formal_name} plays (.*)'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
-        card_str = match.group(1).upper()
-        if card_str[0] in {'S', 'H', 'D', 'C'}:
-            return Card(Card.rank_str_to_int(card_str[1]), Suit[card_str[0]])
-        return Card(Card.rank_str_to_int(card_str[0]), Suit[card_str[1]])
-
     # TODO: unit test
     # Use this function?
     @staticmethod
@@ -301,8 +290,8 @@ class Client(SocketInterface, MessageInterface):
                         f'{self.player.formal_name} ready for '
                         f'{active_player_name}\'s card to '
                         f'trick {env.trick_num}')
-                    card = self.parse_card(super().receive_message(),
-                                           env.active_player)
+                    card = super().parse_card(super().receive_message(),
+                                              env.active_player)
                     env.play_card_by_player(card, env.active_player)
 
     def run(self) -> None:

@@ -9,6 +9,7 @@ from .suit import Suit
 from .table import Table, Team
 from .vul import Vul
 
+# TODO: Add playing phase
 __all__ = ['Bid',
            'BiddingPhase',
            'BiddingPhaseState',

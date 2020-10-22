@@ -2,7 +2,7 @@ import re
 import socket
 from logging import getLogger
 
-from bridge_env import Bid, Suit
+from .. import Bid, Suit, Player, Card
 
 logger = getLogger(__file__)
 
@@ -74,3 +74,14 @@ class MessageInterface:
             return Bid.XX
         raise Exception(f'Illegal bid received. {bid}')
 
+    @staticmethod
+    def parse_card(content: str, player: Player) -> Card:
+        pattern = f'{player.formal_name} plays (.*)'
+        match = re.match(pattern, content)
+        if not match:
+            raise Exception('Parse exception. '
+                            f'Content "{content}" does not match the pattern.')
+        card_str = match.group(1).upper()
+        if card_str[0] in {'S', 'H', 'D', 'C'}:
+            return Card(Card.rank_str_to_int(card_str[1]), Suit[card_str[0]])
+        return Card(Card.rank_str_to_int(card_str[0]), Suit[card_str[1]])

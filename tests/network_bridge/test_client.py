@@ -71,12 +71,3 @@ class TestClient:
     def test_card_str(self, card, expected):
         assert Client.card_str(card) == expected
 
-    @pytest.mark.parametrize(('content', 'player', 'expected'), [
-        ('North plays 2H', Player.N, Card(2, Suit.H)),
-        ('East plays AC', Player.E, Card(14, Suit.C)),
-        ('South plays HT', Player.S, Card(10, Suit.H)),
-        ('West plays SQ', Player.W, Card(12, Suit.S)),
-        ('North plays Dk', Player.N, Card(13, Suit.D))
-    ])
-    def test_parse_card(self, content, player, expected):
-        assert Client.parse_card(content, player) == expected

@@ -2,16 +2,18 @@ from __future__ import annotations
 
 import random
 import re
+import time
 from logging import getLogger
 from queue import Queue
 from threading import Condition, Thread, Event
 from typing import Dict, Optional, Set, Tuple, NamedTuple
 
-from bridge_env import Contract
+from bridge_env.playing_phase import PlayingPhaseWithHands
 
 from .socket_interface import MessageInterface, SocketInterface
 from .. import BiddingPhase, Card, Player, Suit, Vul
 from .. import BiddingPhaseState
+from .. import Contract
 
 logger = getLogger(__file__)
 
@@ -180,6 +182,19 @@ class ThreadHandler(Thread, MessageInterface):
         return True
 
     def _playing_phase(self) -> bool:
+        declarer = Player.convert_formal_name(self.receive_message_from_queue())
+        dummy = declarer.partner
+
+        for _ in range(13):
+            leader = Player.convert_formal_name(
+                self.receive_message_from_queue())
+            if self.player is leader and self.player is not dummy:
+                super().send_message(f'{self.player.formal_name} to lead')
+            elif self.player is declarer and leader is dummy:
+                super().send_message(f'Dummy to lead')
+            else:
+                pass
+
         return True
 
     @staticmethod
@@ -350,7 +365,7 @@ class Server(SocketInterface):
                 if contract.is_passed_out():
                     continue
 
-                self.playing_phase(contract)
+                self.playing_phase(contract, cards)
 
             for thread in threads:
                 thread.join()
@@ -417,5 +432,15 @@ class Server(SocketInterface):
 
         return contract
 
-    def playing_phase(self, contract: Contract):
-        pass
+    def playing_phase(self, contract: Contract, cards: Dict[Player, Set[Card]]):
+        playing_env = PlayingPhaseWithHands(contract=contract, hands=cards)
+
+        for player in Player:
+            self.sent_message_queues[player].put(
+                playing_env.declarer.formal_name)
+
+        while playing_env.has_done():
+            time.sleep(1)
+            leader = playing_env.leader
+            for player in Player:
+                self.sent_message_queues[player].put(leader.formal_name)
