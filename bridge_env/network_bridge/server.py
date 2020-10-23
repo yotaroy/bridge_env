@@ -40,10 +40,13 @@ class ThreadHandler(Thread, MessageInterface):
         self.players_event = players_event
 
     def send_message_to_queue(self, message: str):
+        logger.debug(f'Send message "{message}" to queue.')
         self._sent_message_queues[self.player].put(message)
 
     def receive_message_from_queue(self) -> str:
-        return self._received_message_queues[self.player].get()
+        message = self._received_message_queues[self.player].get()
+        logger.debug(f'Receive message "{message}" to queue.')
+        return message
 
     def _check_message(self, message: str) -> bool:
         received_message = super().receive_message()
@@ -133,7 +136,9 @@ class ThreadHandler(Thread, MessageInterface):
             return False
 
         # names the thread name
-        self.name = f'Thread-{self.player.formal_name}-({team_name})'
+        new_name = f'Thread-{self.player.formal_name}-({team_name})'
+        logger.debug(f'Rename the thread name from {self.name} to {new_name}')
+        self.name = new_name
 
         return True
 
@@ -215,7 +220,7 @@ class ThreadHandler(Thread, MessageInterface):
 
                 else:
                     player_name = active_player.formal_name if \
-                        self.player is not dummy else 'dummy'
+                        active_player is not dummy else 'dummy'
                     self._check_message(
                         f'{self.player.formal_name} ready for '
                         f'{player_name}\'s card to trick {trick_num}')
@@ -532,6 +537,7 @@ class Server(SocketInterface):
             contract = self.bidding_phase(dealer, vul)
             if contract.is_passed_out():
                 continue
+            logger.info(f'Contract: {contract.str_info()}')
 
             self.playing_phase(contract, cards)
 
