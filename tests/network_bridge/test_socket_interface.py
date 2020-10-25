@@ -1,5 +1,5 @@
 import pytest
-from bridge_env import Bid, Player, Card, Suit
+from bridge_env import Bid, Card, Player, Suit
 from bridge_env.network_bridge.socket_interface import MessageInterface
 
 

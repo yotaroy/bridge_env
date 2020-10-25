@@ -70,4 +70,3 @@ class TestClient:
                               (Card(13, Suit.S), 'KS')])
     def test_card_str(self, card, expected):
         assert Client.card_str(card) == expected
-

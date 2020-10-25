@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import random
 import re
+import socket
 import time
 from logging import getLogger
 from queue import Queue
 from threading import Event, Thread
-from typing import Dict, NamedTuple, Optional, Set, Tuple
+from typing import Any, Dict, NamedTuple, Optional, Set, Tuple
 
 from .socket_interface import MessageInterface, SocketInterface
 from .. import BiddingPhase, BiddingPhaseState, Card, Contract, Player, Suit, \
@@ -20,8 +21,8 @@ class ThreadHandler(Thread, MessageInterface):
     PROTOCOL_VERSION = 18
 
     def __init__(self,
-                 connection,
-                 address,
+                 connection: socket.socket,
+                 address: Any,
                  event_sync: Event,
                  event_thread: Event,
                  sent_message_queues: Dict[Player, Queue],
@@ -48,13 +49,16 @@ class ThreadHandler(Thread, MessageInterface):
         logger.debug(f'Receive message "{message}" to queue.')
         return message
 
-    def _check_message(self, message: str) -> bool:
+    def _check_message(self, expected_message: str) -> bool:
         received_message = super().receive_message()
-        if received_message != message:
+        # received_message could use consecutive spaces
+        pattern = expected_message.replace(' ', r'\s+')
+        # don't care about differences between uppercase and lowercase letters
+        if re.fullmatch(pattern, received_message, re.IGNORECASE) is None:
             self._handle_error(
                 message_to_send='ERROR: Unexpected message received.',
                 log_message=f'Unexpected message received. '
-                            f'expected : "{message}", '
+                            f'expected : "{expected_message}", '
                             f'actual : "{received_message}"')
             return False
         return True
@@ -243,12 +247,13 @@ class ThreadHandler(Thread, MessageInterface):
     @staticmethod
     def parse_connection_info(content: str) -> Tuple[str, Player, int]:
         pattern = r'Connecting "(.*)" as (.*) using protocol version (\d+)'
-        match = re.match(pattern, content)
+        # don't care about lowercase and upper case letters
+        match = re.match(pattern, content, re.IGNORECASE)
         if not match:
             raise Exception('Parse exception. '
                             f'Content "{content}" does not match the pattern.')
         team_name = match.group(1)
-        player = Player.convert_formal_name(match.group(2))
+        player = Player.convert_formal_name(match.group(2).capitalize())
         protocol_version = int(match.group(3))
         return team_name, player, protocol_version
 

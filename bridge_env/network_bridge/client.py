@@ -1,4 +1,3 @@
-import re
 from logging import getLogger
 from typing import Optional, Set, Tuple
 
@@ -81,20 +80,14 @@ class Client(SocketInterface, MessageInterface):
         :return: Team names of NS pair and EW pair.
         """
         pattern = r'Teams : N/S : "(.*)".? E/W : "(.*)"'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         team_ns, team_ew = match.group(1), match.group(2)
         return team_ns, team_ew
 
     @staticmethod
     def parse_board(content: str) -> Tuple[int, Player, Vul]:
         pattern = r'Board number (\d+)\. Dealer (.*)\. (.*) vulnerable\.'
-        match = re.match(pattern, content)
-        if match is None:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         board_num = int(match.group(1))
         dealer = Player.convert_formal_name(match.group(2))
         str_vulnerable = match.group(3)
@@ -114,20 +107,14 @@ class Client(SocketInterface, MessageInterface):
     @staticmethod
     def parse_cards(content: str, player_name: str) -> str:
         pattern = fr'{player_name}\'s cards : (.*)'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         hand_str = match.group(1)
         return hand_str
 
     @staticmethod
     def parse_hand(content: str) -> Tuple[Set[Card], Tuple[int, ...]]:
         pattern = r'S (.*)\. H (.*)\. D (.*)\. C (.*)\.\s?'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         hand_list = [0] * 52
         hand_set = set()
         for ranks, suit in zip(map(lambda s: s.split(' '), match.groups()),
@@ -209,10 +196,7 @@ class Client(SocketInterface, MessageInterface):
     @staticmethod
     def parse_leader_message(content: str, dummy: Player) -> Player:
         pattern = r'(.*) to lead'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         player_name = match.group(1)
         if player_name == 'Dummy':
             return dummy
@@ -236,10 +220,7 @@ class Client(SocketInterface, MessageInterface):
     def parse_timing(content: str):
         pattern = r'Timing - N/S : this board (*.), total (*.). ' \
                   r'E/W : this board (*.), total (.*)'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         # TODO: process matched pattern
 
     # TODO: unit test

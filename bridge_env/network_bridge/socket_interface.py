@@ -1,6 +1,7 @@
 import re
 import socket
 from logging import getLogger
+from typing import Match
 
 from .. import Bid, Card, Player, Suit
 
@@ -54,17 +55,33 @@ class MessageInterface:
         return message
 
     @staticmethod
-    def parse_bid(content: str, player_name: str) -> Bid:
-        bid_pattern = fr'{player_name} bids (\d)(C|D|H|S|NT)'
-        match = re.match(bid_pattern, content)
-        if match:
-            return Bid.level_suit_to_bid(level=int(match.group(1)),
-                                         suit=Suit[match.group(2)])
-        pattern = fr'{player_name} (.*)'
-        match = re.match(pattern, content)
-        if not match:
+    def parse_match_base(pattern: str,
+                         content: str) -> Match[str]:
+        """Parses string and raises Exception if the string does not match the
+        pattern.
+
+        Ignore upper case and loser case. when parsing a string.
+
+        :param pattern: Pattern of parsing the content.
+        :param content: String to parse.
+        :return: re.Match object to be matched the pattern.
+        """
+
+        match = re.match(pattern, content, re.IGNORECASE)
+        if match is None:
             raise Exception('Parse exception. '
                             f'Content "{content}" does not match the pattern.')
+        return match
+
+    @staticmethod
+    def parse_bid(content: str, player_name: str) -> Bid:
+        bid_pattern = fr'{player_name} bids (\d)(C|D|H|S|NT)'
+        match = re.match(bid_pattern, content, re.IGNORECASE)
+        if match:
+            return Bid.level_suit_to_bid(level=int(match.group(1)),
+                                         suit=Suit[match.group(2).upper()])
+        pattern = fr'{player_name} (.*)'
+        match = MessageInterface.parse_match_base(pattern, content)
         bid = match.group(1).lower()
         if bid == 'passes':
             return Bid.Pass
@@ -77,10 +94,7 @@ class MessageInterface:
     @staticmethod
     def parse_card(content: str, player: Player) -> Card:
         pattern = f'{player.formal_name} plays (.*)'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         card_str = match.group(1).upper()
         if card_str[0] in {'S', 'H', 'D', 'C'}:
             return Card(Card.rank_str_to_int(card_str[1]), Suit[card_str[0]])
