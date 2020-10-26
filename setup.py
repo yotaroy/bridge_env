@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 setup(
     name='bridge_env',
@@ -9,5 +9,5 @@ setup(
     author_email='yyamaguchi643@gmail.com',
     license='MIT',
     install_requires=['numpy'],
-    packages=['bridge_env']
+    packages=find_packages(exclude=('script', 'tests'))
 )
