@@ -1,4 +1,15 @@
-# Bridge Bidding Environment
+# Contract Bridge Environment for Python
+
+bridge_env is a python package for contract bridge.
+bridge_env supports a network bridge used in the World Computer Bridge Championships.
+
+## Install bridge_env
+
+Run on the root directory of this repository.
+
+```bash
+pip install .
+```
 
 ## Requirements
 
@@ -40,7 +51,11 @@ flake8 . --count --exit-zero --max-complexity=10 --max-line-length=80 --statisti
 
 ## Network bridge
 
-[Protocol](http://www.bluechipbridge.co.uk/protocol.htm)
+Protocol is [version 18](http://www.bluechipbridge.co.uk/protocol.htm).
+
+## License
+
+[MIT License](./LICENSE)
 
 ## `bridge_env`
 
