@@ -2,9 +2,15 @@
 
 ## Requirements
 
-- Python 3.7.3
-- Cuda 10.0 (for [bridge_bidding_RL](https://github.com/yotaroy/bridge_bidding_RL))
-- Pytorch 1.2.0 (for [bridge_bidding_RL](https://github.com/yotaroy/bridge_bidding_RL))
+- Python >= 3.7
+- numpy
+
+### For development
+
+- flake8
+- mypy
+- pytest
+- pytest-mock
 
 ```bash
 # Requirements including pytorch packages
@@ -12,48 +18,29 @@
 $ pip install -r requirements.txt
 ```
 
-### To use Double Dummy Solver and make datasets ([double_dummy.py](./dataset/double_dummy.py), [make_dataset.py](./dataset/make_dataset.py))
-
-Use [dds](https://github.com/dds-bridge/dds) and [python-dds](https://github.com/Afwas/python-dds).
-
-#### Procedure
-
-Clone [dds](https://github.com/dds-bridge/dds) and make `libdds.so`.
-
-```bash
-# clone "dds" repository to the same directory as "bridge_bidding_env" repository
-$ git clone https://github.com/dds-bridge/dds
-
-# Then make 'libdds.so'.
-# Details are written in dds/INSTALL.
-```
-
-Clone [python-dds](https://github.com/Afwas/python-dds).
-
-```bash
-# clone "python-dds" repository to the same directory as "bridge_bidding_env" repository
-$ git clone https://github.com/Afwas/python-dds
-```
-
-Chage the path to the file `libdds.so` in the file [dds.py](./bridge_env/dds_files/python_dds/examples/dds.py).
-
-```bash
-# bridge_env/dds_files/python_dds/examples/dds.py
-
-from ctypes import *
-import os       # addition
-
-base_path = os.path.dirname(os.path.abspath(__file__))      # addition
-
-dds = cdll.LoadLibrary(base_path+"/../../dds/src/libdds.so")    # change
-print('Loaded lib {0}'.format(dds))
-```
-
 ## Test
 
 ```bash
-pytest
+pytest -vv
 ```
+
+## Type check
+
+```bash
+mypy --ignore-missing-imports .
+```
+
+## Lint
+
+```bash
+flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+flake8 . --count --exit-zero --max-complexity=10 --max-line-length=80 --statistics
+```
+
+## Network bridge
+
+[Protocol](http://www.bluechipbridge.co.uk/protocol.htm)
 
 ## `bridge_env`
 
