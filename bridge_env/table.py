@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from enum import Enum
 
-from bridge_env import Pair, Player
+from .pair import Pair
+from .player import Player
 
 
 # TODO: Consider to remove from default install of bridge_env.

@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Set, Tuple
 
-from . import Card, Contract, Player, Suit
+from .card import Card
+from .contract import Contract
+from .player import Player
+from .suit import Suit
 
 
 @dataclass(frozen=True)
