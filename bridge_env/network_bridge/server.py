@@ -461,7 +461,7 @@ class Server(SocketInterface):
             bidding_phase_state = bidding_env.take_bid(bid)
 
             # illegal bid detected
-            if bidding_phase_state is BiddingPhaseState.illegal:
+            if bidding_phase_state is BiddingPhaseState.ILLEGAL:
                 for player in Player:
                     if player is active_player:
                         self.sent_message_queues[player].put(
