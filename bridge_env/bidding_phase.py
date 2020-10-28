@@ -13,9 +13,9 @@ from .vul import Vul
 
 class BiddingPhaseState(Enum):
     """State of a bidding phase in contract bridge."""
-    illegal = -1  # illegal bid
-    ongoing = 1  # bidding phase is ongoing
-    finished = 2  # bidding phase is over
+    ILLEGAL = -1  # illegal bid
+    ONGOING = 1  # bidding phase is ongoing
+    FINISHED = 2  # bidding phase is over
 
 
 class BiddingPhase:
@@ -129,7 +129,7 @@ class BiddingPhase:
         assert self.__active_player is not None
 
         if self.__available_bid[bid.idx] == 0:  # illegal bids
-            return BiddingPhaseState.illegal
+            return BiddingPhaseState.ILLEGAL
 
         if bid is Bid.Pass:  # Pass
             if len(self.__bid_history) >= 3:
@@ -138,7 +138,7 @@ class BiddingPhase:
                     self.__bid_history.append(bid)
                     self.__players_bid_history[self.__active_player].append(bid)
                     self.__active_player = None
-                    return BiddingPhaseState.finished  # bidding phase end
+                    return BiddingPhaseState.FINISHED  # bidding phase end
         elif bid is Bid.X:  # X
             self.__called_x = True
         elif bid is Bid.XX:  # XX
@@ -177,7 +177,7 @@ class BiddingPhase:
             else:
                 self.__available_bid[Bid.XX.idx] = 0
 
-        return BiddingPhaseState.ongoing
+        return BiddingPhaseState.ONGOING
 
     def contract(self) -> Optional[Contract]:
         """Contract declared in the bidding phase.

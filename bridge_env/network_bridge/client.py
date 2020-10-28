@@ -214,9 +214,9 @@ class Client(SocketInterface, MessageInterface):
                 bid = super().parse_bid(message,
                                         env.active_player.formal_name)
             bidding_phase_state = env.take_bid(bid)
-            if bidding_phase_state is BiddingPhaseState.illegal:
+            if bidding_phase_state is BiddingPhaseState.ILLEGAL:
                 raise Exception('')
-            if bidding_phase_state is BiddingPhaseState.finished:
+            if bidding_phase_state is BiddingPhaseState.FINISHED:
                 break
 
         contract = env.contract()

@@ -36,13 +36,13 @@ class TestBiddingPhase:
                     Bid.Pass, Bid.Pass]:
             assert bp.active_player is active_player
             # take a bid
-            assert bp.take_bid(bid) is BiddingPhaseState.ongoing
+            assert bp.take_bid(bid) is BiddingPhaseState.ONGOING
 
             active_player = active_player.next_player
 
         # take an illegal bid
-        assert bp.take_bid(Bid.S5) is BiddingPhaseState.illegal
-        assert bp.take_bid(Bid.XX) is BiddingPhaseState.illegal
+        assert bp.take_bid(Bid.S5) is BiddingPhaseState.ILLEGAL
+        assert bp.take_bid(Bid.XX) is BiddingPhaseState.ILLEGAL
 
         # illegal contract check
         assert bp.contract() is None
@@ -50,7 +50,7 @@ class TestBiddingPhase:
         assert not bp.has_done()
 
         # take a final bid
-        assert bp.take_bid(Bid.Pass) is BiddingPhaseState.finished
+        assert bp.take_bid(Bid.Pass) is BiddingPhaseState.FINISHED
 
         assert bp.has_done()
 
