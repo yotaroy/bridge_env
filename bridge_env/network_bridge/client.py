@@ -153,7 +153,7 @@ class Client(SocketInterface, MessageInterface):
                 hand_list[int(card)] = 1
         return hand_set, tuple(hand_list)
 
-    def _deal(self):
+    def _deal(self) -> None:
         super().send_message(f'{self.player.formal_name} ready for deal')
         self.board_num, self.dealer, self.vul = self.parse_board(
             super().receive_message())

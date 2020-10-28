@@ -93,13 +93,13 @@ class PlayerThread(Thread, MessageInterface):
             return False
         return True
 
-    def _handle_error(self, message_to_send, log_message):
+    def _handle_error(self, message_to_send, log_message) -> None:
         super().send_message(message_to_send)
         logger.error(log_message)
         self.connection.close()
         logger.info('Connection is closed.')
 
-    def _sync_event(self):
+    def _sync_event(self) -> None:
         # sets my Event True, and notify the main thread that getting ready
         self.players_event[self.player].set()
         logger.debug('set')
@@ -292,9 +292,9 @@ class PlayerThread(Thread, MessageInterface):
         protocol_version = int(match.group(3))
         return team_name, player, protocol_version
 
-    def run(self):
+    def run(self) -> None:
         if not self._connect():
-            logger.debug('close 00')
+            logger.debug('Connection error. (exit:01)')
             return
 
         while True:
@@ -303,12 +303,12 @@ class PlayerThread(Thread, MessageInterface):
 
             logger.info('Dealing')
             if not self._deal():
-                logger.debug('close 01')
+                logger.debug('Dealing error. (exit:02)')
                 return
 
             logger.info('Bidding phase')
             if not self._bidding_phase():
-                logger.debug('close 02')
+                logger.debug('Bidding phase error. (exit:03)')
                 return
 
             message = self.receive_message_from_queue()
@@ -320,10 +320,10 @@ class PlayerThread(Thread, MessageInterface):
                 raise Exception('Server error')
 
             if not self._playing_phase():
-                logger.debug('close 03')
+                logger.debug('Playing phase error. (exit:04)')
                 return
 
-        logger.debug('close 04')
+        logger.debug('Unreachable error. (exit:05)')
 
 
 class Server(SocketInterface):
@@ -486,7 +486,9 @@ class Server(SocketInterface):
 
         return contract
 
-    def playing_phase(self, contract: Contract, cards: Dict[Player, Set[Card]]):
+    def playing_phase(self,
+                      contract: Contract,
+                      cards: Dict[Player, Set[Card]]) -> None:
         playing_env = PlayingPhaseWithHands(contract=contract, hands=cards)
 
         for player in Player:
@@ -589,6 +591,8 @@ class Server(SocketInterface):
             logger.info(f'Contract: {contract.str_info()}')
 
             self.playing_phase(contract, cards)
+
+            # TODO: Add score calculation.
 
         for player in Player:
             self.sent_message_queues[player].put(self.Message.END_SESSION)
