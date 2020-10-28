@@ -1,6 +1,6 @@
 import pytest
 from bridge_env import Card, Player, Suit
-from bridge_env.network_bridge.server import Server, ThreadHandler
+from bridge_env.network_bridge.server import Server, PlayerThread
 from pytest_mock import MockFixture
 
 
@@ -8,14 +8,13 @@ class TestThreadHandler:
 
     @pytest.fixture(scope='function')
     def thread_handler(self, mocker: MockFixture):
-        return ThreadHandler(connection=mocker.MagicMock(),
-                             address='localhost',
-                             event_sync=mocker.MagicMock(),
-                             event_thread=mocker.MagicMock(),
-                             sent_message_queues=mocker.MagicMock(),
-                             received_message_queues=mocker.MagicMock(),
-                             players_event=mocker.MagicMock(),
-                             team_names=mocker.MagicMock())
+        return PlayerThread(connection=mocker.MagicMock(),
+                            event_sync=mocker.MagicMock(),
+                            event_thread=mocker.MagicMock(),
+                            sent_message_queues=mocker.MagicMock(),
+                            received_message_queues=mocker.MagicMock(),
+                            players_event=mocker.MagicMock(),
+                            team_names=mocker.MagicMock())
 
     @pytest.mark.parametrize(
         ('expected_message', 'received_message', 'expected'), [
@@ -35,7 +34,7 @@ class TestThreadHandler:
         mock_receive_message.return_value = received_message
 
         mock_handle_error_func = mocker.patch(
-            'bridge_env.network_bridge.server.ThreadHandler._handle_error')
+            'bridge_env.network_bridge.server.PlayerThread._handle_error')
         actual = thread_handler._check_message(expected_message)
         if not expected:
             mock_handle_error_func.assert_called_once()
@@ -56,7 +55,7 @@ class TestThreadHandler:
                                    expected_team_name,
                                    expected_player,
                                    expected_protocol_version):
-        assert ThreadHandler.parse_connection_info(content) == (
+        assert PlayerThread.parse_connection_info(content) == (
             expected_team_name, expected_player, expected_protocol_version)
 
 

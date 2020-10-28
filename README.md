@@ -15,7 +15,7 @@ pip install .
 
 Protocol is [version 18](http://www.bluechipbridge.co.uk/protocol.htm).
 
-Run server
+Run server.
 
 ```bash
 bridge-server [-h] [-p PORT] [-i IP_ADDRESS]
@@ -27,7 +27,7 @@ bridge-server [-h] [-p PORT] [-i IP_ADDRESS]
 #                         IP address. (default=localhost)
 ```
 
-Run an example client
+Run an example client.
 
 ```bash
 usage: bridge-client-ex [-h] [-p PORT] [-i IP_ADDRESS] [-l LOCATION] [-t TEAM_NAME]

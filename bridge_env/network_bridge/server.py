@@ -9,7 +9,7 @@ import time
 from logging import getLogger
 from queue import Queue
 from threading import Event, Thread
-from typing import Any, Dict, NamedTuple, Optional, Set, Tuple
+from typing import Dict, NamedTuple, Optional, Set, Tuple
 
 from .socket_interface import MessageInterface, SocketInterface
 from .. import BiddingPhase, BiddingPhaseState, Card, Contract, Player, Suit, \
@@ -19,22 +19,39 @@ from ..playing_phase import PlayingPhaseWithHands
 logger = getLogger(__file__)
 
 
-class ThreadHandler(Thread, MessageInterface):
+class PlayerThread(Thread, MessageInterface):
+    """Thread for a player.
+
+    Server has four PlayerThread to manage four players' actions.
+
+    Protocol version == 18 (1 August 2005)
+    http://www.bluechipbridge.co.uk/protocol.htm
+    """
     PROTOCOL_VERSION = 18
 
     def __init__(self,
                  connection: socket.socket,
-                 address: Any,
                  event_sync: Event,
                  event_thread: Event,
                  sent_message_queues: Dict[Player, Queue],
                  received_message_queues: Dict[Player, Queue],
                  players_event: Dict[Player, Event],
                  team_names: Dict[Player, Optional[str]]):
+        """
+
+        :param connection: Socket connection.
+        :param event_sync: threading.Event object for sync with main thread.
+        :param event_thread: threading.Event object for connection.
+        :param sent_message_queues: Queues of messages to the main thread.
+        :param received_message_queues: Queues of messages from the main thread.
+        :param players_event: threading.Event objects for sync with threads
+            (Server and other players).
+        :param team_names: Team name table. It will be used to check player
+            duplication and identity of names on a team.
+        """
         Thread.__init__(self, daemon=True)
         MessageInterface.__init__(self, connection_socket=connection)
         self.connection = connection
-        self.address = address
         self.event_sync = event_sync
         self.event_thread = event_thread
         self.team_names = team_names
@@ -42,11 +59,22 @@ class ThreadHandler(Thread, MessageInterface):
         self._received_message_queues = received_message_queues
         self.players_event = players_event
 
-    def send_message_to_queue(self, message: str):
+    def send_message_to_queue(self, message: str) -> None:
+        """Sends a message to the queue.
+
+        The message is read by the main thread.
+
+        :param message: Message to be sent to the main thread.
+        :return: None.
+        """
         logger.debug(f'Send message "{message}" to queue.')
         self._sent_message_queues[self.player].put(message)
 
     def receive_message_from_queue(self) -> str:
+        """Receives a message from the queue.
+
+        :return: Message from the main thread.
+        """
         message = self._received_message_queues[self.player].get()
         logger.debug(f'Receive message "{message}" to queue.')
         return message
@@ -248,6 +276,11 @@ class ThreadHandler(Thread, MessageInterface):
 
     @staticmethod
     def parse_connection_info(content: str) -> Tuple[str, Player, int]:
+        """Parses a message about the connection information.
+
+        :param content: Message to be parsed.
+        :return: Team name, player and protocol version.
+        """
         pattern = r'Connecting "(.*)" as (.*) using protocol version (\d+)'
         # don't care about lowercase and upper case letters
         match = re.match(pattern, content, re.IGNORECASE)
@@ -344,6 +377,11 @@ class Server(SocketInterface):
 
     @staticmethod
     def hand_to_str(hand: Set[Card]) -> str:
+        """Converts set of cards to string of cards.
+
+        :param hand: Set of cards to be converted.
+        :return: String of cards.
+        """
         card_list = sorted(list(hand), reverse=True)
         spade = [Card.rank_int_to_str(c.rank) for c in card_list if
                  c.suit is Suit.S]
@@ -370,6 +408,11 @@ class Server(SocketInterface):
 
     @staticmethod
     def convert_vul(vul: Vul) -> str:
+        """Converts Vul to string of vulnerability.
+
+        :param vul: Vul object.
+        :return: String of vulnerability.
+        """
         if vul is Vul.NONE:
             return 'Neither'
         elif vul is Vul.NS:
@@ -483,7 +526,7 @@ class Server(SocketInterface):
                             continue
                         self.sent_message_queues[player].put(dummy_hand_message)
 
-    def run(self):
+    def run(self) -> None:
         """Runs the server."""
         logger.debug('server run')
         self._socket.bind((self.ip_address, self.port))
@@ -503,13 +546,12 @@ class Server(SocketInterface):
         event_sync = Event()
         event_thread = Event()
         while not all_connected():
-            connection, address = self._socket.accept()
+            connection, _ = self._socket.accept()
 
-            assert self.PROTOCOL_VERSION == ThreadHandler.PROTOCOL_VERSION
+            assert self.PROTOCOL_VERSION == PlayerThread.PROTOCOL_VERSION
             logger.debug('make thread')
-            thread = ThreadHandler(
+            thread = PlayerThread(
                 connection=connection,
-                address=address,
                 event_sync=event_sync,
                 event_thread=event_thread,
                 sent_message_queues=self.received_message_queues,
@@ -555,7 +597,11 @@ class Server(SocketInterface):
             thread.join()
 
 
-def main():
+def main() -> None:
+    """Script to run a network bridge server.
+
+    :return: None.
+    """
     FORMAT = '%(asctime)s - %(threadName)s - %(levelname)s - %(message)s'
     logging.basicConfig(level=logging.DEBUG, format=FORMAT)
     parser = argparse.ArgumentParser()

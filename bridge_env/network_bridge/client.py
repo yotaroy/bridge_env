@@ -15,7 +15,6 @@ logger = getLogger(__file__)
 
 class Client(SocketInterface, MessageInterface):
     """Client of network computer bridge programs.
-    Four clients play each hand.
 
     Protocol version == 18 (1 August 2005)
     http://www.bluechipbridge.co.uk/protocol.htm
@@ -29,6 +28,16 @@ class Client(SocketInterface, MessageInterface):
                  playing_system: PlayingSystem,
                  ip_address: str,
                  port: int):
+        """
+
+        :param player: Player direction (N, E, S or W) on a table.
+        :param team_name: Team name of the player. It must be same as a teammate
+            of the player.
+        :param bidding_system: Bidding system of the player.
+        :param playing_system: Playing system of the player.
+        :param ip_address: IP address to be used on communication.
+        :param port: Port number to be used on communication.
+        """
         SocketInterface.__init__(self, ip_address=ip_address, port=port)
 
         self.player = player
@@ -87,6 +96,11 @@ class Client(SocketInterface, MessageInterface):
 
     @staticmethod
     def parse_board(content: str) -> Tuple[int, Player, Vul]:
+        """Parses a board setting.
+
+        :param content: Message to be parsed.
+        :return: Board number, dealer and vulnerability.
+        """
         pattern = r'Board number (\d+)\. Dealer (.*)\. (.*) vulnerable\.'
         match = MessageInterface.parse_match_base(pattern, content)
         board_num = int(match.group(1))
@@ -107,6 +121,12 @@ class Client(SocketInterface, MessageInterface):
 
     @staticmethod
     def parse_cards(content: str, player_name: str) -> str:
+        """Parses a message about hand.
+
+        :param content: Message to be parsed.
+        :param player_name: Name of a player on the message.
+        :return: string of a hand information.
+        """
         pattern = fr'{player_name}\'s cards : (.*)'
         match = MessageInterface.parse_match_base(pattern, content)
         hand_str = match.group(1)
@@ -114,6 +134,11 @@ class Client(SocketInterface, MessageInterface):
 
     @staticmethod
     def parse_hand(content: str) -> Tuple[Set[Card], Tuple[int, ...]]:
+        """Parses string of a hand information.
+
+        :param content: String of a hand information.
+        :return: Set of parsed cards and tuple of parsed card numbers.
+        """
         pattern = r'S (.*)\. H (.*)\. D (.*)\. C (.*)\.\s?'
         match = MessageInterface.parse_match_base(pattern, content)
         hand_list = [0] * 52
@@ -144,6 +169,12 @@ class Client(SocketInterface, MessageInterface):
 
     @staticmethod
     def create_bid_message(bid: Bid, player_name: str) -> str:
+        """Creates a message about a bid to be taken.
+
+        :param bid: Bid.
+        :param player_name: Player name on a message.
+        :return: Created message.
+        """
         if bid is Bid.Pass:
             str_bid = 'passes'
         elif bid is Bid.X:
@@ -158,11 +189,10 @@ class Client(SocketInterface, MessageInterface):
     def bidding_phase(self) -> Contract:
         """Bidding phase.
 
-            If the Table Manager (Server) receives an illegal bid, it will
-            ignore it and respond "illegal Bid". It is assumed that playing
-            programs will ensure that playing programs will ensure that they do
-            not make illegal bids. The protocol does not define what will then
-            happen.
+        If the Table Manager (Server) receives an illegal bid, it will ignore
+        it and respond "illegal Bid". It is assumed that playing programs will
+        ensure that playing programs will ensure that they do not make illegal
+        bids. The protocol does not define what will then happen.
 
         :return: Contract of the bidding phase.
         """
@@ -196,6 +226,12 @@ class Client(SocketInterface, MessageInterface):
 
     @staticmethod
     def parse_leader_message(content: str, dummy: Player) -> Player:
+        """Parses a message about a leader on a trick.
+
+        :param content: Message to be parsed.
+        :param dummy: Dummy, who is a teammate of the declarer .
+        :return: Leader on a trick.
+        """
         pattern = r'(.*) to lead'
         match = MessageInterface.parse_match_base(pattern, content)
         player_name = match.group(1)
@@ -205,10 +241,10 @@ class Client(SocketInterface, MessageInterface):
 
     @staticmethod
     def card_str(card: Card) -> str:
-        """Convert card object to str of format [value] + [suit].
+        """Converts card object to str of format [value] + [suit].
 
-            an alternative suggestion is [suit] + [value] format, which is same
-            as str(card).
+        An alternative suggestion is [suit] + [value] format, which is same as
+        str(card).
 
         :param card: Card instance.
         :return: [value] + [suit] format.
@@ -219,6 +255,11 @@ class Client(SocketInterface, MessageInterface):
     # Use this function?
     @staticmethod
     def parse_timing(content: str):
+        """Parses a message about timing.
+
+        :param content: Message to be parsed.
+        :return: ??
+        """
         pattern = r'Timing - N/S : this board (*.), total (*.). ' \
                   r'E/W : this board (*.), total (.*)'
         match = MessageInterface.parse_match_base(pattern, content)
@@ -277,7 +318,10 @@ class Client(SocketInterface, MessageInterface):
                     env.play_card_by_player(card, env.active_player)
 
     def run(self) -> None:
-        """Runs the client."""
+        """Runs the client.
+
+        :return: None.
+        """
         print('run')
         self._connect()
 
@@ -305,7 +349,14 @@ class Client(SocketInterface, MessageInterface):
             board_num += 1
 
 
-def main():
+def main() -> None:
+    """Script to run an example network bridge client.
+
+    The client bids 1C when it is an opener, otherwise passes. The client plays
+    a card randomly.
+
+    :return: None.
+    """
     logging.basicConfig(level=logging.DEBUG)
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port',
