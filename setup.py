@@ -9,5 +9,12 @@ setup(
     author_email='yyamaguchi643@gmail.com',
     license='MIT',
     install_requires=['numpy'],
-    packages=find_packages(exclude=('script', 'tests'))
+    # TODO: Add extras_require
+    packages=find_packages(exclude=['tests']),
+    entry_points={
+        'console_scripts': [
+            'bridge-server = bridge_env.network_bridge.server:main',
+            'bridge-client-ex = bridge_env.network_bridge.client:main'
+        ]
+    }
 )

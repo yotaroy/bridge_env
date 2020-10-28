@@ -103,9 +103,10 @@ class Contract:
             raise ValueError("declarer is None. set the declarer")
         return self.declarer.is_vul(self.vul)
 
-    def display(self) -> None:
-        """Print contract information.
+    def str_info(self) -> str:
+        """str type contract information.
 
-        :return: None.
+        :return: Contract information.
+            "[Contract Bid], vul=[vulnerable], declarer=[declarer]"
         """
-        print(str(self), "vul=", str(self.vul), "declarer=", str(self.declarer))
+        return f'{self}, vul={self.vul}, declarer={self.declarer}'

@@ -1,10 +1,11 @@
-import re
+import argparse
+import logging
 from logging import getLogger
 from typing import Optional, Set, Tuple
 
-from .bidding_system import BiddingSystem
-from .playing_system import PlayingSystem
-from .socket_interface import SocketInterface
+from .bidding_system import BiddingSystem, WeakBid
+from .playing_system import PlayingSystem, RandomPlay
+from .socket_interface import MessageInterface, SocketInterface
 from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Pair, \
     Player, Suit, Vul
 from ..playing_phase import ObservedPlayingPhase
@@ -12,9 +13,8 @@ from ..playing_phase import ObservedPlayingPhase
 logger = getLogger(__file__)
 
 
-class Client(SocketInterface):
+class Client(SocketInterface, MessageInterface):
     """Client of network computer bridge programs.
-    Four clients play each hand.
 
     Protocol version == 18 (1 August 2005)
     http://www.bluechipbridge.co.uk/protocol.htm
@@ -28,7 +28,18 @@ class Client(SocketInterface):
                  playing_system: PlayingSystem,
                  ip_address: str,
                  port: int):
-        super().__init__(ip_address=ip_address, port=port)
+        """
+
+        :param player: Player direction (N, E, S or W) on a table.
+        :param team_name: Team name of the player. It must be same as a teammate
+            of the player.
+        :param bidding_system: Bidding system of the player.
+        :param playing_system: Playing system of the player.
+        :param ip_address: IP address to be used on communication.
+        :param port: Port number to be used on communication.
+        """
+        SocketInterface.__init__(self, ip_address=ip_address, port=port)
+
         self.player = player
         self.team_name = team_name
         self.bidding_system = bidding_system
@@ -37,9 +48,14 @@ class Client(SocketInterface):
         # assigned in self._connection()
         self.opponent_team_name: Optional[str] = None
 
+    def __enter__(self):
+        SocketInterface.__enter__(self)
+        MessageInterface.__init__(self, connection_socket=super().get_socket())
+        return self
+
     def _connect(self) -> None:
         """Connects with the server."""
-        self._socket.connect((self.ip_address, self.port))
+        super().connect_socket()
         super().send_message(f'Connecting "{self.team_name}" as '
                              f'{self.player.formal_name} using '
                              f'protocol version {self.PROTOCOL_VERSION}')
@@ -49,7 +65,7 @@ class Client(SocketInterface):
                 reply != f'{self.player.formal_name} ("{self.team_name}") seated':
             raise Exception(f'Unexpected message received. {reply}')
 
-        super().send_message(f'{self.team_name} ready for teams')
+        super().send_message(f'{self.player.formal_name} ready for teams')
 
         team_ns, team_ew = self.parse_team_names(super().receive_message())
         if self.player.pair is Pair.NS:
@@ -74,20 +90,19 @@ class Client(SocketInterface):
         :return: Team names of NS pair and EW pair.
         """
         pattern = r'Teams : N/S : "(.*)".? E/W : "(.*)"'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         team_ns, team_ew = match.group(1), match.group(2)
         return team_ns, team_ew
 
     @staticmethod
     def parse_board(content: str) -> Tuple[int, Player, Vul]:
+        """Parses a board setting.
+
+        :param content: Message to be parsed.
+        :return: Board number, dealer and vulnerability.
+        """
         pattern = r'Board number (\d+)\. Dealer (.*)\. (.*) vulnerable\.'
-        match = re.match(pattern, content)
-        if match is None:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         board_num = int(match.group(1))
         dealer = Player.convert_formal_name(match.group(2))
         str_vulnerable = match.group(3)
@@ -106,21 +121,26 @@ class Client(SocketInterface):
 
     @staticmethod
     def parse_cards(content: str, player_name: str) -> str:
+        """Parses a message about hand.
+
+        :param content: Message to be parsed.
+        :param player_name: Name of a player on the message.
+        :return: string of a hand information.
+        """
         pattern = fr'{player_name}\'s cards : (.*)'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         hand_str = match.group(1)
         return hand_str
 
     @staticmethod
     def parse_hand(content: str) -> Tuple[Set[Card], Tuple[int, ...]]:
+        """Parses string of a hand information.
+
+        :param content: String of a hand information.
+        :return: Set of parsed cards and tuple of parsed card numbers.
+        """
         pattern = r'S (.*)\. H (.*)\. D (.*)\. C (.*)\.\s?'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         hand_list = [0] * 52
         hand_set = set()
         for ranks, suit in zip(map(lambda s: s.split(' '), match.groups()),
@@ -133,28 +153,7 @@ class Client(SocketInterface):
                 hand_list[int(card)] = 1
         return hand_set, tuple(hand_list)
 
-    @staticmethod
-    def parse_bid(content: str, player_name: str) -> Bid:
-        bid_pattern = fr'{player_name} bids (\d)(C|D|H|S|NT)'
-        match = re.match(bid_pattern, content)
-        if match:
-            return Bid.level_suit_to_bid(level=int(match.group(1)),
-                                         suit=Suit[match.group(2)])
-        pattern = fr'{player_name} (.*)'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
-        bid = match.group(1).lower()
-        if bid == 'passes':
-            return Bid.Pass
-        elif bid == 'doubles':
-            return Bid.X
-        elif bid == 'redoubles':
-            return Bid.XX
-        raise Exception(f'Illegal bid received. {bid}')
-
-    def _deal(self):
+    def _deal(self) -> None:
         super().send_message(f'{self.player.formal_name} ready for deal')
         self.board_num, self.dealer, self.vul = self.parse_board(
             super().receive_message())
@@ -170,6 +169,12 @@ class Client(SocketInterface):
 
     @staticmethod
     def create_bid_message(bid: Bid, player_name: str) -> str:
+        """Creates a message about a bid to be taken.
+
+        :param bid: Bid.
+        :param player_name: Player name on a message.
+        :return: Created message.
+        """
         if bid is Bid.Pass:
             str_bid = 'passes'
         elif bid is Bid.X:
@@ -184,11 +189,10 @@ class Client(SocketInterface):
     def bidding_phase(self) -> Contract:
         """Bidding phase.
 
-            If the Table Manager (Server) receives an illegal bid, it will
-            ignore it and respond "illegal Bid". It is assumed that playing
-            programs will ensure that playing programs will ensure that they do
-            not make illegal bids. The protocol does not define what will then
-            happen.
+        If the Table Manager (Server) receives an illegal bid, it will ignore
+        it and respond "illegal Bid". It is assumed that playing programs will
+        ensure that playing programs will ensure that they do not make illegal
+        bids. The protocol does not define what will then happen.
 
         :return: Contract of the bidding phase.
         """
@@ -207,8 +211,8 @@ class Client(SocketInterface):
                 super().send_message(f'{self.player.formal_name} ready '
                                      f'for {env.active_player.formal_name}\'s bid')
                 message = super().receive_message()
-                bid = self.parse_bid(message,
-                                     env.active_player.formal_name)
+                bid = super().parse_bid(message,
+                                        env.active_player.formal_name)
             bidding_phase_state = env.take_bid(bid)
             if bidding_phase_state is BiddingPhaseState.illegal:
                 raise Exception('')
@@ -222,11 +226,14 @@ class Client(SocketInterface):
 
     @staticmethod
     def parse_leader_message(content: str, dummy: Player) -> Player:
+        """Parses a message about a leader on a trick.
+
+        :param content: Message to be parsed.
+        :param dummy: Dummy, who is a teammate of the declarer .
+        :return: Leader on a trick.
+        """
         pattern = r'(.*) to lead'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         player_name = match.group(1)
         if player_name == 'Dummy':
             return dummy
@@ -234,38 +241,28 @@ class Client(SocketInterface):
 
     @staticmethod
     def card_str(card: Card) -> str:
-        """Convert card object to str of format [value] + [suit].
+        """Converts card object to str of format [value] + [suit].
 
-            an alternative suggestion is [suit] + [value] format, which is same
-            as str(card).
+        An alternative suggestion is [suit] + [value] format, which is same as
+        str(card).
 
         :param card: Card instance.
         :return: [value] + [suit] format.
         """
         return Card.rank_int_to_str(card.rank) + card.suit.name
 
-    @staticmethod
-    def parse_card(content: str, player: Player) -> Card:
-        pattern = f'{player.formal_name} plays (.*)'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
-        card_str = match.group(1).upper()
-        if card_str[0] in {'S', 'H', 'D', 'C'}:
-            return Card(Card.rank_str_to_int(card_str[1]), Suit[card_str[0]])
-        return Card(Card.rank_str_to_int(card_str[0]), Suit[card_str[1]])
-
     # TODO: unit test
     # Use this function?
     @staticmethod
     def parse_timing(content: str):
+        """Parses a message about timing.
+
+        :param content: Message to be parsed.
+        :return: ??
+        """
         pattern = r'Timing - N/S : this board (*.), total (*.). ' \
                   r'E/W : this board (*.), total (.*)'
-        match = re.match(pattern, content)
-        if not match:
-            raise Exception('Parse exception. '
-                            f'Content "{content}" does not match the pattern.')
+        match = MessageInterface.parse_match_base(pattern, content)
         # TODO: process matched pattern
 
     # TODO: unit test
@@ -316,19 +313,24 @@ class Client(SocketInterface):
                         f'{self.player.formal_name} ready for '
                         f'{active_player_name}\'s card to '
                         f'trick {env.trick_num}')
-                    card = self.parse_card(super().receive_message(),
-                                           env.active_player)
+                    card = super().parse_card(super().receive_message(),
+                                              env.active_player)
                     env.play_card_by_player(card, env.active_player)
 
     def run(self) -> None:
-        """Runs the client."""
+        """Runs the client.
+
+        :return: None.
+        """
         print('run')
         self._connect()
 
         message = super().receive_message()
         board_num = 1
         while True:
-            if message != 'Start of Board':
+            if message.lower() != 'start of board':
+                # protocol: "Start of board"
+                # bridge_monitor: "Start of Board"
                 raise Exception()
 
             self._deal()
@@ -342,5 +344,46 @@ class Client(SocketInterface):
 
             message = super().receive_message()
             if message == 'End of session':
+                logger.info('End of session is detected ')
                 break
             board_num += 1
+
+
+def main() -> None:
+    """Script to run an example network bridge client.
+
+    The client bids 1C when it is an opener, otherwise passes. The client plays
+    a card randomly.
+
+    :return: None.
+    """
+    logging.basicConfig(level=logging.DEBUG)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--port',
+                        default=2000,
+                        type=int,
+                        help='Port number. (default=2000)')
+    parser.add_argument('-i', '--ip_address',
+                        default='localhost',
+                        type=str,
+                        help='IP address. (default=localhost)')
+    parser.add_argument('-l', '--location',
+                        default='N',
+                        type=str,
+                        help='Player (N, E, S or W)')
+    parser.add_argument('-t', '--team_name',
+                        default='teamNS',
+                        type=str,
+                        help='Team name')
+
+    args = parser.parse_args()
+    player = Player[args.location]
+    with Client(player=player,
+                team_name=str(player.pair),
+                bidding_system=WeakBid(),
+                playing_system=RandomPlay(),
+                ip_address=args.ip_address,
+                port=args.port) as client:
+        print(client)
+        client.run()
+        print('end')
