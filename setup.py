@@ -9,7 +9,9 @@ setup(
     author_email='yyamaguchi643@gmail.com',
     license='MIT',
     install_requires=['numpy'],
-    # TODO: Add extras_require
+    extras_require={
+        'dev': ['flake8', 'mypy', 'pytest', 'pytest-mock'],
+    },
     packages=find_packages(exclude=['tests']),
     entry_points={
         'console_scripts': [
