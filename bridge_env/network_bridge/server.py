@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import argparse
+import logging
 import random
 import re
 import socket
@@ -551,3 +553,26 @@ class Server(SocketInterface):
 
         for thread in threads:
             thread.join()
+
+
+def main():
+    FORMAT = '%(asctime)s - %(threadName)s - %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--port',
+                        default=2000,
+                        type=int,
+                        help='Port number. (default=2000)')
+    parser.add_argument('-i', '--ip_address',
+                        default='localhost',
+                        type=str,
+                        help='IP address. (default=localhost)')
+
+    # TODO: Implement a selection to proceed a next board on cli
+    # TODO: Add an option to load board information to hold.
+    #  (ex. load a board from pbn file)
+    # TODO: Add an option to save board results.
+    #  (ex. save results as a pbn file)
+    args = parser.parse_args()
+    with Server(ip_address=args.ip_address, port=args.port) as server:
+        server.run()

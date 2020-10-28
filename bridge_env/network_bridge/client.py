@@ -1,13 +1,14 @@
+import argparse
+import logging
 from logging import getLogger
 from typing import Optional, Set, Tuple
 
-from bridge_env.playing_phase import ObservedPlayingPhase
-
-from .bidding_system import BiddingSystem
-from .playing_system import PlayingSystem
+from .bidding_system import BiddingSystem, WeakBid
+from .playing_system import PlayingSystem, RandomPlay
 from .socket_interface import MessageInterface, SocketInterface
 from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Pair, \
     Player, Suit, Vul
+from ..playing_phase import ObservedPlayingPhase
 
 logger = getLogger(__file__)
 
@@ -302,3 +303,36 @@ class Client(SocketInterface, MessageInterface):
                 logger.info('End of session is detected ')
                 break
             board_num += 1
+
+
+def main():
+    logging.basicConfig(level=logging.DEBUG)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--port',
+                        default=2000,
+                        type=int,
+                        help='Port number. (default=2000)')
+    parser.add_argument('-i', '--ip_address',
+                        default='localhost',
+                        type=str,
+                        help='IP address. (default=localhost)')
+    parser.add_argument('-l', '--location',
+                        default='N',
+                        type=str,
+                        help='Player (N, E, S or W)')
+    parser.add_argument('-t', '--team_name',
+                        default='teamNS',
+                        type=str,
+                        help='Team name')
+
+    args = parser.parse_args()
+    player = Player[args.location]
+    with Client(player=player,
+                team_name=str(player.pair),
+                bidding_system=WeakBid(),
+                playing_system=RandomPlay(),
+                ip_address=args.ip_address,
+                port=args.port) as client:
+        print(client)
+        client.run()
+        print('end')
