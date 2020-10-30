@@ -5,21 +5,32 @@ PBN VERSION 2.1
 http://www.tistis.nl/pbn/
 """
 import re
-from typing import AnyStr, Dict, IO
+from logging import getLogger
+from typing import Dict, IO, Iterator, List
+
+logger = getLogger(__file__)
 
 
 class PBNParser:
     def __init__(self):
+        # for multiple-line comment
         self._in_comment = False
-        self.buffer = list()
+
+        # tag pairs of a board result are stored in a buffer
+        self.tag_pair_buffer = list()
+
+        # comments are stores in
         self.comment_list = list()
+        # pieces of a comment in multiple lines are stored in a buffer
         self.comment_buffer = list()
 
-    # TODO: Consider more appropriate method name.
-    def comment_check(self, string: str):
-        """
+    def extract_content(self, string: str):
+        """Extract contents in a line.
 
-        :param string:
+        Commentary: starts with ';', or starts with '{' to the next '}'.
+        This function doesn't cover a comment style '%' in the first column.
+
+        :param string: A string line.
         :return: None.
         """
         if not string:  # empty str
@@ -31,34 +42,60 @@ class PBNParser:
                 self._in_comment = False
 
                 # Add a whole comment in comment_buffer to comment_list
-                self.comment_buffer.append(string)
+                self.comment_buffer.append(comment)
                 self.comment_list.append(''.join(self.comment_buffer))
                 self.comment_buffer = list()
 
-                self.comment_check(remainder)
+                self.extract_content(remainder)
             else:
                 self.comment_buffer.append(string)
+            return
+        x = string.find('; ')
+        y = string.find('{ ')
+        tag_pair = re.search(self.TAG_PATTERN, string)
+        if 0 < x < y or y < 0 < x:
+            if tag_pair and tag_pair.start() < x < tag_pair.end():
+                self.tag_pair_buffer.append(string[:tag_pair.end()])
+                self.extract_content(string[tag_pair.end():])
+            # rest of the line is comment
+            string, comment = string.split('; ', 1)
+            self.tag_pair_buffer.append(string)
+            self.comment_list.append(comment)
+        elif x > y > 0 or y > 0 > x:
+            # comment to the next `}`
+            string, remainder = string.split('{ ', 1)
+            self.tag_pair_buffer.append(string)
+            self._in_comment = True
+            self.extract_content(remainder)
         else:
-            x = string.find(';')
-            y = string.find('{')
-            if x < y:
-                # rest of the line is comment
-                string, comment = string.split(';', 1)
-                self.buffer.append(string)
-                self.comment_list.append(comment)
-            elif x > y:
-                # comment to the next `}`
-                string, remainder = string.split('{', 1)
-                self.buffer.append(string)
-                self._in_comment = True
-                self.comment_check(remainder)
-            else:
-                # neither ';' nor '{' appear
-                self.buffer.append(string)
+            # neither ';' nor '{' appear
+            self.tag_pair_buffer.append(string)
 
-    def parse(self, fp: IO[AnyStr]) -> Dict[str, str]:
-        # Stream processing
-        # line is maximally 255 characters
+    TAG_PATTERN = r'\[[ ]?([A-Z][a-zA-Z]+) "([^"]*)"[ ]?\]'
+    REPLACE_PATTERN = r'[ \t\r\n]+'
+
+    def parse_board(self) -> Dict[str, str]:
+        """Parse tag pairs of a board.
+
+        :return: Dict converted from tag pairs.
+        """
+        string = ''.join(self.tag_pair_buffer)
+        string = re.sub(self.REPLACE_PATTERN, ' ', string)
+        tag_pairs = re.findall(self.TAG_PATTERN, string, )
+
+        game_mem = dict()
+        for tag_pair in tag_pairs:
+            game_mem[tag_pair[0]] = tag_pair[1]
+
+        return game_mem
+
+    def parse_stream(self, fp: IO[str]) -> Iterator[Dict[str, str]]:
+        """Parses a PBN style stream in stream.
+
+        :param fp: Input stream in a PBN style.
+        :return: Dict of a board content (yield).
+        """
+        # line is maximally 255 characters in protocol PBN ver2.1
         for line in fp:
             # Check a semi-empty line, which is the first line of a new
             # game except the first game of the PBN file.
@@ -67,7 +104,7 @@ class PBNParser:
                 yield self.parse_board()
 
                 # initialization
-                self.buffer = list()
+                self.tag_pair_buffer = list()
                 self.comment_list = list()
                 self.comment_buffer = list()
                 continue
@@ -75,39 +112,35 @@ class PBNParser:
             # escape character '%'
             if line[0] == '%' and not self._in_comment:
                 match = re.match(r'% PBN (\d+)\.(\d+)', line)
-                if not match:
-                    major_version = int(match.group(1))
-                    minor_version = int(match.group(2))
+                if match:
+                    major_ver = int(match.group(1))
+                    minor_ver = int(match.group(2))
+                    logger.debug(f'PBN version = {major_ver}.{minor_ver}')
+
                 match = re.match(r'% EXPORT', line)
-                if not match:
+                if match:
                     # This file has the export format.
-                    pass
+                    logger.debug(f'File is the export format.')
+
+                self.comment_list.append(line[1:].lstrip())
                 continue
 
-            self.comment_check(line)
+            self.extract_content(line)
 
-        if len(self.buffer) == 0:
+        if len(self.tag_pair_buffer) != 0:
             yield self.parse_board()
 
-    TAG_PATTERN = r'\[([A-Z][a-z]+) "(.*)"\]'
-    REPLACE_PATTERN = r'[ \t\r\n]+'
+    # TODO: Consider type not IO[str] but IO[AnyStr]
+    def parse_all(self, fp: IO[str]) -> List[Dict[str, str]]:
+        """Parses a PBN style stream at once.
 
-    def parse_board(self) -> Dict[str, str]:
-        string = ''.join(self.buffer)
-        string = re.sub(self.REPLACE_PATTERN, ' ', string)
-        tag_pairs = re.findall(self.TAG_PATTERN, string)
-
-        game_mem = dict()
-        for tag_pair in tag_pairs:
-            match = re.fullmatch(self.TAG_PATTERN, tag_pair)
-            if match is None:
-                continue
-            tag = match.group(1)
-            content = match.group(2)
-
-            game_mem[tag] = content
-
-        return game_mem
+        :param fp: Input stream in a PBN style
+        :return: List of dicts of a board content.
+        """
+        outputs = list()
+        for x in self.parse_stream(fp):
+            outputs.append(x)
+        return outputs
 
 
 class PBNEncoder:
