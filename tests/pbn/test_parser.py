@@ -82,6 +82,29 @@ class TestPBNParser:
          'OptimumScore': 'NS 130',
          'OptimumResultTable': r'Declarer;Denomination\2R;Result\2R'}]
     RESULT_FILE_PATH = 'tests/pbn/source/result_ex.pbn'
+    RESULT_FILE_EXPECTED = [{
+        'Event': '12th Cap Gemini World Top Tournament 1998',
+        'Site': 'Hotel Des Indes - The Hague, Netherlands, NLD',
+        'Date': '1998.01.15',
+        'Round': '2',
+        'Board': '16',
+        'West': 'Blakset',
+        'North': 'Sun',
+        'East': 'Christiansen',
+        'South': 'Wang',
+        'Dealer': 'W',
+        'Vulnerable': 'EW',
+        'Deal': 'W:AJ9754.J62.K62.6 32..A954.AQJ9875 KQ86.KQT843.QJ.K '
+                'T.A975.T873.T432',
+        'Declarer': 'N',
+        'Contract': '5CX',
+        'Auction': 'W',
+        'Play': 'E',
+        'Result': 'NS 11',
+        'Score': 'NS +550',
+        'ScoreIMP': 'NS +10',
+        'OptimumPlayTable': 'S\8R;H\8R;D\8R;C\8R'
+    }]
 
     @pytest.fixture(scope='function')
     def parser(self):
@@ -150,14 +173,22 @@ class TestPBNParser:
         parser.tag_pair_buffer = tag_pair_buffer
         assert parser.parse_board() == expected
 
-    def test_parse_stream(self, parser):
-        with open(self.PLAY_FILE_PATH, 'r') as fp:
+    # Integration test
+    @pytest.mark.parametrize(('path', 'expected'),
+                             [(PLAY_FILE_PATH, PLAY_FILE_EXPECTED),
+                              (RESULT_FILE_PATH, RESULT_FILE_EXPECTED)])
+    def test_parse_stream(self, path, expected, parser):
+        with open(path, 'r') as fp:
             actuals = parser.parse_stream(fp)
-            for ex in self.PLAY_FILE_EXPECTED:
+            for ex in expected:
                 assert next(actuals) == ex
         with pytest.raises(StopIteration):
             next(actuals)
 
-    def test_parse_all(self, parser):
-        with open(self.PLAY_FILE_PATH, 'r') as fp:
-            assert parser.parse_all(fp) == self.PLAY_FILE_EXPECTED
+    # Integration test
+    @pytest.mark.parametrize(('path', 'expected'),
+                             [(PLAY_FILE_PATH, PLAY_FILE_EXPECTED),
+                              (RESULT_FILE_PATH, RESULT_FILE_EXPECTED)])
+    def test_parse_all(self, path, expected, parser):
+        with open(path, 'r') as fp:
+            assert parser.parse_all(fp) == expected
