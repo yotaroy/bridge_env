@@ -183,7 +183,7 @@ def hands_parser(pbn_hands: str) -> Dict[Player, Set[Card]]:
 
 
 def _hand_parser(pbn_hand: str) -> Set[Card]:
-    cards = set()
+    cards: Set[Card] = set()
     if pbn_hand == '-':
         return cards
     match = re.match(HAND_PATTERN, pbn_hand)
