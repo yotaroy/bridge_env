@@ -104,7 +104,7 @@ class TestPBNParser:
         'Result': 'NS 11',
         'Score': 'NS +550',
         'ScoreIMP': 'NS +10',
-        'OptimumPlayTable': 'S\8R;H\8R;D\8R;C\8R'
+        'OptimumPlayTable': r'S\8R;H\8R;D\8R;C\8R'
     }]
 
     @pytest.fixture(scope='function')

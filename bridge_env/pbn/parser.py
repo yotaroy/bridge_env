@@ -3,6 +3,14 @@ Portable Bridge Notation (PBN)
 
 PBN VERSION 2.1
 http://www.tistis.nl/pbn/
+
+Parse PBN file::
+
+    >>> parser = PBNParser()
+    >>> with open(file_path, 'r') as fp:
+    ...     print(parser.parse_all(fp))
+
+
 """
 import re
 from logging import getLogger
@@ -14,6 +22,8 @@ logger = getLogger(__file__)
 
 
 class PBNParser:
+    """PBN (Portable Bridge Notation) format parser."""
+
     def __init__(self):
         # for multiple-line comment
         self._in_comment = False
@@ -145,10 +155,6 @@ class PBNParser:
         for x in self.parse_stream(fp):
             outputs.append(x)
         return outputs
-
-
-class PBNEncoder:
-    pass
 
 
 HAND_PATTERN = r'([2-9TJQKA]*).([2-9TJQKA]*).([2-9TJQKA]*).([2-9TJQKA]*)'
