@@ -1,0 +1,45 @@
+% http://www.tistis.nl/pbn/OptimumPlayTable.pbn
+[Event "12th Cap Gemini World Top Tournament 1998"]
+[Site "Hotel Des Indes - The Hague, Netherlands, NLD"]
+[Date "1998.01.15"]
+[Round "2"]
+[Board "16"]
+[West "Blakset"]
+[North "Sun"]
+[East "Christiansen"]
+[South "Wang"]
+[Dealer "W"]
+[Vulnerable "EW"]
+[Deal "W:AJ9754.J62.K62.6 32..A954.AQJ9875 KQ86.KQT843.QJ.K T.A975.T873.T432"]
+[Declarer "N"]
+[Contract "5CX"]
+[Auction "W"]
+2D 3C 4H 5C
+Pass Pass X Pass
+Pass Pass
+[Play "E"]
+SK ST S4 S2
+HK H5 H2 C7
+S6 C2 S5 S3
+H3 HA H6 D4
+*
+[Result "NS 11"]
+[Score "NS +550"]
+[ScoreIMP "NS +10"]
+[OptimumPlayTable "S\8R;H\8R;D\8R;C\8R"]
+KQ86    -       QJ      K
+T       -       -       -
+AJ9754  -       -       -
+32      -       -       -
+Q86     -       QJ      K
+-       A975    -       -
+-       J62     -       -
+-       -       -       QJ9875
+3       -       A       A
+Q86     -       -       -
+-       -       -       432
+AJ975   -       -       -
+-       A97     -       -
+-       J6      -       -
+-       -       954     -
+-       QT843   -       -

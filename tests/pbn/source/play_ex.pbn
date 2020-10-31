@@ -1,0 +1,161 @@
+% PBN 2.0
+% 1
+% KGB's batch converter with
+% program version 1.90, build is 50
+% Converted 11/03/2007T8:35:58 AM
+% http://www.tistis.nl/pbn/OptimumResultTable.pbn
+{control  1}
+[Event "?"]
+[Site "?"]
+[Date "?"]
+[Board "1"]
+[West "?"]
+[North "?"]
+[East "?"]
+[South "?"]
+[Dealer "N"]
+[Vulnerable "-"]
+[Deal "N:4.KJ32.842.AQ743 JT987.Q876.AK5.2 AK532.T.JT6.T985 Q6.A954.Q973.KJ6"]
+[Scoring "?"]
+[Declarer "?"]
+[Contract "?"]
+[Result "?"]
+[OptimumScore "NS 100"]
+[OptimumResultTable "Declarer;Denomination\2R;Result\2R"]
+N  C  9
+N  D  6
+N  H  5
+N  S  6
+N NT  6
+E  C  3
+E  D  7
+E  H  8
+E  S  7
+E NT  6
+S  C  9
+S  D  6
+S  H  5
+S  S  6
+S NT  6
+W  C  3
+W  D  7
+W  H  8
+W  S  7
+W NT  7
+
+{control  2}
+[Event "#"]
+[Site "#"]
+[Date "#"]
+[Board "2"]
+[West "#"]
+[North "#"]
+[East "#"]
+[South "#"]
+[Dealer "E"]
+[Vulnerable "NS"]
+[Deal "E:KQ9752.K74.8742. T.A93.QT93.KJ873 J6.T852.AJ65.QT9 A843.QJ6.K.A6542"]
+[Scoring "?"]
+[Declarer "?"]
+[Contract "?"]
+[Result "?"]
+[OptimumScore "NS 800"]
+[OptimumResultTable "Declarer;Denomination\2R;Result\2R"]
+N  C 11
+N  D  6
+N  H  8
+N  S  5
+N NT  9
+E  C  2
+E  D  6
+E  H  5
+E  S  7
+E NT  4
+S  C 11
+S  D  6
+S  H  8
+S  S  5
+S NT  9
+W  C  2
+W  D  6
+W  H  5
+W  S  7
+W NT  4
+
+{control  3}
+[Event "#"]
+[Site "#"]
+[Date "#"]
+[Board "3"]
+[West "#"]
+[North "#"]
+[East "#"]
+[South "#"]
+[Dealer "S"]
+[Vulnerable "EW"]
+[Deal "S:876.T532.QJ.J853 AK53.9.T742.K974 QJ2.AK8.K853.Q62 T94.QJ764.A96.AT"]
+[Scoring "?"]
+[Declarer "?"]
+[Contract "?"]
+[Result "?"]
+[OptimumScore "NS -110"]
+[OptimumResultTable "Declarer;Denomination\2R;Result\2R"]
+N  C  6
+N  D  5
+N  H  5
+N  S  4
+N NT  6
+E  C  7
+E  D  8
+E  H  8
+E  S  8
+E NT  7
+S  C  6
+S  D  5
+S  H  5
+S  S  4
+S NT  6
+W  C  7
+W  D  8
+W  H  8
+W  S  8
+W NT  7
+
+{control  4}
+[Event "#"]
+[Site "#"]
+[Date "#"]
+[Board "4"]
+[West "#"]
+[North "#"]
+[East "#"]
+[South "#"]
+[Dealer "W"]
+[Vulnerable "All"]
+[Deal "W:QT75.KQ64.KQ9.Q8 4.85.A8653.AKJT9 KJ863.A73.JT4.54 A92.JT92.72.7632"]
+[Scoring "?"]
+[Declarer "?"]
+[Contract "?"]
+[Result "?"]
+[OptimumScore "NS 130"]
+[OptimumResultTable "Declarer;Denomination\2R;Result\2R"]
+N  C 10
+N  D  8
+N  H  5
+N  S  4
+N NT  7
+E  C  3
+E  D  4
+E  H  7
+E  S  8
+E NT  6
+S  C 10
+S  D  8
+S  H  5
+S  S  4
+S NT  7
+W  C  3
+W  D  4
+W  H  7
+W  S  8
+W NT  6
