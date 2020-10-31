@@ -15,6 +15,14 @@ class PBNWriter:
         self.writer = writer
 
     def write_line(self, string: str):
+        """Writes string to output stream.
+
+        If string size is over MAX_LINE_CHARS, breaks the string and writes
+        the exceeded parts of the string to a new line.
+
+        :param string: String to be writen.
+        :return: None.
+        """
         if string[-1] != '\n':
             string += '\n'
         while len(string) > self.MAX_LINE_CHARS:
@@ -24,11 +32,22 @@ class PBNWriter:
         self.writer.write(string)
 
     def write_header(self):
+        """Writes headers about PBN version and the export format.
+
+        :return: None.
+        """
         self.write_line(f'% PBN {_VERSION}')
         self.write_line(f'% EXPORT')
 
     def write_tag_pair(self, tag: str, content: str):
-        # tag is camel case.
+        """Writes tag pair, which consists of tag and content.
+
+        Format: [Tag "content"]
+
+        :param tag: Tag string. Tag must be camel case (ex: CamelCase).
+        :param content: content string.
+        :return: None.
+        """
         assert tag[0].isupper()
 
         self.write_line(f'[{tag} "{content}"]')
@@ -100,7 +119,7 @@ class PBNWriter:
         self.write_tag_pair('South', south_player)
         self.write_tag_pair('Dealer', str(dealer))
         self.write_tag_pair('Vulnerable', vulnerable.pbn_format())
-        self.write_tag_pair('Deal', deal)  # TODO: Convert deal
+        self.write_tag_pair('Deal', convert_deal(deal))
         self.write_tag_pair('Scoring', scoring.value)
         self.write_tag_pair('Declarer',
                             '' if declarer is None else str(declarer))
@@ -135,6 +154,12 @@ class Scoring(Enum):
 
 def convert_deal(hands: Dict[Player, Set[Card]],
                  dealer: Player = Player.N) -> str:
+    """Converts dict of player and set of cards to deal (hands) in PBN format.
+
+    :param hands: Dict of player and set of cards (hands).
+    :param dealer: Dealer.
+    :return: Deal (hands) in PBN format.
+    """
     player = dealer
     cards: List[str] = list()
     for _ in range(4):
