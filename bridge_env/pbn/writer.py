@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import datetime
 from enum import Enum
-from typing import Dict, IO, List, Optional, Set
+from typing import Dict, IO, List, Set
 
 from . import _VERSION
-from .. import Card, Contract, Player, Suit, Vul
+from .. import Card, Contract, Player, Suit
 
 
 class PBNWriter:
@@ -34,7 +35,7 @@ class PBNWriter:
     def write_header(self):
         """Writes headers about PBN version and the export format.
 
-        :return: None.
+        treturn: None.
         """
         self.write_line(f'% PBN {_VERSION}')
         self.write_line(f'% EXPORT')
@@ -59,17 +60,15 @@ class PBNWriter:
     def write_board_result(self,
                            event: str,
                            site: str,
-                           date: str,
+                           date: datetime.date,
                            board_num: int,
                            west_player: str,
                            north_player: str,
                            east_player: str,
                            south_player: str,
                            dealer: Player,
-                           vulnerable: Vul,
                            deal: Dict[Player, Set[Card]],
                            scoring: Scoring,
-                           declarer: Optional[Player],
                            contract: Contract,
                            taken_tricks: int
                            ):
@@ -101,28 +100,28 @@ class PBNWriter:
         :param east_player:
         :param south_player:
         :param dealer:
-        :param vulnerable:
         :param deal:
         :param scoring:
-        :param declarer:
         :param contract:
         :param taken_tricks:
         :return:
         """
         self.write_tag_pair('Event', event)
         self.write_tag_pair('Site', site)
-        self.write_tag_pair('Date', date)  # TODO: Format? date object?
+        self.write_tag_pair('Date', date.strftime('%Y.%m.%d'))  # "YYYY.MM.DD"
+        assert board_num > 0
         self.write_tag_pair('Board', str(board_num))
         self.write_tag_pair('West', west_player)
         self.write_tag_pair('North', north_player)
         self.write_tag_pair('East', east_player)
         self.write_tag_pair('South', south_player)
         self.write_tag_pair('Dealer', str(dealer))
-        self.write_tag_pair('Vulnerable', vulnerable.pbn_format())
+        self.write_tag_pair('Vulnerable', contract.vul.pbn_format())
         self.write_tag_pair('Deal', convert_deal(deal))
         self.write_tag_pair('Scoring', scoring.value)
         self.write_tag_pair('Declarer',
-                            '' if declarer is None else str(declarer))
+                            '' if contract.is_passed_out() is None else str(
+                                contract.declarer))
         self.write_tag_pair('Contract',
                             'Pass' if contract.is_passed_out() else str(
                                 contract))

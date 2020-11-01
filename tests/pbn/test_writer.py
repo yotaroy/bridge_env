@@ -1,10 +1,12 @@
+import datetime
+from typing import Dict, Set
 from unittest.mock import call
 
 import pytest
 from pytest_mock import MockFixture
 
-from bridge_env import Player
-from bridge_env.pbn.writer import PBNWriter, convert_deal
+from bridge_env import Bid, Card, Contract, Player, Vul
+from bridge_env.pbn.writer import PBNWriter, Scoring, convert_deal
 from . import HANDS1, HANDS2, HANDS3, PBN_HANDS1, PBN_HANDS2, \
     PBN_HANDS3
 
@@ -35,7 +37,68 @@ class TestPBNWriter:
         # change MAX_LINE_CHARS value to check new lines
         pbn_writer.MAX_LINE_CHARS = max_line_chars
         pbn_writer.write_line(string)
-        mock_writer.write.assert_has_calls([call(b) for b in expected_calls])
+        mock_writer.write.assert_has_calls([call(c) for c in expected_calls])
+
+    @pytest.mark.parametrize(('tag', 'content', 'expected'), [
+        ('Declarer', 'N', '[Declarer "N"]'),
+        ('Contract', '5DX', '[Contract "5DX"]')
+    ])
+    def test_write_tag_pair(self, tag, content, expected, pbn_writer,
+                            mocker: MockFixture):
+        mock_write_line = mocker.patch(
+            'bridge_env.pbn.writer.PBNWriter.write_line')
+        pbn_writer.write_tag_pair(tag, content)
+        mock_write_line.assert_called_once_with(expected)
+
+    def test_create_contents_sequence(self):
+        contents = ['test1', 'test2', 'test3']
+        expected = 'test1;test2;test3'
+        assert PBNWriter.create_contents_sequence(contents) == expected
+
+    # TODO: Fix to write examples to follow a format protocol.
+    @pytest.mark.parametrize(
+        ('event', 'site', 'date', 'board_num', 'west_player', 'north_player',
+         'east_player', 'south_player', 'dealer', 'deal', 'scoring', 'contract',
+         'taken_tricks', 'expected_calls', 'deal_return_value'),
+        [('Event1', 'Tokyo', datetime.date(2019, 1, 31), 1, 'West', 'North',
+          'East', 'South', Player.N, HANDS1, Scoring.IMP,
+          Contract(Bid.NT5, x=True, xx=False, vul=Vul.BOTH, declarer=Player.E),
+          10, [('Event', 'Event1'), ('Site', 'Tokyo'), ('Date', '2019.01.31'),
+               ('Board', '1'), ('West', 'West'), ('North', 'North'),
+               ('East', 'East'), ('South', 'South'), ('Dealer', 'N'),
+               ('Vulnerable', 'All'), ('Deal', PBN_HANDS1), ('Scoring', 'IMP'),
+               ('Declarer', 'E'), ('Contract', '5NTX'), ('Result', '10')],
+          PBN_HANDS1)])
+    def test_write_board_result(self,
+                                event: str,
+                                site: str,
+                                date: datetime.date,
+                                board_num: int,
+                                west_player: str,
+                                north_player: str,
+                                east_player: str,
+                                south_player: str,
+                                dealer: Player,
+                                deal: Dict[Player, Set[Card]],
+                                scoring: Scoring,
+                                contract: Contract,
+                                taken_tricks: int,
+                                expected_calls,
+                                deal_return_value,
+                                pbn_writer,
+                                mocker: MockFixture):
+        mock_write_tag_pair = mocker.patch(
+            'bridge_env.pbn.writer.PBNWriter.write_tag_pair')
+        mock_convert_deal = mocker.patch(
+            'bridge_env.pbn.writer.convert_deal')
+        mock_convert_deal.return_value = deal_return_value
+
+        pbn_writer.write_board_result(event, site, date, board_num, west_player,
+                                      north_player, east_player, south_player,
+                                      dealer, deal, scoring, contract,
+                                      taken_tricks)
+        mock_write_tag_pair.assert_has_calls(
+            [call(tag, content) for tag, content in expected_calls])
 
 
 @pytest.mark.parametrize(('hands', 'dealer', 'expected'),
