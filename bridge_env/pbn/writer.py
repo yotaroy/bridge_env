@@ -135,7 +135,7 @@ class PBNWriter:
         self.write_tag_pair('Result',
                             '' if contract.is_passed_out() else str(
                                 taken_tricks))
-        # TODO: Optional figure
+        # TODO: Implement optional fields.
 
 
 class Scoring(Enum):
