@@ -1,7 +1,8 @@
 import pytest
-from bridge_env import Card, Player, Suit
-from bridge_env.network_bridge.server import Server, PlayerThread
 from pytest_mock import MockFixture
+
+from bridge_env import Card, Player, Suit
+from bridge_env.network_bridge.server import PlayerThread, Server
 
 
 class TestThreadHandler:

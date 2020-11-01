@@ -1,4 +1,5 @@
 import pytest
+
 from bridge_env import Bid, Card, Player, Suit, Vul
 from bridge_env.network_bridge.client import Client
 

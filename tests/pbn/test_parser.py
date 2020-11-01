@@ -3,8 +3,9 @@ from unittest.mock import call
 import pytest
 from pytest_mock import MockFixture
 
-from bridge_env import Card, Player, Suit
 from bridge_env.pbn.parser import PBNParser, hands_parser
+from . import HANDS1, HANDS2, HANDS3, PBN_HANDS1, PBN_HANDS2, \
+    PBN_HANDS3
 
 
 class TestPBNParser:
@@ -20,8 +21,7 @@ class TestPBNParser:
          'South': '?',
          'Dealer': 'N',
          'Vulnerable': '-',
-         'Deal': 'N:4.KJ32.842.AQ743 JT987.Q876.AK5.2 AK532.T.JT6.T985 '
-                 'Q6.A954.Q973.KJ6',
+         'Deal': PBN_HANDS1,
          'Scoring': '?',
          'Declarer': '?',
          'Contract': '?',
@@ -38,8 +38,7 @@ class TestPBNParser:
          'South': '#',
          'Dealer': 'E',
          'Vulnerable': 'NS',
-         'Deal': 'E:KQ9752.K74.8742. T.A93.QT93.KJ873 J6.T852.AJ65.QT9 '
-                 'A843.QJ6.K.A6542',
+         'Deal': PBN_HANDS2,
          'Scoring': '?',
          'Declarer': '?',
          'Contract': '?',
@@ -156,6 +155,7 @@ class TestPBNParser:
           'J973.J98742.3.K4 KQT2.AT.J6542.85"]\n',
           '[Scoring "IMP"]\n',
           '[Declarer "S"]\n',
+          '[Declarer "N"]\n',   # duplicated tag is ignored
           '[Contract "5HX"]\n'],
          {'Dealer': 'N', 'Vulnerable': 'None',
           'Deal': 'N:.63.AKQ987.A9732 A8654.KQ5.T.QJT6 '
@@ -195,66 +195,9 @@ class TestPBNParser:
             assert parser.parse_all(fp) == expected
 
 
-@pytest.mark.parametrize(('pbn_hands', 'expected'), [
-    (TestPBNParser.PLAY_FILE_EXPECTED[0]['Deal'],
-     {Player.N: {Card(4, Suit.S), Card(13, Suit.H), Card(11, Suit.H),
-                 Card(3, Suit.H), Card(2, Suit.H), Card(8, Suit.D),
-                 Card(4, Suit.D), Card(2, Suit.D), Card(14, Suit.C),
-                 Card(12, Suit.C), Card(7, Suit.C), Card(4, Suit.C),
-                 Card(3, Suit.C)},
-      Player.E: {Card(11, Suit.S), Card(10, Suit.S), Card(9, Suit.S),
-                 Card(8, Suit.S), Card(7, Suit.S), Card(12, Suit.H),
-                 Card(8, Suit.H), Card(7, Suit.H), Card(6, Suit.H),
-                 Card(14, Suit.D), Card(13, Suit.D), Card(5, Suit.D),
-                 Card(2, Suit.C)},
-      Player.S: {Card(14, Suit.S), Card(13, Suit.S), Card(5, Suit.S),
-                 Card(3, Suit.S), Card(2, Suit.S), Card(10, Suit.H),
-                 Card(11, Suit.D), Card(10, Suit.D), Card(6, Suit.D),
-                 Card(10, Suit.C), Card(9, Suit.C), Card(8, Suit.C),
-                 Card(5, Suit.C)},
-      Player.W: {Card(12, Suit.S), Card(6, Suit.S), Card(14, Suit.H),
-                 Card(9, Suit.H), Card(5, Suit.H), Card(4, Suit.H),
-                 Card(12, Suit.D), Card(9, Suit.D), Card(7, Suit.D),
-                 Card(3, Suit.D), Card(13, Suit.C), Card(11, Suit.C),
-                 Card(6, Suit.C)},
-      }),
-    (TestPBNParser.PLAY_FILE_EXPECTED[1]['Deal'],
-     {Player.N: {Card(14, Suit.S), Card(8, Suit.S), Card(4, Suit.S),
-                 Card(3, Suit.S), Card(12, Suit.H), Card(11, Suit.H),
-                 Card(6, Suit.H), Card(13, Suit.D), Card(14, Suit.C),
-                 Card(6, Suit.C), Card(5, Suit.C), Card(4, Suit.C),
-                 Card(2, Suit.C)},
-      Player.E: {Card(13, Suit.S), Card(12, Suit.S), Card(9, Suit.S),
-                 Card(7, Suit.S), Card(5, Suit.S), Card(2, Suit.S),
-                 Card(13, Suit.H), Card(7, Suit.H), Card(4, Suit.H),
-                 Card(8, Suit.D), Card(7, Suit.D), Card(4, Suit.D),
-                 Card(2, Suit.D)},
-      Player.S: {Card(10, Suit.S), Card(14, Suit.H), Card(9, Suit.H),
-                 Card(3, Suit.H), Card(12, Suit.D), Card(10, Suit.D),
-                 Card(9, Suit.D), Card(3, Suit.D), Card(13, Suit.C),
-                 Card(11, Suit.C), Card(8, Suit.C), Card(7, Suit.C),
-                 Card(3, Suit.C)},
-      Player.W: {Card(11, Suit.S), Card(6, Suit.S), Card(10, Suit.H),
-                 Card(8, Suit.H), Card(5, Suit.H), Card(2, Suit.H),
-                 Card(14, Suit.D), Card(11, Suit.D), Card(6, Suit.D),
-                 Card(5, Suit.D), Card(12, Suit.C), Card(10, Suit.C),
-                 Card(9, Suit.C)},
-      }),
-    ('W:KQT2.AT.J6542.85 - A8654.KQ5.T.QJT6 -',
-     {Player.N: set(),
-      Player.E: {Card(14, Suit.S), Card(8, Suit.S), Card(6, Suit.S),
-                 Card(5, Suit.S), Card(4, Suit.S), Card(13, Suit.H),
-                 Card(12, Suit.H), Card(5, Suit.H), Card(10, Suit.D),
-                 Card(12, Suit.C), Card(11, Suit.C), Card(10, Suit.C),
-                 Card(6, Suit.C)},
-      Player.S: set(),
-      Player.W: {Card(13, Suit.S), Card(12, Suit.S), Card(10, Suit.S),
-                 Card(2, Suit.S), Card(14, Suit.H), Card(10, Suit.H),
-                 Card(11, Suit.D), Card(6, Suit.D), Card(5, Suit.D),
-                 Card(4, Suit.D), Card(2, Suit.D), Card(8, Suit.C),
-                 Card(5, Suit.C)},
-      })
-])
+@pytest.mark.parametrize(('pbn_hands', 'expected'),
+                         [(PBN_HANDS1, HANDS1),
+                          (PBN_HANDS2, HANDS2),
+                          (PBN_HANDS3, HANDS3)])
 def test_hands_parser(pbn_hands, expected):
     assert hands_parser(pbn_hands) == expected
-

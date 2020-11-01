@@ -1,6 +1,7 @@
 import operator
 
 import pytest
+
 from bridge_env import Card, Suit
 
 
