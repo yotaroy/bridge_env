@@ -9,13 +9,14 @@ from .. import Card, Contract, Player, Suit
 
 
 class PBNWriter:
+    """Writer to write contract bridge results in PBN format."""
     # maximum characters in a line including non-visible characters
     MAX_LINE_CHARS = 255
 
     def __init__(self, writer: IO[str]):
         self.writer = writer
 
-    def write_line(self, string: str):
+    def write_line(self, string: str) -> None:
         """Writes string to output stream.
 
         If string size is over MAX_LINE_CHARS, breaks the string and writes
@@ -32,15 +33,15 @@ class PBNWriter:
             string = string[self.MAX_LINE_CHARS - 1:]
         self.writer.write(string)
 
-    def write_header(self):
+    def write_header(self) -> None:
         """Writes headers about PBN version and the export format.
 
-        treturn: None.
+        return: None.
         """
         self.write_line(f'% PBN {_VERSION}')
         self.write_line(f'% EXPORT')
 
-    def write_tag_pair(self, tag: str, content: str):
+    def write_tag_pair(self, tag: str, content: str) -> None:
         """Writes tag pair, which consists of tag and content.
 
         Format: [Tag "content"]
@@ -70,11 +71,10 @@ class PBNWriter:
                            deal: Dict[Player, Set[Card]],
                            scoring: Scoring,
                            contract: Contract,
-                           taken_tricks: Optional[int]
-                           ):
-        """
+                           taken_tricks: Optional[int]) -> None:
+        """Writes board result.
 
-        The 15 tag names of the MTS are (in order):
+        The 15 tag names of the mandatory tag set are (in order):
          (1) Event      (the name of the tournament or match)
          (2) Site       (the location of the event)
          (3) Date       (the starting date of the game)
@@ -91,20 +91,21 @@ class PBNWriter:
          (14) Contract   (the contract)
          (15) Result     (the result of the game)
 
-        :param event:
-        :param site:
-        :param date:
-        :param board_num:
-        :param west_player:
-        :param north_player:
-        :param east_player:
-        :param south_player:
-        :param dealer:
-        :param deal:
-        :param scoring:
-        :param contract:
-        :param taken_tricks:
-        :return:
+        :param event: The name of the tournament or match.
+        :param site: Location of the event.
+        :param date: Starting date of the game
+        :param board_num: Board number.
+        :param west_player: West player's name.
+        :param north_player: North player's name.
+        :param east_player: East player's name.
+        :param south_player: South player's name.
+        :param dealer: Dealer position.
+        :param deal: Dealt cards. Hands of the players.
+        :param scoring: Scoring system.
+        :param contract: Contract of the game. Contract object has the
+            information about vulnerability and declarer.
+        :param taken_tricks: Tricks taken by the declarer's team.
+        :return: None.
         """
         self.write_tag_pair('Event', event)
         self.write_tag_pair('Site', site)
@@ -138,7 +139,8 @@ class PBNWriter:
 
 
 class Scoring(Enum):
-    """
+    """PBN Scoring systems.
+
     Examples of basic scoring systems are:
         MP:           MatchPoint scoring
         MatchPoints:  identical to 'MP'
