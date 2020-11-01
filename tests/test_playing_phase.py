@@ -1,8 +1,9 @@
 import pytest
+from pytest_mock import MockFixture
+
 from bridge_env import Bid, Card, Contract, Player, Suit
 from bridge_env.playing_phase import ObservedPlayingPhase, PlayingHistory, \
     PlayingPhase, PlayingPhaseWithHands, TrickHistory
-from pytest_mock import MockFixture
 
 
 @pytest.fixture(scope='module')
