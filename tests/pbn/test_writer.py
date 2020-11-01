@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, Set
+from typing import Dict, Optional, Set
 from unittest.mock import call
 
 import pytest
@@ -68,7 +68,19 @@ class TestPBNWriter:
                ('East', 'East'), ('South', 'South'), ('Dealer', 'N'),
                ('Vulnerable', 'All'), ('Deal', PBN_HANDS1), ('Scoring', 'IMP'),
                ('Declarer', 'E'), ('Contract', '5NTX'), ('Result', '10')],
-          PBN_HANDS1)])
+          PBN_HANDS1),
+         # passed out
+         ('World Bridge Championship 2019', 'Online',
+          datetime.date(2019, 12, 1), 10, 'WWW', 'NNN', 'EEE', 'SSS',
+          Player.S, HANDS2, Scoring.MP,
+          Contract(None, x=False, xx=False, vul=Vul.NONE, declarer=None),
+          None, [('Event', 'World Bridge Championship 2019'), ('Site', 'Online'),
+               ('Date', '2019.12.01'),
+               ('Board', '10'), ('West', 'WWW'), ('North', 'NNN'),
+               ('East', 'EEE'), ('South', 'SSS'), ('Dealer', 'S'),
+               ('Vulnerable', 'None'), ('Deal', PBN_HANDS2), ('Scoring', 'MP'),
+               ('Declarer', ''), ('Contract', 'Pass'), ('Result', '')],
+          PBN_HANDS2)])
     def test_write_board_result(self,
                                 event: str,
                                 site: str,
@@ -82,7 +94,7 @@ class TestPBNWriter:
                                 deal: Dict[Player, Set[Card]],
                                 scoring: Scoring,
                                 contract: Contract,
-                                taken_tricks: int,
+                                taken_tricks: Optional[int],
                                 expected_calls,
                                 deal_return_value,
                                 pbn_writer,

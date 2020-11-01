@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from enum import Enum
-from typing import Dict, IO, List, Set
+from typing import Dict, IO, List, Optional, Set
 
 from . import _VERSION
 from .. import Card, Contract, Player, Suit
@@ -70,7 +70,7 @@ class PBNWriter:
                            deal: Dict[Player, Set[Card]],
                            scoring: Scoring,
                            contract: Contract,
-                           taken_tricks: int
+                           taken_tricks: Optional[int]
                            ):
         """
 
@@ -119,13 +119,21 @@ class PBNWriter:
         self.write_tag_pair('Vulnerable', contract.vul.pbn_format())
         self.write_tag_pair('Deal', convert_deal(deal))
         self.write_tag_pair('Scoring', scoring.value)
+
+        if contract.is_passed_out():
+            assert taken_tricks is None
+        else:
+            assert taken_tricks is not None
+
         self.write_tag_pair('Declarer',
-                            '' if contract.is_passed_out() is None else str(
+                            '' if contract.is_passed_out() else str(
                                 contract.declarer))
         self.write_tag_pair('Contract',
                             'Pass' if contract.is_passed_out() else str(
                                 contract))
-        self.write_tag_pair('Result', str(taken_tricks))
+        self.write_tag_pair('Result',
+                            '' if contract.is_passed_out() else str(
+                                taken_tricks))
         # TODO: Optional figure
 
 
