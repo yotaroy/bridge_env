@@ -1,0 +1,93 @@
+{
+  "type": "object",
+  "properties": {
+    "log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "player": {
+            "type": "object",
+            "properties": {
+              "north": {
+                "description": "North player's name",
+                "type": "string"
+              },
+              "east": {
+                "description": "East player's name",
+                "type": "string"
+              },
+              "south": {
+                "description": "South player's name",
+                "type": "string"
+              },
+              "west": {
+                "description": "West player's name",
+                "type": "string"
+              }
+            }
+          },
+          "board_id": {
+            "description": "The id of the board.",
+            "type": "integer"
+          },
+          "dealer": {
+            "description": "Dealer. (N, E, S or W)",
+            "type": "string"
+          },
+          "deal": {
+            "description": "Deal of players in PBN format.",
+            "type": "string"
+          },
+          "vulnerability": {
+            "description": "Vulnerability. (Both, NS, EW or None)",
+            "type": "string"
+          },
+          "bid_history": {
+            "description": "History of bidding phase. Bid format is <level><trump>, X, XX or Pass",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contract": {
+            "description": "Contract. Format is <level><trump>(X, XX). Empty string if passed out.",
+            "type": "string"
+          },
+          "declarer": {
+            "description": "Declarer. (N, E, S or W)",
+            "type": "string"
+          },
+          "play_history": {
+            "description": "",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "taken_tricks": {
+            "description": "Tricks taken by the declarer's team.",
+            "type": "integer"
+          },
+          "score_type": {
+            "description": "Score type. (ex. IMP, MP)",
+            "type": "integer"
+          },
+          "score": {
+            "type": "object",
+            "properties": {
+              "NS": {
+                "description": "Score of NS pair.",
+                "type": "integer"
+              },
+              "EW": {
+                "description": "Score of NS pair.",
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
