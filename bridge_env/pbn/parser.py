@@ -99,6 +99,9 @@ class PBNParser:
 
         game_mem = dict()
         for tag_pair in tag_pairs:
+            # In import format, a tag pair that already occurred, is ignored.
+            if tag_pair[0] in game_mem:
+                continue
             game_mem[tag_pair[0]] = tag_pair[1]
 
         return game_mem
@@ -171,7 +174,8 @@ def hands_parser(pbn_hands: str) -> Dict[Player, Set[Card]]:
     | <2nd_hand> is the hand of the next player of the dealer
     | ...
     |
-    | ex) "N:4.KJ32.842.AQ743 JT987.Q876.AK5.2 AK532.T.JT6.T985 Q6.A954.Q973.KJ6"
+    | ex)
+    |  "N:4.KJ32.842.AQ743 JT987.Q876.AK5.2 AK532.T.JT6.T985 Q6.A954.Q973.KJ6"
 
     :param pbn_hands: string of PBN style hands.
     :return: Dict of player and hand(set of cards).

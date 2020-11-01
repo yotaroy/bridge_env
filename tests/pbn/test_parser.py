@@ -155,6 +155,7 @@ class TestPBNParser:
           'J973.J98742.3.K4 KQT2.AT.J6542.85"]\n',
           '[Scoring "IMP"]\n',
           '[Declarer "S"]\n',
+          '[Declarer "N"]\n',   # duplicated tag is ignored
           '[Contract "5HX"]\n'],
          {'Dealer': 'N', 'Vulnerable': 'None',
           'Deal': 'N:.63.AKQ987.A9732 A8654.KQ5.T.QJT6 '
