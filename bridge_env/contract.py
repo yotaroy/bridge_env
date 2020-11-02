@@ -35,7 +35,7 @@ class Contract:
         :return: str representation of the contract.
         """
         if self.is_passed_out():
-            return "Passed_Out"
+            return "Passed_out"
         contract = str(self.final_bid)
         if self.xx:
             contract += "XX"

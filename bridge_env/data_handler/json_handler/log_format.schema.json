@@ -1,0 +1,107 @@
+{
+  "type": "object",
+  "properties": {
+    "logs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "players": {
+            "type": "object",
+            "properties": {
+              "N": {
+                "description": "North player's name",
+                "type": "string"
+              },
+              "E": {
+                "description": "East player's name",
+                "type": "string"
+              },
+              "S": {
+                "description": "South player's name",
+                "type": "string"
+              },
+              "W": {
+                "description": "West player's name",
+                "type": "string"
+              }
+            }
+          },
+          "board_id": {
+            "description": "The id of the board.",
+            "type": "integer"
+          },
+          "dealer": {
+            "description": "Dealer. (N, E, S or W)",
+            "type": "string"
+          },
+          "deal": {
+            "description": "Deal of players in PBN format.",
+            "type": "string"
+          },
+          "vulnerability": {
+            "description": "Vulnerability. (Both, NS, EW or None)",
+            "type": "string"
+          },
+          "bid_history": {
+            "description": "History of bidding phase. Bid format is <level><trump>, X, XX or Pass",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contract": {
+            "description": "Contract. Format is <level><trump>(X, XX). The value is Passed_out if passed out.",
+            "type": "string"
+          },
+          "declarer": {
+            "description": "Declarer. (N, E, S or W)",
+            "type": "string"
+          },
+          "play_history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "leader": {
+                  "description": "Player who plays the first card. (N, E, S or W)",
+                  "type": "string"
+                },
+                "cards": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "taken_trick": {
+            "description": "The number of tricks taken by the declarer's team. The value is null if passed out.",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "score_type": {
+            "description": "Score type. (ex. IMP, MP)",
+            "type": "integer"
+          },
+          "scores": {
+            "type": "object",
+            "properties": {
+              "NS": {
+                "description": "Score of NS pair.",
+                "type": "integer"
+              },
+              "EW": {
+                "description": "Score of NS pair.",
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

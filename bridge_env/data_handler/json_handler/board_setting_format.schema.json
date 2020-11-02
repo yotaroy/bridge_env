@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+    "board_settings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "board_id": {
+            "description": "The id of the board.",
+            "type": "integer"
+          },
+          "dealer": {
+            "description": "Dealer. (N, E, S or W)",
+            "type": "string"
+          },
+          "deal": {
+            "description": "Deal of players in PBN format.",
+            "type": "string"
+          },
+          "vulnerability": {
+            "description": "Vulnerability. (Both, NS, EW or None)",
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

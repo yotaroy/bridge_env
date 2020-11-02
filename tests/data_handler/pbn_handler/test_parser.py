@@ -3,13 +3,13 @@ from unittest.mock import call
 import pytest
 from pytest_mock import MockFixture
 
-from bridge_env.pbn.parser import PBNParser, hands_parser
+from bridge_env.data_handler.pbn_handler.parser import PBNParser, hands_parser
 from . import HANDS1, HANDS2, HANDS3, PBN_HANDS1, PBN_HANDS2, \
     PBN_HANDS3
 
 
 class TestPBNParser:
-    PLAY_FILE_PATH = 'tests/pbn/source/play_ex.pbn'
+    PLAY_FILE_PATH = 'tests/data_handler/pbn_handler/source/play_ex.pbn'
     PLAY_FILE_EXPECTED = [
         {'Event': '?',
          'Site': '?',
@@ -81,7 +81,7 @@ class TestPBNParser:
          'Result': '?',
          'OptimumScore': 'NS 130',
          'OptimumResultTable': r'Declarer;Denomination\2R;Result\2R'}]
-    RESULT_FILE_PATH = 'tests/pbn/source/result_ex.pbn'
+    RESULT_FILE_PATH = 'tests/data_handler/pbn_handler/source/result_ex.pbn'
     RESULT_FILE_EXPECTED = [{
         'Event': '12th Cap Gemini World Top Tournament 1998',
         'Site': 'Hotel Des Indes - The Hague, Netherlands, NLD',
@@ -155,7 +155,7 @@ class TestPBNParser:
           'J973.J98742.3.K4 KQT2.AT.J6542.85"]\n',
           '[Scoring "IMP"]\n',
           '[Declarer "S"]\n',
-          '[Declarer "N"]\n',   # duplicated tag is ignored
+          '[Declarer "N"]\n',  # duplicated tag is ignored
           '[Contract "5HX"]\n'],
          {'Dealer': 'N', 'Vulnerable': 'None',
           'Deal': 'N:.63.AKQ987.A9732 A8654.KQ5.T.QJT6 '
