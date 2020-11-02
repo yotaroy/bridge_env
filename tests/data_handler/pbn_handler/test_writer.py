@@ -6,7 +6,8 @@ import pytest
 from pytest_mock import MockFixture
 
 from bridge_env import Bid, Card, Contract, Player, Vul
-from bridge_env.pbn.writer import PBNWriter, Scoring, convert_deal
+from bridge_env.data_handler.pbn_handler.writer import PBNWriter, Scoring, \
+    convert_deal
 from . import HANDS1, HANDS2, HANDS3, PBN_HANDS1, PBN_HANDS2, \
     PBN_HANDS3
 
@@ -46,7 +47,7 @@ class TestPBNWriter:
     def test_write_tag_pair(self, tag, content, expected, pbn_writer,
                             mocker: MockFixture):
         mock_write_line = mocker.patch(
-            'bridge_env.pbn.writer.PBNWriter.write_line')
+            'bridge_env.data_handler.pbn_handler.writer.PBNWriter.write_line')
         pbn_writer.write_tag_pair(tag, content)
         mock_write_line.assert_called_once_with(expected)
 
@@ -101,9 +102,10 @@ class TestPBNWriter:
                                 pbn_writer,
                                 mocker: MockFixture):
         mock_write_tag_pair = mocker.patch(
-            'bridge_env.pbn.writer.PBNWriter.write_tag_pair')
+            'bridge_env.data_handler.pbn_handler.writer.PBNWriter.'
+            'write_tag_pair')
         mock_convert_deal = mocker.patch(
-            'bridge_env.pbn.writer.convert_deal')
+            'bridge_env.data_handler.pbn_handler.writer.convert_deal')
         mock_convert_deal.return_value = deal_return_value
 
         pbn_writer.write_board_result(event, site, date, board_num, west_player,

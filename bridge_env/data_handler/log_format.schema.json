@@ -1,27 +1,27 @@
 {
   "type": "object",
   "properties": {
-    "log": {
+    "logs": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "player": {
+          "players": {
             "type": "object",
             "properties": {
-              "north": {
+              "N": {
                 "description": "North player's name",
                 "type": "string"
               },
-              "east": {
+              "E": {
                 "description": "East player's name",
                 "type": "string"
               },
-              "south": {
+              "S": {
                 "description": "South player's name",
                 "type": "string"
               },
-              "west": {
+              "W": {
                 "description": "West player's name",
                 "type": "string"
               }
@@ -65,15 +65,15 @@
               "type": "string"
             }
           },
-          "taken_tricks": {
-            "description": "Tricks taken by the declarer's team.",
+          "taken_trick": {
+            "description": "The number of tricks taken by the declarer's team.",
             "type": "integer"
           },
           "score_type": {
             "description": "Score type. (ex. IMP, MP)",
             "type": "integer"
           },
-          "score": {
+          "scores": {
             "type": "object",
             "properties": {
               "NS": {

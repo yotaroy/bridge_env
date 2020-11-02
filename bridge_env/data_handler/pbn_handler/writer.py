@@ -5,10 +5,11 @@ from enum import Enum
 from typing import Dict, IO, List, Optional, Set
 
 from . import _VERSION
-from .. import Card, Contract, Player, Suit
+from ..abstract_classes import Writer
+from ... import Card, Contract, Player, Suit
 
 
-class PBNWriter:
+class PBNWriter(Writer):
     """Writer to write contract bridge results in PBN format."""
     # maximum characters in a line including non-visible characters
     MAX_LINE_CHARS = 255

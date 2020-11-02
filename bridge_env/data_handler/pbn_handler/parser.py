@@ -14,14 +14,15 @@ Parse PBN file::
 """
 import re
 from logging import getLogger
-from typing import Dict, IO, Iterator, List, Set
+from typing import Dict, IO, Iterator, List, Set, Tuple
 
-from bridge_env import Card, Player, Suit
+from ..abstract_classes import BoardSetting, Parser
+from ... import Card, Player, Suit, Vul
 
 logger = getLogger(__file__)
 
 
-class PBNParser:
+class PBNParser(Parser):
     """PBN (Portable Bridge Notation) format parser."""
 
     def __init__(self):
@@ -157,6 +158,18 @@ class PBNParser:
         outputs = list()
         for x in self.parse_stream(fp):
             outputs.append(x)
+        return outputs
+
+    # TODO: Add unit test
+    def parse_board_setting(self, fp: IO[str]) -> List[BoardSetting]:
+        outputs: List[BoardSetting] = list()
+        for x in self.parse_stream(fp):
+            deal = hands_parser(x['Deal'])
+            dealer = Player[x['Dealer']]
+            vul = Vul.str_to_vul(x['Vulnerable'])
+            board_id = x['Board']  # TODO: Consider other id conversion
+            outputs.append(BoardSetting(deal, dealer, vul, board_id))
+
         return outputs
 
 
