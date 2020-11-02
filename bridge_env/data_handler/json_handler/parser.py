@@ -1,7 +1,7 @@
 import json
-from typing import Dict, IO, List, Set, Tuple
+from typing import Dict, IO, List
 
-from bridge_env import Card, Player, Vul
+from bridge_env import Player, Vul
 from bridge_env.data_handler.abstract_classes import BoardSetting, Parser
 from bridge_env.data_handler.pbn_handler.parser import hands_parser
 

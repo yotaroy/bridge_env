@@ -5,7 +5,7 @@ from pytest_mock import MockFixture
 from bridge_env import Bid, Contract, Player, Vul
 from bridge_env.data_handler.json_handler.writer import JsonWriter
 from bridge_env.data_handler.pbn_handler.writer import Scoring
-from ..pbn_handler import PBN_HANDS1, PBN_HANDS2, HANDS1, HANDS2
+from ..pbn_handler import HANDS1, PBN_HANDS1
 
 
 class TestJsonWriter:
@@ -23,7 +23,8 @@ class TestJsonWriter:
             dealer=Player.N,
             deal=HANDS1,
             scoring=Scoring.MP,
-            contract=Contract(Bid.NT5, x=True, xx=False, declarer=Player.E, vul=Vul.BOTH),
+            contract=Contract(Bid.NT5, x=True, xx=False, declarer=Player.E,
+                              vul=Vul.BOTH),
             taken_tricks=9,
             scores={'NS': 40, 'EW': -40})
 
@@ -59,4 +60,3 @@ class TestJsonWriter:
                  '"scores": {"NS": 40, "EW": -40}}'),
             call('\n]}')
         ])
-

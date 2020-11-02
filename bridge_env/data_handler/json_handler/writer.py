@@ -57,8 +57,8 @@ class JsonWriter(Writer):
                   'taken_trick': taken_tricks,
                   'score_type': scoring.value,
                   'scores': {'NS': scores['NS'],
-                            'EW': scores['EW']
-                            }
+                             'EW': scores['EW']
+                             }
                   }
         line = json.dumps(result, indent=None)
         if self._first_line:

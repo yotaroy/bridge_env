@@ -14,7 +14,7 @@ Parse PBN file::
 """
 import re
 from logging import getLogger
-from typing import Dict, IO, Iterator, List, Set, Tuple
+from typing import Dict, IO, Iterator, List, Set
 
 from ..abstract_classes import BoardSetting, Parser
 from ... import Card, Player, Suit, Vul
