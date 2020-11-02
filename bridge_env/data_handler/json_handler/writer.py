@@ -53,14 +53,14 @@ class JsonWriter(Writer):
                   'deal': convert_deal(deal, dealer),
                   'vulnerable': str(contract.vul),
                   'bid_history': [str(bid) for bid in bid_history],
-                  'contract': str(contract),  # "Passed_Out" when passed out.
+                  'contract': str(contract),  # "Passed_out" when passed out.
                   'declarer': '' if contract.is_passed_out() else str(
                       contract.declarer),
                   'play_history': [{'leader': str(trick_history.leader),
                                     'cards': [str(card) for card in
                                               trick_history.cards]} for
                                    trick_history in play_history.history],
-                  'taken_trick': taken_trick_num,
+                  'taken_trick': taken_trick_num,  # nullable (passed out)
                   'score_type': scoring.value,
                   'scores': {'NS': scores['NS'],
                              'EW': scores['EW']

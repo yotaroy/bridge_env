@@ -49,6 +49,22 @@ usage: bridge-client-ex [-h] [-p PORT] [-i IP_ADDRESS] [-l LOCATION] [-t TEAM_NA
 #                         Team name
 ```
 
+### Board setting and log formats
+
+Server can read board settings in PBN or JSON file.
+Game log outputted by server follows PBN or JSON formats below.
+
+Board setting in JSON is defined in
+[json schema](bridge_env/data_handler/json_handler/board_setting_format.schema.json).
+Game log in JSON is defined in
+[json schema](bridge_env/data_handler/json_handler/log_format.schema.json).
+See [README](bridge_env/data_handler/json_handler/README.md) for more information
+about JSON format.
+
+Board setting in PBN (v2.1) is defined in
+<http://www.tistis.nl/pbn/pbn_v21.txt> as "import format".
+See <http://www.tistis.nl/pbn/> for more information about PBN format.
+
 ## Requirements
 
 - Python >= 3.7

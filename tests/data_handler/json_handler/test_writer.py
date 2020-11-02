@@ -45,6 +45,7 @@ class TestJsonWriter:
         # TODO: It is better to create all trick_history until trick #13.
         return play_history
 
+    # TODO: Add passed out case.
     def test_integration(self, playing_history1, playing_history2,
                          mocker: MockFixture):
         mock_io = mocker.MagicMock()

@@ -51,7 +51,7 @@
             }
           },
           "contract": {
-            "description": "Contract. Format is <level><trump>(X, XX). \"Passed_Out\" if passed out.",
+            "description": "Contract. Format is <level><trump>(X, XX). \"Passed_out\" if passed out.",
             "type": "string"
           },
           "declarer": {
@@ -78,7 +78,10 @@
           },
           "taken_trick": {
             "description": "The number of tricks taken by the declarer's team.",
-            "type": "integer"
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "score_type": {
             "description": "Score type. (ex. IMP, MP)",
