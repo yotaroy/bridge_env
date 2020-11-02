@@ -26,7 +26,6 @@ class JsonWriter(Writer):
             self.writer.write('\n]}')
         self._open = False
 
-    # TODO: Add bid history and play history
     def write_board_result(self,
                            board_id: str,
                            west_player: str,

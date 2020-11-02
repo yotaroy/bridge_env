@@ -66,7 +66,7 @@ The values are "N", "E", "S" or "W".
 "cards" is a list of card strings.
 A card string consists of a suit and a rank.
 For example, "S2" (2 of spade), "CT" (10 of club).
-Ranks no less than 10 is represented as "T" (10), "J" (11), "Q" (12), "K" (13),
+Ranks no less than 10 are represented as "T" (10), "J" (11), "Q" (12), "K" (13),
 "A" (1).
 
 ### taken_trick (int, null)

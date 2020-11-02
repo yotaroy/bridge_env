@@ -63,6 +63,8 @@ about JSON format.
 
 Board setting in PBN (v2.1) is defined in
 <http://www.tistis.nl/pbn/pbn_v21.txt> as "import format".
+Game log in PBN (v2.1) is defined in
+<http://www.tistis.nl/pbn/pbn_v21.txt> as "export format".
 See <http://www.tistis.nl/pbn/> for more information about PBN format.
 
 ## Requirements

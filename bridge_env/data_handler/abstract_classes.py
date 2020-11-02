@@ -30,4 +30,5 @@ class BoardSetting(NamedTuple):
 
 
 class Writer(metaclass=ABCMeta):
+    # TODO: Use this abstract method.
     pass
