@@ -119,7 +119,7 @@ class PBNWriter(Writer):
         self.write_tag_pair('South', south_player)
         self.write_tag_pair('Dealer', str(dealer))
         self.write_tag_pair('Vulnerable', contract.vul.pbn_format())
-        self.write_tag_pair('Deal', convert_deal(deal))
+        self.write_tag_pair('Deal', convert_deal(deal, dealer))
         self.write_tag_pair('Scoring', scoring.value)
 
         if contract.is_passed_out():

@@ -51,7 +51,7 @@
             }
           },
           "contract": {
-            "description": "Contract. Format is <level><trump>(X, XX). Empty string if passed out.",
+            "description": "Contract. Format is <level><trump>(X, XX). \"Passed_Out\" if passed out.",
             "type": "string"
           },
           "declarer": {
@@ -59,10 +59,21 @@
             "type": "string"
           },
           "play_history": {
-            "description": "",
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "leader": {
+                  "description": "Player who plays the first card. (N, E, S or W)",
+                  "type": "string"
+                },
+                "cards": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
             }
           },
           "taken_trick": {
