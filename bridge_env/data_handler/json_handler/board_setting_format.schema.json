@@ -15,8 +15,37 @@
             "type": "string"
           },
           "deal": {
-            "description": "Deal of players in PBN format.",
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "N": {
+                "description": "Hand of north player. Card format is <suit><rank>.",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "E": {
+                "description": "Hand of east player. Card format is <suit><rank>.",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "S": {
+                "description": "Hand of south player. Card format is <suit><rank>.",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "W": {
+                "description": "Hand of west player. Card format is <suit><rank>.",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "vulnerability": {
             "description": "Vulnerability. (Both, NS, EW or None)",
