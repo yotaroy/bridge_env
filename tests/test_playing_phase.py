@@ -186,6 +186,10 @@ class TestPlayingPhase:
         # _set_next_leader()
         assert playing_phase.leader == next_leader
 
+        # taken_tricks
+        assert playing_phase.taken_tricks[next_leader.pair] == 1
+        assert playing_phase.taken_tricks[next_leader.pair.opponent_pair] == 0
+
         # same as leader
         assert playing_phase.active_player == next_leader
 

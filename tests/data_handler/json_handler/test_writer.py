@@ -3,7 +3,7 @@ from unittest.mock import call
 import pytest
 from pytest_mock import MockFixture
 
-from bridge_env import Bid, Card, Contract, Player, Suit, Vul
+from bridge_env import Bid, Card, Contract, Pair, Player, Suit, Vul
 from bridge_env.data_handler.json_handler.writer import JsonWriter
 from bridge_env.data_handler.pbn_handler.writer import Scoring
 from bridge_env.playing_phase import PlayingHistory, TrickHistory
@@ -69,7 +69,7 @@ class TestJsonWriter:
                               vul=Vul.BOTH),
             play_history=playing_history1,
             taken_trick_num=9,
-            scores={'NS': 40, 'EW': -40})
+            scores={Pair.NS: 40, Pair.EW: -40})
 
         json_writer.write_board_result(
             board_id='test_board2',
@@ -88,7 +88,7 @@ class TestJsonWriter:
                               vul=Vul.NONE),
             play_history=playing_history2,
             taken_trick_num=10,
-            scores={'NS': 300, 'EW': -300})
+            scores={Pair.NS: 300, Pair.EW: -300})
 
         json_writer.close()
 
