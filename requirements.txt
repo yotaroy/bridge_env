@@ -1,5 +1,5 @@
 flake8
-numpy==1.19.1
+numpy==1.19.4
 mypy
 pytest
 pytest-mock
