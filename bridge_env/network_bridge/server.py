@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import pathlib
 import random
 import re
 import socket
@@ -9,11 +10,14 @@ import time
 from logging import getLogger
 from queue import Queue
 from threading import Event, Thread
-from typing import Dict, NamedTuple, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from .socket_interface import MessageInterface, SocketInterface
 from .. import BiddingPhase, BiddingPhaseState, Card, Contract, Player, Suit, \
     Vul
+from ..data_handler.abstract_classes import BoardSetting, Parser
+from ..data_handler.json_handler.parser import JsonParser
+from ..data_handler.pbn_handler.parser import PBNParser
 from ..playing_phase import PlayingPhaseWithHands
 
 logger = getLogger(__file__)
@@ -323,6 +327,16 @@ class PlayerThread(Thread, MessageInterface):
                 logger.debug('Playing phase error. (exit:04)')
                 return
 
+            status_message = self.receive_message_from_queue()
+            if status_message == Server.Message.NEXT_BOARD:
+                continue
+            elif status_message == Server.Message.END_SESSION:
+                super().send_message(Server.Message.END_SESSION)
+                return
+
+            raise Exception(f'Unexpected status message by main thread '
+                            f'received. Status message: "{status_message}"')
+
         logger.debug('Unreachable error. (exit:05)')
 
 
@@ -335,14 +349,18 @@ class Server(SocketInterface):
     """
     PROTOCOL_VERSION = 18
 
-    class Message(NamedTuple):
+    class Message:
         ILLEGAL_BID: str = 'illegal bid'
         ERROR: str = 'error detected'
         PASSED_OUT: str = 'passed out'
         NULL: str = 'nothing happens'
         END_SESSION: str = 'End of session'
+        NEXT_BOARD: str = 'next board'
 
-    def __init__(self, ip_address: str, port: int):
+    def __init__(self,
+                 ip_address: str,
+                 port: int,
+                 board_settings: Optional[List[BoardSetting]] = None):
         """
 
         :param ip_address:
@@ -350,6 +368,8 @@ class Server(SocketInterface):
             1024 to 5000.
         """
         super().__init__(ip_address=ip_address, port=port)
+
+        self.board_settings = board_settings
 
         self.sent_message_queues: Dict[Player, Queue] = {Player.N: Queue(),
                                                          Player.E: Queue(),
@@ -365,7 +385,8 @@ class Server(SocketInterface):
                                                    Player.W: Event()}
 
     @staticmethod
-    def _deal_cards(seed: Optional[int] = None) -> Dict[Player, Set[Card]]:
+    def _deal_random_cards(seed: Optional[int] = None) -> Dict[Player,
+                                                               Set[Card]]:
         cards = [Card(rank, suit) for rank in range(2, 15) for suit in Suit
                  if suit is not Suit.NT]
         random.seed(seed)
@@ -576,10 +597,20 @@ class Server(SocketInterface):
         # waits all players are seated
         self._sync_event(self.players_event, event_sync)
 
-        for board_number in range(1, 101):
-            cards = self._deal_cards()
-            vul = Vul.NONE  # TODO: How to set? Random?
-            dealer = Player.N  # TODO: How to set?
+        max_board_num = 101 if self.board_settings is None else len(
+            self.board_settings) + 1
+        for board_number in range(1, max_board_num):
+            if self.board_settings is None:
+                cards = self._deal_random_cards()
+                vul = random.choice(list(Vul))
+                dealer = random.choice(list(Player))
+            else:
+                board_setting: BoardSetting = self.board_settings[board_number - 1]
+                cards = board_setting.hands
+                dealer = board_setting.dealer
+                vul = board_setting.vul
+                board_id = board_setting.board_id
+                logger.info(f'Load a board setting. Board id: {board_id}')
 
             event_sync.clear()
             self.deal(board_number, dealer, vul, cards, event_sync)
@@ -593,6 +624,12 @@ class Server(SocketInterface):
             self.playing_phase(contract, cards)
 
             # TODO: Add score calculation.
+
+            if board_number == max_board_num - 1:
+                break
+
+            for player in Player:
+                self.sent_message_queues[player].put(self.Message.NEXT_BOARD)
 
         for player in Player:
             self.sent_message_queues[player].put(self.Message.END_SESSION)
@@ -617,12 +654,34 @@ def main() -> None:
                         default='localhost',
                         type=str,
                         help='IP address. (default=localhost)')
+    parser.add_argument('-b', '--board_setting',
+                        default='',
+                        type=str,
+                        help='Board settings file (.json or .pbn).')
 
     # TODO: Implement a selection to proceed a next board on cli
-    # TODO: Add an option to load board information to hold.
-    #  (ex. load a board from pbn file)
     # TODO: Add an option to save board results.
     #  (ex. save results as a pbn file)
     args = parser.parse_args()
-    with Server(ip_address=args.ip_address, port=args.port) as server:
+
+    board_settings = None
+    if args.board_setting:
+        path = pathlib.Path(args.board_setting)
+        board_setting_parser: Parser
+        if path.suffix == '.pbn':
+            board_setting_parser = PBNParser()
+        elif path.suffix == '.json':
+            board_setting_parser = JsonParser()
+        else:
+            raise Exception('File type error. '
+                            'Board setting file is neither PBN or JSON.')
+        # TODO: Consider streaming
+        with open(path, 'r') as fp:
+            board_settings = board_setting_parser.parse_board_setting(fp)
+            logger.info(f'Board settings are imported from {path}. '
+                        f'Board num = {len(board_settings)}')
+
+    with Server(ip_address=args.ip_address,
+                port=args.port,
+                board_settings=board_settings) as server:
         server.run()
