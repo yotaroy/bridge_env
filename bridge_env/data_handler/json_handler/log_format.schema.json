@@ -80,12 +80,15 @@
             }
           },
           "contract": {
-            "description": "Contract. Format is <level><trump>(X, XX). The value is Passed_out if passed out.",
+            "description": "Contract. Format is <level><trump>(X, XX). The value is Passed_out in passed out case.",
             "type": "string"
           },
           "declarer": {
-            "description": "Declarer. (N, E, S or W)",
-            "type": "string"
+            "description": "Declarer. (N, E, S or W). The value is null in passed out case.",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "play_history": {
             "description": "History of playing phase. The value is null in passed out case.",

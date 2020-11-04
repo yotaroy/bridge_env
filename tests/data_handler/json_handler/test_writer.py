@@ -90,6 +90,23 @@ class TestJsonWriter:
             taken_trick_num=10,
             scores={Pair.NS: 300, Pair.EW: -300})
 
+        # passed out
+        json_writer.write_board_result(
+            board_id='test_board3',
+            west_player='player-west',
+            north_player='player-north',
+            east_player='player-east',
+            south_player='player-south',
+            dealer=Player.S,
+            deal=HANDS1,
+            scoring=Scoring.MP,
+            bid_history=[Bid.Pass, Bid.Pass, Bid.Pass, Bid.Pass],
+            contract=Contract(None, x=False, xx=False, declarer=None,
+                              vul=Vul.NS),
+            play_history=None,
+            taken_trick_num=None,
+            scores={Pair.NS: 0, Pair.EW: 0})
+
         json_writer.close()
 
         deal1_n = '{"N": ["' + '", "'.join(JSON_HANDS1['N']) + '"], '
@@ -139,5 +156,19 @@ class TestJsonWriter:
                  '"taken_trick": 10, '
                  '"score_type": "MP", '
                  '"scores": {"NS": 300, "EW": -300}}'),
+            call(',\n'),
+            call('{"players": {"N": "player-north", "E": "player-east", '
+                 '"S": "player-south", "W": "player-west"}, '
+                 '"board_id": "test_board3", '
+                 '"dealer": "S", '
+                 f'"deal": {deal1_n}{deal1_e}{deal1_s}{deal1_w}, '
+                 '"vulnerable": "NS", '
+                 '"bid_history": ["Pass", "Pass", "Pass", "Pass"], '
+                 '"contract": "Passed_out", '
+                 '"declarer": null, '
+                 '"play_history": null, '
+                 '"taken_trick": null, '
+                 '"score_type": "MP", '
+                 '"scores": {"NS": 0, "EW": 0}}'),
             call('\n]}')
         ])

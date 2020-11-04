@@ -52,7 +52,7 @@ class JsonWriter(Writer):
                   'vulnerable': str(contract.vul),
                   'bid_history': [str(bid) for bid in bid_history],
                   'contract': str(contract),  # "Passed_out" when passed out.
-                  'declarer': '' if contract.is_passed_out() else str(
+                  'declarer': None if contract.is_passed_out() else str(
                       contract.declarer),
                   'play_history':
                       [{'leader': str(trick_history.leader),
