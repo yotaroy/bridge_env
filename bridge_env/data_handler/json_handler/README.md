@@ -82,9 +82,10 @@ The values are "N", "E", "S" or "W".
 
 ### play_history
 
-type: list of object
+type: list of object, null
 
 "play_history" is a list of trick history objects.
+"play_history" is null in passed out case.
 A trick history consists of "leader" and "cards"
 
 "leader" is the player who firstly plays a card in a trick.

@@ -15,8 +15,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from .socket_interface import MessageInterface, SocketInterface
 from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Player, \
-    Suit, \
-    Vul
+    Suit, Vul
 from ..data_handler.abstract_classes import BoardSetting, Parser
 from ..data_handler.json_handler.parser import JsonParser
 from ..data_handler.json_handler.writer import JsonWriter
@@ -561,6 +560,8 @@ class Server(SocketInterface):
                         if player is playing_env.dummy:
                             continue
                         self.sent_message_queues[player].put(dummy_hand_message)
+
+        assert contract.declarer is not None
         return playing_env.playing_history, \
                playing_env.taken_tricks[contract.declarer.pair]
 
@@ -609,6 +610,13 @@ class Server(SocketInterface):
 
         logger.debug(f'Four players have been seated. {team_names}')
 
+        assert team_names[Player.N] == team_names[Player.S]
+        assert team_names[Player.E] == team_names[Player.W]
+        ns_team_name = team_names[Player.N]
+        ew_team_name = team_names[Player.E]
+        assert ns_team_name is not None
+        assert ew_team_name is not None
+
         # waits all players are seated
         self._sync_event(self.players_event, event_sync)
 
@@ -638,24 +646,30 @@ class Server(SocketInterface):
 
                 # TODO: Consider to deal with exception
                 contract, bid_history = self.bidding_phase(dealer, vul)
-                if contract.is_passed_out():
-                    continue
                 logger.info(f'Contract: {contract.str_info()}')
+                if contract.is_passed_out():
+                    play_history = None
+                    taken_trick_num = None
+                    score = 0
+                else:
+                    play_history, taken_trick_num = \
+                        self.playing_phase(contract, copy.deepcopy(cards))
 
-                play_history, taken_trick_num = \
-                    self.playing_phase(contract, copy.deepcopy(cards))
+                    score = calc_score(contract, taken_trick_num)
+                    logger.info(f'Declarer\'s team takes {taken_trick_num} '
+                                f'tricks. '
+                                f'Contract: {contract.str_info()}. '
+                                f'Score: {score}.')
 
-                score = calc_score(contract, taken_trick_num)
-                logger.info(f'Declarer\'s team takes {taken_trick_num} tricks. '
-                            f'Contract: {contract.str_info()}. '
-                            f'Score: {score}.')
+                declarer = contract.declarer
+                assert declarer is not None
 
                 game_log_writer.write_board_result(
                     board_id=board_id,
-                    west_player=team_names[Player.W],
-                    north_player=team_names[Player.N],
-                    east_player=team_names[Player.E],
-                    south_player=team_names[Player.S],
+                    west_player=ew_team_name,
+                    north_player=ns_team_name,
+                    east_player=ew_team_name,
+                    south_player=ns_team_name,
                     dealer=dealer,
                     deal=cards,
                     scoring=Scoring.IMP,
@@ -663,8 +677,8 @@ class Server(SocketInterface):
                     contract=contract,
                     play_history=play_history,
                     taken_trick_num=taken_trick_num,
-                    scores={contract.declarer.pair: score,
-                            contract.declarer.pair.opponent_pair: -score})
+                    scores={declarer.pair: score,
+                            declarer.pair.opponent_pair: -score})
 
                 if board_number == max_board_num - 1:
                     break

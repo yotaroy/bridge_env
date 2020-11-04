@@ -37,7 +37,7 @@ class JsonWriter(Writer):
                            scoring: Scoring,
                            bid_history: List[Bid],
                            contract: Contract,
-                           play_history: PlayingHistory,
+                           play_history: Optional[PlayingHistory],
                            taken_trick_num: Optional[int],
                            scores: Dict[Pair, int]) -> None:
         if not self._open:
@@ -58,7 +58,7 @@ class JsonWriter(Writer):
                   'play_history': [{'leader': str(trick_history.leader),
                                     'cards': [str(card) for card in
                                               trick_history.cards]} for
-                                   trick_history in play_history.history],
+                                   trick_history in play_history.history] if play_history is not None else None,
                   'taken_trick': taken_trick_num,  # nullable (passed out)
                   'score_type': scoring.value,
                   'scores': {'NS': scores[Pair.NS],

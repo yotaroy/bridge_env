@@ -88,7 +88,11 @@
             "type": "string"
           },
           "play_history": {
-            "type": "array",
+            "description": "History of playing phase. The value is null in passed out case.",
+            "type": [
+              "array",
+              "null"
+            ],
             "items": {
               "type": "object",
               "properties": {
