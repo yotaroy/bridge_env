@@ -41,6 +41,14 @@ class TestCard:
     def test_int_to_card(self, int_card, expected):
         assert Card.int_to_card(int_card) == expected
 
+    @pytest.mark.parametrize(('str_card', 'expected'),
+                             [('C2', Card(2, Suit.C)),
+                              ('DT', Card(10, Suit.D)),
+                              ('HQ', Card(12, Suit.H)),
+                              ('SA', Card(14, Suit.S))])
+    def test_str_to_card(self, str_card, expected):
+        assert Card.str_to_card(str_card) == expected
+
     @pytest.mark.parametrize(('num', 'expected'),
                              [(2, "2"),
                               (3, "3"),
