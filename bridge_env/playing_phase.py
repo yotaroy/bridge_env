@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Set, Tuple
 
+from . import Pair
 from .card import Card
 from .contract import Contract
 from .player import Player
@@ -80,6 +81,8 @@ class PlayingPhase:
 
         self.used_cards: Set[Card] = set()
 
+        self.taken_tricks = {Pair.NS: 0, Pair.EW: 0}
+
     def has_done(self) -> bool:
         """Checks whether the playing phase has done.
 
@@ -97,9 +100,9 @@ class PlayingPhase:
         self.used_cards.add(card)
 
         if len(self._trick_cards) == 4:
-            # TODO: Count the number of taken tricks by each team.
             self._record()
             self._set_next_leader()
+            self.taken_tricks[self.leader.pair] += 1
             self.active_player = self.leader
             self.trick_num += 1
             self._trick_cards = list()

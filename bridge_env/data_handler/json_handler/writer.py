@@ -1,7 +1,7 @@
 import json
 from typing import Dict, IO, List, Optional, Set
 
-from bridge_env import Bid, Card, Contract, Player
+from bridge_env import Bid, Card, Contract, Pair, Player
 from bridge_env.data_handler.abstract_classes import Writer
 from bridge_env.data_handler.pbn_handler.writer import Scoring
 from bridge_env.playing_phase import PlayingHistory
@@ -37,33 +37,32 @@ class JsonWriter(Writer):
                            scoring: Scoring,
                            bid_history: List[Bid],
                            contract: Contract,
-                           play_history: PlayingHistory,
+                           play_history: Optional[PlayingHistory],
                            taken_trick_num: Optional[int],
-                           scores: Dict[str, int]) -> None:
+                           scores: Dict[Pair, int]) -> None:
         if not self._open:
             raise Exception('JsonWriter does not open the file.')
         result = {'players': {'N': north_player,
                               'E': east_player,
                               'S': south_player,
-                              'W': west_player,
-                              },
+                              'W': west_player},
                   'board_id': board_id,
                   'dealer': str(dealer),
                   'deal': convert_deal(deal),
                   'vulnerable': str(contract.vul),
                   'bid_history': [str(bid) for bid in bid_history],
                   'contract': str(contract),  # "Passed_out" when passed out.
-                  'declarer': '' if contract.is_passed_out() else str(
+                  'declarer': None if contract.is_passed_out() else str(
                       contract.declarer),
-                  'play_history': [{'leader': str(trick_history.leader),
-                                    'cards': [str(card) for card in
-                                              trick_history.cards]} for
-                                   trick_history in play_history.history],
+                  'play_history':
+                      [{'leader': str(trick_history.leader),
+                        'cards': [str(card) for card in trick_history.cards]}
+                       for trick_history in play_history.history]
+                      if play_history is not None else None,
                   'taken_trick': taken_trick_num,  # nullable (passed out)
                   'score_type': scoring.value,
-                  'scores': {'NS': scores['NS'],
-                             'EW': scores['EW']
-                             }
+                  'scores': {'NS': scores[Pair.NS],
+                             'EW': scores[Pair.EW]}
                   }
         line = json.dumps(result, indent=None)
         if self._first_line:

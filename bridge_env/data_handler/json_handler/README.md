@@ -75,16 +75,18 @@ Passed out case is represented as "Passed_out".
 
 ### declarer
 
-type: string
+type: string, null
 
 "declarer" is the player who declares the contract.
-The values are "N", "E", "S" or "W".
+The values are "N", "E", "S", "W" or null.
+The value is null in passed out case.
 
 ### play_history
 
-type: list of object
+type: list of object, null
 
 "play_history" is a list of trick history objects.
+"play_history" is null in passed out case.
 A trick history consists of "leader" and "cards"
 
 "leader" is the player who firstly plays a card in a trick.

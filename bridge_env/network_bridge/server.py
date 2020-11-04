@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import logging
 import pathlib
 import random
@@ -13,12 +14,15 @@ from threading import Event, Thread
 from typing import Dict, List, Optional, Set, Tuple
 
 from .socket_interface import MessageInterface, SocketInterface
-from .. import BiddingPhase, BiddingPhaseState, Card, Contract, Player, Suit, \
-    Vul
+from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Player, \
+    Suit, Vul
 from ..data_handler.abstract_classes import BoardSetting, Parser
 from ..data_handler.json_handler.parser import JsonParser
+from ..data_handler.json_handler.writer import JsonWriter
 from ..data_handler.pbn_handler.parser import PBNParser
-from ..playing_phase import PlayingPhaseWithHands
+from ..data_handler.pbn_handler.writer import Scoring
+from ..playing_phase import PlayingHistory, PlayingPhaseWithHands
+from ..score import calc_score
 
 logger = getLogger(__file__)
 
@@ -360,6 +364,7 @@ class Server(SocketInterface):
     def __init__(self,
                  ip_address: str,
                  port: int,
+                 output_file_path: pathlib.Path,
                  board_settings: Optional[List[BoardSetting]] = None):
         """
 
@@ -370,6 +375,10 @@ class Server(SocketInterface):
         super().__init__(ip_address=ip_address, port=port)
 
         self.board_settings = board_settings
+
+        if output_file_path.suffix != '.json':
+            raise NotImplementedError('PBN format is not supported.')
+        self.output_file_path = output_file_path
 
         self.sent_message_queues: Dict[Player, Queue] = {Player.N: Queue(),
                                                          Player.E: Queue(),
@@ -467,7 +476,9 @@ class Server(SocketInterface):
         # wait to be ready for cards
         self._sync_event(self.players_event, event_sync)
 
-    def bidding_phase(self, dealer: Player, vul: Vul) -> Contract:
+    def bidding_phase(self,
+                      dealer: Player,
+                      vul: Vul) -> Tuple[Contract, List[Bid]]:
         # TODO: Consider alerting
         bidding_env = BiddingPhase(dealer=dealer, vul=vul)
 
@@ -505,11 +516,12 @@ class Server(SocketInterface):
                 self.Message.PASSED_OUT if contract.is_passed_out() else
                 self.Message.NULL)
 
-        return contract
+        return contract, bidding_env.bid_history
 
     def playing_phase(self,
                       contract: Contract,
-                      cards: Dict[Player, Set[Card]]) -> None:
+                      cards: Dict[Player, Set[Card]]) -> Tuple[PlayingHistory,
+                                                               int]:
         playing_env = PlayingPhaseWithHands(contract=contract, hands=cards)
 
         for player in Player:
@@ -548,6 +560,10 @@ class Server(SocketInterface):
                         if player is playing_env.dummy:
                             continue
                         self.sent_message_queues[player].put(dummy_hand_message)
+
+        assert contract.declarer is not None
+        return playing_env.playing_history, \
+               playing_env.taken_tricks[contract.declarer.pair]
 
     def run(self) -> None:
         """Runs the server."""
@@ -594,45 +610,86 @@ class Server(SocketInterface):
 
         logger.debug(f'Four players have been seated. {team_names}')
 
+        assert team_names[Player.N] == team_names[Player.S]
+        assert team_names[Player.E] == team_names[Player.W]
+        ns_team_name = team_names[Player.N]
+        ew_team_name = team_names[Player.E]
+        assert ns_team_name is not None
+        assert ew_team_name is not None
+
         # waits all players are seated
         self._sync_event(self.players_event, event_sync)
 
         max_board_num = 101 if self.board_settings is None else len(
             self.board_settings) + 1
-        for board_number in range(1, max_board_num):
-            if self.board_settings is None:
-                cards = self._deal_random_cards()
-                vul = random.choice(list(Vul))
-                dealer = random.choice(list(Player))
-            else:
-                board_setting: BoardSetting = self.board_settings[board_number - 1]
-                cards = board_setting.hands
-                dealer = board_setting.dealer
-                vul = board_setting.vul
-                board_id = board_setting.board_id
-                logger.info(f'Load a board setting. Board id: {board_id}')
 
-            event_sync.clear()
-            self.deal(board_number, dealer, vul, cards, event_sync)
+        with open(self.output_file_path, 'w') as fw:
+            game_log_writer = JsonWriter(fw)
+            game_log_writer.open()
+            for board_number in range(1, max_board_num):
+                if self.board_settings is None:
+                    cards = self._deal_random_cards()
+                    vul = random.choice(list(Vul))
+                    dealer = random.choice(list(Player))
+                    board_id = str(board_number)
+                else:
+                    board_setting: BoardSetting = self.board_settings[
+                        board_number - 1]
+                    cards = board_setting.hands
+                    dealer = board_setting.dealer
+                    vul = board_setting.vul
+                    board_id = board_setting.board_id
+                    logger.info(f'Load a board setting. Board id: {board_id}')
 
-            # TODO: Consider to deal with exception
-            contract = self.bidding_phase(dealer, vul)
-            if contract.is_passed_out():
-                continue
-            logger.info(f'Contract: {contract.str_info()}')
+                event_sync.clear()
+                self.deal(board_number, dealer, vul, cards, event_sync)
 
-            self.playing_phase(contract, cards)
+                # TODO: Consider to deal with exception
+                contract, bid_history = self.bidding_phase(dealer, vul)
+                logger.info(f'Contract: {contract.str_info()}')
+                if contract.is_passed_out():
+                    play_history = None
+                    taken_trick_num = None
+                    score = 0
+                else:
+                    play_history, taken_trick_num = \
+                        self.playing_phase(contract, copy.deepcopy(cards))
 
-            # TODO: Add score calculation.
+                    score = calc_score(contract, taken_trick_num)
+                    logger.info(f'Declarer\'s team takes {taken_trick_num} '
+                                f'tricks. '
+                                f'Contract: {contract.str_info()}. '
+                                f'Score: {score}.')
 
-            if board_number == max_board_num - 1:
-                break
+                declarer = contract.declarer
+                assert declarer is not None
 
+                game_log_writer.write_board_result(
+                    board_id=board_id,
+                    west_player=ew_team_name,
+                    north_player=ns_team_name,
+                    east_player=ew_team_name,
+                    south_player=ns_team_name,
+                    dealer=dealer,
+                    deal=cards,
+                    scoring=Scoring.IMP,
+                    bid_history=bid_history,
+                    contract=contract,
+                    play_history=play_history,
+                    taken_trick_num=taken_trick_num,
+                    scores={declarer.pair: score,
+                            declarer.pair.opponent_pair: -score})
+
+                if board_number == max_board_num - 1:
+                    break
+
+                for player in Player:
+                    self.sent_message_queues[player].put(
+                        self.Message.NEXT_BOARD)
+
+            game_log_writer.close()
             for player in Player:
-                self.sent_message_queues[player].put(self.Message.NEXT_BOARD)
-
-        for player in Player:
-            self.sent_message_queues[player].put(self.Message.END_SESSION)
+                self.sent_message_queues[player].put(self.Message.END_SESSION)
 
         for thread in threads:
             thread.join()
@@ -658,6 +715,12 @@ def main() -> None:
                         default='',
                         type=str,
                         help='Board settings file (.json or .pbn).')
+    parser.add_argument('-o', '--output_file',
+                        default='output.json',
+                        type=str,
+                        help='Output file path (.json or .pbn file). '
+                             'File will be overwritten. '
+                             '(default="output.json")')
 
     # TODO: Implement a selection to proceed a next board on cli
     # TODO: Add an option to save board results.
@@ -683,5 +746,6 @@ def main() -> None:
 
     with Server(ip_address=args.ip_address,
                 port=args.port,
-                board_settings=board_settings) as server:
+                board_settings=board_settings,
+                output_file_path=pathlib.Path(args.output_file)) as server:
         server.run()
