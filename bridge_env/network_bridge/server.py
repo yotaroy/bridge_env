@@ -675,6 +675,7 @@ def main() -> None:
         else:
             raise Exception('File type error. '
                             'Board setting file is neither PBN or JSON.')
+        # TODO: Consider streaming
         with open(path, 'r') as fp:
             board_settings = board_setting_parser.parse_board_setting(fp)
             logger.info(f'Board settings are imported from {path}. '
