@@ -10,7 +10,7 @@ import time
 from logging import getLogger
 from queue import Queue
 from threading import Event, Thread
-from typing import Dict, List, NamedTuple, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from .socket_interface import MessageInterface, SocketInterface
 from .. import BiddingPhase, BiddingPhaseState, Card, Contract, Player, Suit, \
@@ -327,6 +327,16 @@ class PlayerThread(Thread, MessageInterface):
                 logger.debug('Playing phase error. (exit:04)')
                 return
 
+            status_message = self.receive_message_from_queue()
+            if status_message == Server.Message.NEXT_BOARD:
+                continue
+            elif status_message == Server.Message.END_SESSION:
+                super().send_message(Server.Message.END_SESSION)
+                return
+
+            raise Exception(f'Unexpected status message by main thread '
+                            f'received. Status message: "{status_message}"')
+
         logger.debug('Unreachable error. (exit:05)')
 
 
@@ -339,12 +349,13 @@ class Server(SocketInterface):
     """
     PROTOCOL_VERSION = 18
 
-    class Message(NamedTuple):
+    class Message:
         ILLEGAL_BID: str = 'illegal bid'
         ERROR: str = 'error detected'
         PASSED_OUT: str = 'passed out'
         NULL: str = 'nothing happens'
         END_SESSION: str = 'End of session'
+        NEXT_BOARD: str = 'next board'
 
     def __init__(self,
                  ip_address: str,
@@ -587,7 +598,7 @@ class Server(SocketInterface):
         self._sync_event(self.players_event, event_sync)
 
         max_board_num = 101 if self.board_settings is None else len(
-            self.board_settings)
+            self.board_settings) + 1
         for board_number in range(1, max_board_num):
             if self.board_settings is None:
                 cards = self._deal_random_cards()
@@ -598,7 +609,8 @@ class Server(SocketInterface):
                 cards = board_setting.hands
                 dealer = board_setting.dealer
                 vul = board_setting.vul
-                # board_id = board_setting.board_id
+                board_id = board_setting.board_id
+                logger.info(f'Load a board setting. Board id: {board_id}')
 
             event_sync.clear()
             self.deal(board_number, dealer, vul, cards, event_sync)
@@ -612,6 +624,12 @@ class Server(SocketInterface):
             self.playing_phase(contract, cards)
 
             # TODO: Add score calculation.
+
+            if board_number == max_board_num - 1:
+                break
+
+            for player in Player:
+                self.sent_message_queues[player].put(self.Message.NEXT_BOARD)
 
         for player in Player:
             self.sent_message_queues[player].put(self.Message.END_SESSION)
@@ -659,7 +677,8 @@ def main() -> None:
                             'Board setting file is neither PBN or JSON.')
         with open(path, 'r') as fp:
             board_settings = board_setting_parser.parse_board_setting(fp)
-            logger.info(f'Board settings are imported from {path}.')
+            logger.info(f'Board settings are imported from {path}. '
+                        f'Board num = {len(board_settings)}')
 
     with Server(ip_address=args.ip_address,
                 port=args.port,
