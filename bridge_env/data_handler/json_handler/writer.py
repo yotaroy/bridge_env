@@ -45,8 +45,7 @@ class JsonWriter(Writer):
         result = {'players': {'N': north_player,
                               'E': east_player,
                               'S': south_player,
-                              'W': west_player,
-                              },
+                              'W': west_player},
                   'board_id': board_id,
                   'dealer': str(dealer),
                   'deal': convert_deal(deal),
@@ -55,15 +54,15 @@ class JsonWriter(Writer):
                   'contract': str(contract),  # "Passed_out" when passed out.
                   'declarer': '' if contract.is_passed_out() else str(
                       contract.declarer),
-                  'play_history': [{'leader': str(trick_history.leader),
-                                    'cards': [str(card) for card in
-                                              trick_history.cards]} for
-                                   trick_history in play_history.history] if play_history is not None else None,
+                  'play_history':
+                      [{'leader': str(trick_history.leader),
+                        'cards': [str(card) for card in trick_history.cards]}
+                       for trick_history in play_history.history]
+                      if play_history is not None else None,
                   'taken_trick': taken_trick_num,  # nullable (passed out)
                   'score_type': scoring.value,
                   'scores': {'NS': scores[Pair.NS],
-                             'EW': scores[Pair.EW]
-                             }
+                             'EW': scores[Pair.EW]}
                   }
         line = json.dumps(result, indent=None)
         if self._first_line:

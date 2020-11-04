@@ -719,7 +719,8 @@ def main() -> None:
                         default='output.json',
                         type=str,
                         help='Output file path (.json or .pbn file). '
-                             'File will be overwritten.')
+                             'File will be overwritten. '
+                             '(default="output.json")')
 
     # TODO: Implement a selection to proceed a next board on cli
     # TODO: Add an option to save board results.
