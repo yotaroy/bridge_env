@@ -39,6 +39,10 @@ type: object
 "E" is east's hand object which has a list of card strings.
 "S" is south's hand object which has a list of card strings.
 "W" is west's hand object which has a list of card strings.
+A list of card strings are sorted.
+The order is "C2" - "CA", "D2" - "DA", "H2" - "HA", "S2" - "SA", which is also
+defined in [Card](../../card.py).
+
 A card string consists of a suit and a rank.
 For example, "S2" (2 of spade), "CT" (10 of club).
 Ranks no less than 10 are represented as "T" (10), "J" (11), "Q" (12), "K" (13),
