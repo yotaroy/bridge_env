@@ -7,7 +7,7 @@ from bridge_env import Bid, Card, Contract, Player, Suit, Vul
 from bridge_env.data_handler.json_handler.writer import JsonWriter
 from bridge_env.data_handler.pbn_handler.writer import Scoring
 from bridge_env.playing_phase import PlayingHistory, TrickHistory
-from ..pbn_handler import HANDS1, HANDS2, PBN_HANDS1, PBN_HANDS2
+from .. import HANDS1, HANDS2, JSON_HANDS1, JSON_HANDS2
 
 
 class TestJsonWriter:
@@ -92,13 +92,23 @@ class TestJsonWriter:
 
         json_writer.close()
 
+        deal1_n = '{"N": ["' + '", "'.join(JSON_HANDS1['N']) + '"], '
+        deal1_e = '"E": ["' + '", "'.join(JSON_HANDS1['E']) + '"], '
+        deal1_s = '"S": ["' + '", "'.join(JSON_HANDS1['S']) + '"], '
+        deal1_w = '"W": ["' + '", "'.join(JSON_HANDS1['W']) + '"]}'
+
+        deal2_n = '{"N": ["' + '", "'.join(JSON_HANDS2['N']) + '"], '
+        deal2_e = '"E": ["' + '", "'.join(JSON_HANDS2['E']) + '"], '
+        deal2_s = '"S": ["' + '", "'.join(JSON_HANDS2['S']) + '"], '
+        deal2_w = '"W": ["' + '", "'.join(JSON_HANDS2['W']) + '"]}'
+
         mock_io.write.assert_has_calls([
             call('{"logs": [\n'),
             call('{"players": {"N": "player-north", "E": "player-east", '
                  '"S": "player-south", "W": "player-west"}, '
                  '"board_id": "test_board1", '
                  '"dealer": "N", '
-                 f'"deal": "{PBN_HANDS1}", '
+                 f'"deal": {deal1_n}{deal1_e}{deal1_s}{deal1_w}, '
                  '"vulnerable": "Both", '
                  '"bid_history": ["Pass", "1NT", "2C", "3NT", "Pass", "4S", '
                  '"Pass", "4NT", "Pass", "5NT", "X", "Pass", "Pass", "Pass"], '
@@ -116,7 +126,7 @@ class TestJsonWriter:
                  '"S": "player-south", "W": "player-west"}, '
                  '"board_id": "test_board2", '
                  '"dealer": "E", '
-                 f'"deal": "{PBN_HANDS2}", '
+                 f'"deal": {deal2_n}{deal2_e}{deal2_s}{deal2_w}, '
                  '"vulnerable": "None", '
                  '"bid_history": ["1C", "1H", "Pass", "1S", "1NT", "3S", '
                  '"X", "4S", "X", "XX", "Pass", "Pass", "Pass"], '

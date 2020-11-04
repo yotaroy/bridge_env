@@ -3,7 +3,7 @@ from typing import Dict, IO, List, Optional, Set
 
 from bridge_env import Bid, Card, Contract, Player
 from bridge_env.data_handler.abstract_classes import Writer
-from bridge_env.data_handler.pbn_handler.writer import Scoring, convert_deal
+from bridge_env.data_handler.pbn_handler.writer import Scoring
 from bridge_env.playing_phase import PlayingHistory
 
 
@@ -49,7 +49,7 @@ class JsonWriter(Writer):
                               },
                   'board_id': board_id,
                   'dealer': str(dealer),
-                  'deal': convert_deal(deal, dealer),
+                  'deal': convert_deal(deal),
                   'vulnerable': str(contract.vul),
                   'bid_history': [str(bid) for bid in bid_history],
                   'contract': str(contract),  # "Passed_out" when passed out.
@@ -73,3 +73,11 @@ class JsonWriter(Writer):
 
         # write a board result
         self.writer.write(line)
+
+
+def convert_deal(deal: Dict[Player, Set[Card]]) -> Dict[str, List[str]]:
+    north = [str(card) for card in sorted(deal[Player.N])]
+    east = [str(card) for card in sorted(deal[Player.E])]
+    south = [str(card) for card in sorted(deal[Player.S])]
+    west = [str(card) for card in sorted(deal[Player.W])]
+    return {'N': north, 'E': east, 'S': south, 'W': west}

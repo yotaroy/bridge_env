@@ -3,7 +3,7 @@ from pytest_mock import MockFixture
 from bridge_env import Player, Vul
 from bridge_env.data_handler.abstract_classes import BoardSetting
 from bridge_env.data_handler.json_handler.parser import JsonParser
-from ..pbn_handler import HANDS1, HANDS2, PBN_HANDS1, PBN_HANDS2
+from .. import HANDS1, HANDS2, JSON_HANDS1, JSON_HANDS2
 
 
 class TestJsonParser:
@@ -16,12 +16,12 @@ class TestJsonParser:
             'board_settings': [
                 {'board_id': 'test-board1',
                  'dealer': 'N',
-                 'deal': PBN_HANDS1,
+                 'deal': JSON_HANDS1,
                  'vulnerability': 'Both',
                  },
                 {'board_id': 'test-board2',
                  'dealer': 'E',
-                 'deal': PBN_HANDS2,
+                 'deal': JSON_HANDS2,
                  'vulnerability': 'None',
                  }
             ]
