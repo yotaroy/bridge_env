@@ -8,7 +8,7 @@ from pytest_mock import MockFixture
 from bridge_env import Bid, Card, Contract, Player, Vul
 from bridge_env.data_handler.pbn_handler.writer import PBNWriter, Scoring, \
     convert_deal
-from . import HANDS1, HANDS2, HANDS3, PBN_HANDS1, PBN_HANDS2, \
+from .. import HANDS1, HANDS2, HANDS3, PBN_HANDS1, PBN_HANDS2, \
     PBN_HANDS3
 
 

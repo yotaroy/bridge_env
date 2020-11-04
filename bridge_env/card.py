@@ -75,7 +75,7 @@ class Card:
 
     @classmethod
     def int_to_card(cls, x: int) -> Card:
-        """Convert int representation of card to Card
+        """Converts int representation of card to Card.
 
         :param int x: int representation of a card.
         :return: Card object of the int representation of a card.
@@ -88,8 +88,22 @@ class Card:
         return Card(x % 13 + 2, Suit(x // 13 + 1))
 
     @classmethod
+    def str_to_card(cls, x: str) -> Card:
+        """Converts str of card to Card.
+
+        :param x: str of card. The format is <suit><rank>. For example, 'C2',
+            'DT', 'HQ' or 'SA'.
+        :return: Converted Card object.
+        """
+        if len(x) != 2:
+            raise ValueError('Incorrect card string format.')
+        suit = Suit[x[0]]
+        rank = Card.rank_str_to_int(x[1])
+        return Card(rank, suit)
+
+    @classmethod
     def rank_int_to_str(cls, rank: int) -> str:
-        """Convert int representation to str representation of rank.
+        """Converts int representation to str representation of rank.
 
         :param int rank: int representation of rank
         :return: str representation of rank
@@ -114,7 +128,7 @@ class Card:
 
     @classmethod
     def rank_str_to_int(cls, rank: str) -> int:
-        """Convert str representation to int representation of rank.
+        """Converts str representation to int representation of rank.
 
         :param str rank: str representation of rank
         :return: int representation of rank
