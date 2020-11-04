@@ -76,6 +76,11 @@ class JsonWriter(Writer):
 
 
 def convert_deal(deal: Dict[Player, Set[Card]]) -> Dict[str, List[str]]:
+    """Converts hands to "deal" in json format.
+
+    :param deal: Dict of Player and set of Card.
+    :return: "deal" in json format.
+    """
     north = [str(card) for card in sorted(deal[Player.N])]
     east = [str(card) for card in sorted(deal[Player.E])]
     south = [str(card) for card in sorted(deal[Player.S])]

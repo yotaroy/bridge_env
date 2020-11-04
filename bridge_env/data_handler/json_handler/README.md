@@ -8,7 +8,7 @@ Game log consists of a list of game log items.
 
 ### players
 
-type: objects
+type: object
 
 "player" has 4 fields of strings.
 "N" is the name of north player.
@@ -21,7 +21,7 @@ type: objects
 type: string
 
 "board_id" is the id of the board.
-You can use board number as the id, for example.
+You can use a board number as an id, for example.
 
 ### dealer
 
