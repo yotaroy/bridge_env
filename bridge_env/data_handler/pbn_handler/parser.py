@@ -138,7 +138,7 @@ class PBNParser(Parser):
                 match = re.match(r'% EXPORT', line)
                 if match:
                     # This file has the export format.
-                    logger.debug(f'File is the export format.')
+                    logger.debug('File is the export format.')
 
                 self.comment_list.append(line[1:].lstrip())
                 continue

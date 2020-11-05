@@ -43,8 +43,8 @@ class Hands:
         if not isinstance(other, Hands):
             raise TypeError(
                 'Hands object is comparable only with Hands object.')
-        return self.north == other.north and self.east == other.east and \
-               self.south == other.south and self.west == other.west
+        return (self.north == other.north) and (self.east == other.east) and (
+                    self.south == other.south) and (self.west == other.west)
 
     def to_pbn(self, dealer: Player = Player.N) -> str:
         """Converts to deal in PBN format.

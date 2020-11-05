@@ -217,12 +217,12 @@ class PlayerThread(Thread, MessageInterface):
             elif message is Server.Message.ILLEGAL_BID:
                 self._handle_error(
                     message_to_send=Server.Message.ILLEGAL_BID,
-                    log_message=f'illegal bid detected.')
+                    log_message='illegal bid detected.')
                 return False
             elif message is Server.Message.ERROR:
                 self._handle_error(
                     message_to_send=Server.Message.ERROR,
-                    log_message=f'server error.')
+                    log_message='server error.')
                 return False
 
             active_player = Player.convert_formal_name(message)
@@ -256,7 +256,7 @@ class PlayerThread(Thread, MessageInterface):
 
                 elif self.player is declarer and active_player is dummy:
                     if i == 0:
-                        super().send_message(f'Dummy to lead')
+                        super().send_message('Dummy to lead')
                     # receives played card, and sends it to queue
                     self.send_message_to_queue(super().receive_message())
 
@@ -549,8 +549,8 @@ class Server(SocketInterface):
                         self.sent_message_queues[player].put(dummy_hand_message)
 
         assert contract.declarer is not None
-        return playing_env.playing_history, \
-               playing_env.taken_tricks[contract.declarer.pair]
+        return playing_env.playing_history, playing_env.taken_tricks[
+            contract.declarer.pair]
 
     def run(self) -> None:
         """Runs the server."""

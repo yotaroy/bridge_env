@@ -40,7 +40,7 @@ class PBNWriter(Writer):
         return: None.
         """
         self.write_line(f'% PBN {_VERSION}')
-        self.write_line(f'% EXPORT')
+        self.write_line('% EXPORT')
 
     def write_tag_pair(self, tag: str, content: str) -> None:
         """Writes tag pair, which consists of tag and content.
