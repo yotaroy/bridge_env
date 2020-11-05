@@ -44,7 +44,7 @@ class Hands:
             raise TypeError(
                 'Hands object is comparable only with Hands object.')
         return (self.north == other.north) and (self.east == other.east) and (
-                    self.south == other.south) and (self.west == other.west)
+                self.south == other.south) and (self.west == other.west)
 
     def to_pbn(self, dealer: Player = Player.N) -> str:
         """Converts to deal in PBN format.
@@ -108,10 +108,12 @@ class Hands:
         east_idxes = np.where(binary_hands[Player.E] == 1)[0]
         south_idxes = np.where(binary_hands[Player.S] == 1)[0]
         west_idxes = np.where(binary_hands[Player.W] == 1)[0]
-        return Hands(north_hand={Card.int_to_card(idx) for idx in north_idxes},
-                     east_hand={Card.int_to_card(idx) for idx in east_idxes},
-                     south_hand={Card.int_to_card(idx) for idx in south_idxes},
-                     west_hand={Card.int_to_card(idx) for idx in west_idxes})
+        # idx is numpy.int64. convert idx into int object
+        return Hands(
+            north_hand={Card.int_to_card(int(idx)) for idx in north_idxes},
+            east_hand={Card.int_to_card(int(idx)) for idx in east_idxes},
+            south_hand={Card.int_to_card(int(idx)) for idx in south_idxes},
+            west_hand={Card.int_to_card(int(idx)) for idx in west_idxes})
 
     @classmethod
     def convert_pbn(cls, pbn_hands: str) -> Hands:
