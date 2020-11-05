@@ -1,7 +1,7 @@
 import pytest
 from pytest_mock import MockFixture
 
-from bridge_env import Bid, Card, Contract, Player, Suit
+from bridge_env import Bid, Card, Contract, Hands, Player, Suit
 from bridge_env.playing_phase import ObservedPlayingPhase, PlayingHistory, \
     PlayingPhase, PlayingPhaseWithHands, TrickHistory
 
@@ -35,10 +35,10 @@ HAND_W = frozenset([Card(5, Suit.C), Card(12, Suit.C), Card(13, Suit.C),
 
 @pytest.fixture(scope='function')
 def hands():
-    return {Player.N: set(HAND_N),
-            Player.E: set(HAND_E),
-            Player.S: set(HAND_S),
-            Player.W: set(HAND_W)}
+    return Hands(north_hand=set(HAND_N),
+                 east_hand=set(HAND_E),
+                 south_hand=set(HAND_S),
+                 west_hand=set(HAND_W))
 
 
 class TestPlayingHistory:

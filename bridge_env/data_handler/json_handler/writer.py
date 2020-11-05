@@ -1,10 +1,10 @@
 import json
-from typing import Dict, IO, List, Optional, Set
+from typing import Dict, IO, List, Optional
 
-from bridge_env import Bid, Card, Contract, Pair, Player
-from bridge_env.data_handler.abstract_classes import Writer
-from bridge_env.data_handler.pbn_handler.writer import Scoring
-from bridge_env.playing_phase import PlayingHistory
+from ... import Bid, Contract, Hands, Pair, Player
+from ..abstract_classes import Writer
+from ..pbn_handler.writer import Scoring
+from ...playing_phase import PlayingHistory
 
 
 class JsonWriter(Writer):
@@ -33,7 +33,7 @@ class JsonWriter(Writer):
                            east_player: str,
                            south_player: str,
                            dealer: Player,
-                           deal: Dict[Player, Set[Card]],
+                           deal: Hands,
                            scoring: Scoring,
                            bid_history: List[Bid],
                            contract: Contract,
@@ -74,7 +74,7 @@ class JsonWriter(Writer):
         self.writer.write(line)
 
 
-def convert_deal(deal: Dict[Player, Set[Card]]) -> Dict[str, List[str]]:
+def convert_deal(deal: Hands) -> Dict[str, List[str]]:
     """Converts hands to "deal" in json format.
 
     :param deal: Dict of Player and set of Card.

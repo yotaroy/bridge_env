@@ -14,8 +14,8 @@ from threading import Event, Thread
 from typing import Dict, List, Optional, Set, Tuple
 
 from .socket_interface import MessageInterface, SocketInterface
-from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Player, \
-    Suit, Vul
+from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Hands, \
+    Player, Suit, Vul
 from ..data_handler.abstract_classes import BoardSetting, Parser
 from ..data_handler.json_handler.parser import JsonParser
 from ..data_handler.json_handler.writer import JsonWriter
@@ -217,12 +217,12 @@ class PlayerThread(Thread, MessageInterface):
             elif message is Server.Message.ILLEGAL_BID:
                 self._handle_error(
                     message_to_send=Server.Message.ILLEGAL_BID,
-                    log_message=f'illegal bid detected.')
+                    log_message='illegal bid detected.')
                 return False
             elif message is Server.Message.ERROR:
                 self._handle_error(
                     message_to_send=Server.Message.ERROR,
-                    log_message=f'server error.')
+                    log_message='server error.')
                 return False
 
             active_player = Player.convert_formal_name(message)
@@ -256,7 +256,7 @@ class PlayerThread(Thread, MessageInterface):
 
                 elif self.player is declarer and active_player is dummy:
                     if i == 0:
-                        super().send_message(f'Dummy to lead')
+                        super().send_message('Dummy to lead')
                     # receives played card, and sends it to queue
                     self.send_message_to_queue(super().receive_message())
 
@@ -394,18 +394,6 @@ class Server(SocketInterface):
                                                    Player.W: Event()}
 
     @staticmethod
-    def _deal_random_cards(seed: Optional[int] = None) -> Dict[Player,
-                                                               Set[Card]]:
-        cards = [Card(rank, suit) for rank in range(2, 15) for suit in Suit
-                 if suit is not Suit.NT]
-        random.seed(seed)
-        random.shuffle(cards)
-        return {Player.N: set(cards[0:13]),
-                Player.E: set(cards[13: 26]),
-                Player.S: set(cards[26: 39]),
-                Player.W: set(cards[39: 52])}
-
-    @staticmethod
     def hand_to_str(hand: Set[Card]) -> str:
         """Converts set of cards to string of cards.
 
@@ -457,7 +445,7 @@ class Server(SocketInterface):
              board_number: int,
              dealer: Player,
              vul: Vul,
-             cards: Dict[Player, Set[Card]],
+             cards: Hands,  # not changed
              event_sync: Event) -> None:
         for player in Player:
             self.sent_message_queues[player].put(
@@ -520,8 +508,7 @@ class Server(SocketInterface):
 
     def playing_phase(self,
                       contract: Contract,
-                      cards: Dict[Player, Set[Card]]) -> Tuple[PlayingHistory,
-                                                               int]:
+                      cards: Hands) -> Tuple[PlayingHistory, int]:
         playing_env = PlayingPhaseWithHands(contract=contract, hands=cards)
 
         for player in Player:
@@ -562,8 +549,8 @@ class Server(SocketInterface):
                         self.sent_message_queues[player].put(dummy_hand_message)
 
         assert contract.declarer is not None
-        return playing_env.playing_history, \
-               playing_env.taken_tricks[contract.declarer.pair]
+        return playing_env.playing_history, playing_env.taken_tricks[
+            contract.declarer.pair]
 
     def run(self) -> None:
         """Runs the server."""
@@ -628,7 +615,7 @@ class Server(SocketInterface):
             game_log_writer.open()
             for board_number in range(1, max_board_num):
                 if self.board_settings is None:
-                    cards = self._deal_random_cards()
+                    cards = Hands.generate_random_hands()
                     vul = random.choice(list(Vul))
                     dealer = random.choice(list(Player))
                     board_id = str(board_number)

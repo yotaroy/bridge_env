@@ -14,10 +14,10 @@ Parse PBN file::
 """
 import re
 from logging import getLogger
-from typing import Dict, IO, Iterator, List, Set
+from typing import Dict, IO, Iterator, List
 
 from ..abstract_classes import BoardSetting, Parser
-from ... import Card, Player, Suit, Vul
+from ... import Hands, Player, Vul
 
 logger = getLogger(__file__)
 
@@ -138,7 +138,7 @@ class PBNParser(Parser):
                 match = re.match(r'% EXPORT', line)
                 if match:
                     # This file has the export format.
-                    logger.debug(f'File is the export format.')
+                    logger.debug('File is the export format.')
 
                 self.comment_list.append(line[1:].lstrip())
                 continue
@@ -164,61 +164,10 @@ class PBNParser(Parser):
     def parse_board_setting(self, fp: IO[str]) -> List[BoardSetting]:
         outputs: List[BoardSetting] = list()
         for x in self.parse_stream(fp):
-            deal = hands_parser(x['Deal'])
+            deal = Hands.convert_pbn(x['Deal'])
             dealer = Player[x['Dealer']]
             vul = Vul.str_to_vul(x['Vulnerable'])
             board_id = x['Board']  # TODO: Consider other id conversion
             outputs.append(BoardSetting(deal, dealer, vul, board_id))
 
         return outputs
-
-
-HAND_PATTERN = r'([2-9TJQKA]*).([2-9TJQKA]*).([2-9TJQKA]*).([2-9TJQKA]*)'
-HAND = r'[2-9TJQKA\.]{16}|-'
-DEAL_PATTERN = fr'([NESW]):({HAND}) ({HAND}) ({HAND}) ({HAND})'
-
-
-def hands_parser(pbn_hands: str) -> Dict[Player, Set[Card]]:
-    """Parses PBN style hands.
-
-    | PBN style hands: "<first>:<1st_hand> <2nd_hand> <3rd_hand> <4th_hand>"
-    | <first> is the dealer (N, E, S or W)
-    | <1st_hand> is the hand of the dealer
-    | <2nd_hand> is the hand of the next player of the dealer
-    | ...
-    |
-    | ex)
-    |  "N:4.KJ32.842.AQ743 JT987.Q876.AK5.2 AK532.T.JT6.T985 Q6.A954.Q973.KJ6"
-
-    :param pbn_hands: string of PBN style hands.
-    :return: Dict of player and hand(set of cards).
-    """
-    match = re.match(DEAL_PATTERN, pbn_hands)
-    if not match:
-        raise Exception(f'Parse exception. "{pbn_hands}" does not match '
-                        f'the pattern.')
-    player = Player[match.group(1)]
-    hands = dict()
-    for i in range(2, 2 + 4):
-        hands[player] = _hand_parser(match.group(i))
-        player = player.next_player
-    return hands
-
-
-def _hand_parser(pbn_hand: str) -> Set[Card]:
-    cards: Set[Card] = set()
-    if pbn_hand == '-':
-        return cards
-    match = re.match(HAND_PATTERN, pbn_hand)
-    if not match:
-        raise Exception(f'Parse exception. "{pbn_hand}" does not match '
-                        f'the pattern.')
-    mapped_ranks = {Suit.S: match.group(1),
-                    Suit.H: match.group(2),
-                    Suit.D: match.group(3),
-                    Suit.C: match.group(4)}
-
-    for suit, rank in mapped_ranks.items():
-        for r in rank:
-            cards.add(Card(Card.rank_str_to_int(r), suit))
-    return cards

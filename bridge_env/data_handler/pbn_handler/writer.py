@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import datetime
 from enum import Enum
-from typing import Dict, IO, List, Optional, Set
+from typing import IO, List, Optional
 
 from . import _VERSION
 from ..abstract_classes import Writer
-from ... import Card, Contract, Player, Suit
+from ... import Contract, Hands, Player
 
 
 class PBNWriter(Writer):
@@ -40,7 +40,7 @@ class PBNWriter(Writer):
         return: None.
         """
         self.write_line(f'% PBN {_VERSION}')
-        self.write_line(f'% EXPORT')
+        self.write_line('% EXPORT')
 
     def write_tag_pair(self, tag: str, content: str) -> None:
         """Writes tag pair, which consists of tag and content.
@@ -69,7 +69,7 @@ class PBNWriter(Writer):
                            east_player: str,
                            south_player: str,
                            dealer: Player,
-                           deal: Dict[Player, Set[Card]],
+                           deal: Hands,
                            scoring: Scoring,
                            contract: Contract,
                            taken_tricks: Optional[int]) -> None:
@@ -119,7 +119,7 @@ class PBNWriter(Writer):
         self.write_tag_pair('South', south_player)
         self.write_tag_pair('Dealer', str(dealer))
         self.write_tag_pair('Vulnerable', contract.vul.pbn_format())
-        self.write_tag_pair('Deal', convert_deal(deal, dealer))
+        self.write_tag_pair('Deal', deal.to_pbn(dealer))
         self.write_tag_pair('Scoring', scoring.value)
 
         if contract.is_passed_out():
@@ -160,33 +160,3 @@ class Scoring(Enum):
     RUBBER = 'Rubber'
     BAM = 'BAM'
     INSTANT = 'Instant'
-
-
-def convert_deal(hands: Dict[Player, Set[Card]],
-                 dealer: Player = Player.N) -> str:
-    """Converts dict of player and set of cards to deal (hands) in PBN format.
-
-    :param hands: Dict of player and set of cards (hands).
-    :param dealer: Dealer.
-    :return: Deal (hands) in PBN format.
-    """
-    player = dealer
-    cards: List[str] = list()
-    for _ in range(4):
-        cards.append(_convert_hand(hands[player]))
-        player = player.next_player
-    return f'{dealer}:{cards[0]} {cards[1]} {cards[2]} {cards[3]}'
-
-
-def _convert_hand(hand: Set[Card]) -> str:
-    if len(hand) == 0:
-        return '-'
-    assert len(hand) == 13
-    hand_list = sorted(list(hand), reverse=True)
-
-    suits = list()
-    for suit in [Suit.S, Suit.H, Suit.D, Suit.C]:
-        suits.append(''.join(
-            [Card.rank_int_to_str(card.rank) for card in hand_list if
-             card.suit is suit]))
-    return '.'.join(suits)
