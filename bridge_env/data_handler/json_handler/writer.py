@@ -8,7 +8,8 @@ from ...playing_phase import PlayingHistory
 
 
 class JsonWriter(Writer):
-    # TODO: consider to use abstract method
+    # TODO: Consider to use abstract method
+    # TODO: Implement context manager
     def __init__(self, writer: IO[str]):
         self.writer = writer
         self._open = False
