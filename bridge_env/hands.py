@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import random
 import re
 from typing import Dict, List, Set
@@ -75,9 +74,13 @@ class Hands:
                  card.suit is suit]))
         return '.'.join(suits)
 
-    def to_binary(self) -> Dict[Player, np.ndarray]:
-        # TODO: Implement
-        raise NotImplementedError()
+    def to_binary(self, dtype: np.dtype = np.int) -> Dict[Player, np.ndarray]:
+        binaries = dict()
+        for p in Player:
+            binary = np.zeros(52, dtype=dtype)
+            binary[[int(card) for card in self[p]]] = 1
+            binaries[p] = binary
+        return binaries
 
     def to_dict(self) -> Dict[Player, Set[Card]]:
         return {Player.N: self.north,
@@ -88,8 +91,14 @@ class Hands:
     @classmethod
     def convert_binary(cls,
                        binary_hands: Dict[Player, np.ndarray]) -> Hands:
-        # TODO: Implement
-        raise NotImplementedError()
+        north_idxes = np.where(binary_hands[Player.N] == 1)[0]
+        east_idxes = np.where(binary_hands[Player.E] == 1)[0]
+        south_idxes = np.where(binary_hands[Player.S] == 1)[0]
+        west_idxes = np.where(binary_hands[Player.W] == 1)[0]
+        return Hands(north_hand={Card.int_to_card(idx) for idx in north_idxes},
+                     east_hand={Card.int_to_card(idx) for idx in east_idxes},
+                     south_hand={Card.int_to_card(idx) for idx in south_idxes},
+                     west_hand={Card.int_to_card(idx) for idx in west_idxes})
 
     @classmethod
     def convert_pbn(cls, pbn_hands: str) -> Hands:
@@ -160,10 +169,3 @@ class Hands:
                      east_hand=set(cards[13: 26]),
                      south_hand=set(cards[26: 39]),
                      west_hand=set(cards[39: 52]))
-
-    def copy(self) -> Hands:
-        # Card object is immutable
-        return Hands(north_hand=copy.copy(self.north),
-                     east_hand=copy.copy(self.east),
-                     south_hand=copy.copy(self.south),
-                     west_hand=copy.copy(self.west))

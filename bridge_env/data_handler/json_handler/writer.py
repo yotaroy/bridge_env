@@ -1,7 +1,7 @@
 import json
-from typing import Dict, IO, List, Optional, Set
+from typing import Dict, IO, List, Optional
 
-from bridge_env import Bid, Card, Contract, Hands, Pair, Player
+from bridge_env import Bid, Contract, Hands, Pair, Player
 from bridge_env.data_handler.abstract_classes import Writer
 from bridge_env.data_handler.pbn_handler.writer import Scoring
 from bridge_env.playing_phase import PlayingHistory

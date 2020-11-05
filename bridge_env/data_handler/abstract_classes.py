@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import Dict, IO, List, NamedTuple, Set
+from typing import Dict, IO, List, NamedTuple
 
-from bridge_env import Card, Hands, Player, Vul
+from bridge_env import Hands, Player, Vul
 
 
 class Parser(metaclass=ABCMeta):

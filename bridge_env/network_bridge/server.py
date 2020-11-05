@@ -509,8 +509,7 @@ class Server(SocketInterface):
 
     def playing_phase(self,
                       contract: Contract,
-                      cards: Hands) -> Tuple[PlayingHistory,
-                                                               int]:
+                      cards: Hands) -> Tuple[PlayingHistory, int]:
         playing_env = PlayingPhaseWithHands(contract=contract, hands=cards)
 
         for player in Player:
