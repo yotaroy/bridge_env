@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Dict, IO, List, NamedTuple, Set
 
-from bridge_env import Card, Player, Vul
+from bridge_env import Card, Hands, Player, Vul
 
 
 class Parser(metaclass=ABCMeta):
@@ -23,7 +23,7 @@ class Parser(metaclass=ABCMeta):
 
 
 class BoardSetting(NamedTuple):
-    hands: Dict[Player, Set[Card]]
+    hands: Hands
     dealer: Player
     vul: Vul
     board_id: str

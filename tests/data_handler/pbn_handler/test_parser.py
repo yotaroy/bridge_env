@@ -3,9 +3,8 @@ from unittest.mock import call
 import pytest
 from pytest_mock import MockFixture
 
-from bridge_env.data_handler.pbn_handler.parser import PBNParser, hands_parser
-from .. import HANDS1, HANDS2, HANDS3, PBN_HANDS1, PBN_HANDS2, \
-    PBN_HANDS3
+from bridge_env.data_handler.pbn_handler.parser import PBNParser
+from .. import PBN_HANDS1, PBN_HANDS2
 
 
 class TestPBNParser:
@@ -193,11 +192,3 @@ class TestPBNParser:
     def test_parse_all(self, path, expected, parser):
         with open(path, 'r') as fp:
             assert parser.parse_all(fp) == expected
-
-
-@pytest.mark.parametrize(('pbn_hands', 'expected'),
-                         [(PBN_HANDS1, HANDS1),
-                          (PBN_HANDS2, HANDS2),
-                          (PBN_HANDS3, HANDS3)])
-def test_hands_parser(pbn_hands, expected):
-    assert hands_parser(pbn_hands) == expected

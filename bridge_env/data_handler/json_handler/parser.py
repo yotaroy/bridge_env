@@ -1,7 +1,7 @@
 import json
-from typing import Dict, IO, List, Set
+from typing import Dict, IO, List
 
-from bridge_env import Card, Player, Vul
+from bridge_env import Card, Hands, Player, Vul
 from bridge_env.data_handler.abstract_classes import BoardSetting, Parser
 
 
@@ -25,14 +25,14 @@ class JsonParser(Parser):
         return outputs
 
 
-def hands_parser(hands: Dict[str, List[str]]) -> Dict[Player, Set[Card]]:
+def hands_parser(hands: Dict[str, List[str]]) -> Hands:
     """Parses deal in json.
 
     :param hands: Dict of hands. Format is {'N': ['C2', 'CT', 'D4', ...],
         'E': ..., 'S': ..., 'W': ...}
-    :return: Dict of Player and set of Card.
+    :return: Hands instance parsed from json file.
     """
-    return {Player.N: {Card.str_to_card(card) for card in hands['N']},
-            Player.E: {Card.str_to_card(card) for card in hands['E']},
-            Player.S: {Card.str_to_card(card) for card in hands['S']},
-            Player.W: {Card.str_to_card(card) for card in hands['W']}}
+    return Hands(north_hand={Card.str_to_card(card) for card in hands['N']},
+                 east_hand={Card.str_to_card(card) for card in hands['E']},
+                 south_hand={Card.str_to_card(card) for card in hands['S']},
+                 west_hand={Card.str_to_card(card) for card in hands['W']})

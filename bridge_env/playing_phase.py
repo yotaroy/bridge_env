@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple
 
-from . import Pair
+from . import Hands, Pair
 from .card import Card
 from .contract import Contract
 from .player import Player
@@ -209,19 +209,15 @@ class PlayingPhaseWithHands(PlayingPhase):
 
     def __init__(self,
                  contract: Contract,
-                 hands: Dict[Player, Set[Card]]):
+                 hands: Hands):
         super().__init__(contract)
 
-        self._hands = hands
-
-    @property
-    def hands(self) -> Dict[Player, Set[Card]]:
-        return self._hands
+        self.hands = hands
 
     def play_card_by_player(self, card: Card, player: Player) -> None:
         super()._check_active_player(player)
-        super()._check_has_card(player, self._hands[player], card)
-        self._hands[player].remove(card)
+        super()._check_has_card(player, self.hands[player], card)
+        self.hands[player].remove(card)
         super().play_card(card)
 
     def current_available_cards_in_hand(self, player: Player) -> Set[Card]:
@@ -231,7 +227,7 @@ class PlayingPhaseWithHands(PlayingPhase):
         :param player: Player to play a card.
         :return: Set of cards which can be played by the player.
         """
-        return super().current_available_cards(self._hands[player])
+        return super().current_available_cards(self.hands[player])
 
 
 class ObservedPlayingPhase(PlayingPhase):

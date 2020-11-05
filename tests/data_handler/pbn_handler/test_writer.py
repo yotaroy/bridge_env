@@ -1,15 +1,13 @@
 import datetime
-from typing import Dict, Optional, Set
+from typing import Optional
 from unittest.mock import call
 
 import pytest
 from pytest_mock import MockFixture
 
-from bridge_env import Bid, Card, Contract, Player, Vul
-from bridge_env.data_handler.pbn_handler.writer import PBNWriter, Scoring, \
-    convert_deal
-from .. import HANDS1, HANDS2, HANDS3, PBN_HANDS1, PBN_HANDS2, \
-    PBN_HANDS3
+from bridge_env import Bid, Contract, Hands, Player, Vul
+from bridge_env.data_handler.pbn_handler.writer import PBNWriter, Scoring
+from .. import HANDS1, HANDS2, PBN_HANDS1, PBN_HANDS2
 
 
 class TestPBNWriter:
@@ -93,7 +91,7 @@ class TestPBNWriter:
                                 east_player: str,
                                 south_player: str,
                                 dealer: Player,
-                                deal: Dict[Player, Set[Card]],
+                                deal: Hands,
                                 scoring: Scoring,
                                 contract: Contract,
                                 taken_tricks: Optional[int],
@@ -104,9 +102,9 @@ class TestPBNWriter:
         mock_write_tag_pair = mocker.patch(
             'bridge_env.data_handler.pbn_handler.writer.PBNWriter.'
             'write_tag_pair')
-        mock_convert_deal = mocker.patch(
-            'bridge_env.data_handler.pbn_handler.writer.convert_deal')
-        mock_convert_deal.return_value = deal_return_value
+        # mock to_pbn() method in Hands
+        mock_to_pbn = mocker.patch.object(deal, "to_pbn",
+                                          return_value=deal_return_value)
 
         pbn_writer.write_board_result(event, site, date, board_num, west_player,
                                       north_player, east_player, south_player,
@@ -115,10 +113,4 @@ class TestPBNWriter:
         mock_write_tag_pair.assert_has_calls(
             [call(tag, content) for tag, content in expected_calls])
 
-
-@pytest.mark.parametrize(('hands', 'dealer', 'expected'),
-                         [(HANDS1, Player.N, PBN_HANDS1),
-                          (HANDS2, Player.E, PBN_HANDS2),
-                          (HANDS3, Player.W, PBN_HANDS3)])
-def test_convert_deal(hands, dealer, expected):
-    assert convert_deal(hands, dealer) == expected
+        mock_to_pbn.assert_called_once_with(dealer)
