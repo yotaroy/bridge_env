@@ -1,10 +1,10 @@
 import json
 from typing import Dict, IO, List, Optional
 
-from bridge_env import Bid, Contract, Hands, Pair, Player
-from bridge_env.data_handler.abstract_classes import Writer
-from bridge_env.data_handler.pbn_handler.writer import Scoring
-from bridge_env.playing_phase import PlayingHistory
+from ... import Bid, Contract, Hands, Pair, Player
+from ..abstract_classes import Writer
+from ..pbn_handler.writer import Scoring
+from ...playing_phase import PlayingHistory
 
 
 class JsonWriter(Writer):

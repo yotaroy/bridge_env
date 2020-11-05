@@ -1,8 +1,8 @@
 import json
 from typing import Dict, IO, List
 
-from bridge_env import Card, Hands, Player, Vul
-from bridge_env.data_handler.abstract_classes import BoardSetting, Parser
+from ... import Card, Hands, Player, Vul
+from ..abstract_classes import BoardSetting, Parser
 
 
 class JsonParser(Parser):

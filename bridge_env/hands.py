@@ -47,8 +47,7 @@ class Hands:
                self.south == other.south and self.west == other.west
 
     def to_pbn(self, dealer: Player = Player.N) -> str:
-        """Converts dict of player and set of cards to deal (hands) in PBN
-        format.
+        """Converts to deal in PBN format.
 
         :param dealer: Dealer.
         :return: Hands in PBN format.
@@ -75,6 +74,11 @@ class Hands:
         return '.'.join(suits)
 
     def to_binary(self, dtype: np.dtype = np.int) -> Dict[Player, np.ndarray]:
+        """Converts to 52 dims binary vectors.
+
+        :param dtype: numpy array's dtype.
+        :return: Dict of Player and 52 dims binary vector.
+        """
         binaries = dict()
         for p in Player:
             binary = np.zeros(52, dtype=dtype)
@@ -83,6 +87,10 @@ class Hands:
         return binaries
 
     def to_dict(self) -> Dict[Player, Set[Card]]:
+        """Converts to dict format.
+
+        :return: Dict of Player and set of cards.
+        """
         return {Player.N: self.north,
                 Player.E: self.east,
                 Player.S: self.south,
@@ -91,6 +99,11 @@ class Hands:
     @classmethod
     def convert_binary(cls,
                        binary_hands: Dict[Player, np.ndarray]) -> Hands:
+        """Converts dict of deal in binary vector format to Hands object.
+
+        :param binary_hands: Dict of Player and deal of binary vectors.
+        :return: Hands instance converted from binary vectors.
+        """
         north_idxes = np.where(binary_hands[Player.N] == 1)[0]
         east_idxes = np.where(binary_hands[Player.E] == 1)[0]
         south_idxes = np.where(binary_hands[Player.S] == 1)[0]
@@ -102,7 +115,7 @@ class Hands:
 
     @classmethod
     def convert_pbn(cls, pbn_hands: str) -> Hands:
-        """Converts PBN style hands to Hands.
+        """Converts PBN style hands to Hands object.
 
         | PBN style hands: "<first>:<1st_hand> <2nd_hand> <3rd_hand> <4th_hand>"
         | <first> is the dealer (N, E, S or W)
