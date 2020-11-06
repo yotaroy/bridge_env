@@ -614,12 +614,8 @@ class Server(SocketInterface):
             game_log_writer = JsonWriter(fw)
             game_log_writer.open()
             for board_number in range(1, max_board_num):
-                if self.board_settings is None:
-                    cards = Hands.generate_random_hands()
-                    vul = random.choice(list(Vul))
-                    dealer = random.choice(list(Player))
-                    board_id = str(board_number)
-                else:
+                cards, vul, dealer, board_id = None, None, None, None
+                if self.board_settings is not None:
                     board_setting: BoardSetting = self.board_settings[
                         board_number - 1]
                     cards = board_setting.hands
@@ -627,6 +623,15 @@ class Server(SocketInterface):
                     vul = board_setting.vul
                     board_id = board_setting.board_id
                     logger.info(f'Load a board setting. Board id: {board_id}')
+
+                if cards is None:
+                    cards = Hands.generate_random_hands()
+                if vul is None:
+                    vul = random.choice(list(Vul))
+                if dealer is None:
+                    dealer = random.choice(list(Player))
+                if board_id is None:
+                    board_id = str(board_number)
 
                 event_sync.clear()
                 self.deal(board_number, dealer, vul, cards, event_sync)

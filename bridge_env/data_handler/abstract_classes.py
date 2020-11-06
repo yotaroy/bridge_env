@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import Dict, IO, List, NamedTuple
+from typing import Dict, IO, List, NamedTuple, Optional
 
-from .. import Hands, Player, Vul
+from .. import Hands, Player, Suit, Vul
 
 
 class Parser(metaclass=ABCMeta):
@@ -23,10 +23,12 @@ class Parser(metaclass=ABCMeta):
 
 
 class BoardSetting(NamedTuple):
-    hands: Hands
-    dealer: Player
-    vul: Vul
-    board_id: str
+    hands: Hands  # required field
+    dealer: Optional[Player]
+    vul: Optional[Vul]
+    board_id: Optional[str]
+    dda: Optional[Dict[Player, Dict[Suit, int]]] # double dummy analysis
+    # TODO: Consider immutable object. dict is not immutable.
 
 
 class Writer(metaclass=ABCMeta):

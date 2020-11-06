@@ -168,6 +168,10 @@ class PBNParser(Parser):
             dealer = Player[x['Dealer']]
             vul = Vul.str_to_vul(x['Vulnerable'])
             board_id = x['Board']  # TODO: Consider other id conversion
-            outputs.append(BoardSetting(deal, dealer, vul, board_id))
+            outputs.append(BoardSetting(hands=deal,
+                                        dealer=dealer,
+                                        vul=vul,
+                                        board_id=board_id,
+                                        dda=None))
 
         return outputs
