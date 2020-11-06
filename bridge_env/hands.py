@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 import re
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 import numpy as np
 
@@ -73,11 +73,25 @@ class Hands:
                  card.suit is suit]))
         return '.'.join(suits)
 
-    def to_binary(self, dtype: np.dtype = np.int) -> Dict[Player, np.ndarray]:
-        """Converts to 52 dims binary vectors.
+    def to_binary(self) -> Dict[Player, Tuple[int, ...]]:
+        """Converts to tuple of 52 dims binary vectors.
+
+        :return: Dict of Player and tuple of 52 dims binary vector.
+        """
+        binaries = dict()
+        for p in Player:
+            binary = [0] * 52
+            for card in self[p]:
+                binary[int(card)] = 1
+            binaries[p] = tuple(binary)
+        return binaries
+
+    def to_np_binary(self, dtype: np.dtype = np.int) -> Dict[
+        Player, np.ndarray]:
+        """Converts to 52 dims binary numpy array.
 
         :param dtype: numpy array's dtype.
-        :return: Dict of Player and 52 dims binary vector.
+        :return: Dict of Player and 52 dims binary numpy array.
         """
         binaries = dict()
         for p in Player:
@@ -98,11 +112,35 @@ class Hands:
 
     @classmethod
     def convert_binary(cls,
-                       binary_hands: Dict[Player, np.ndarray]) -> Hands:
-        """Converts dict of deal in binary vector format to Hands object.
+                       binary_hands: Dict[Player, Tuple[int, ...]]) -> Hands:
+        """Converts dict of deal in tuple of binary vector format to Hands object.
 
-        :param binary_hands: Dict of Player and deal of binary vectors.
-        :return: Hands instance converted from binary vectors.
+        :param binary_hands: Dict of Player and deal of tuple of binary vectors.
+        :return: Hands instance converted from tuple of binary vectors.
+        """
+        north = set()
+        east = set()
+        south = set()
+        west = set()
+        for i in range(52):
+            if binary_hands[Player.N][i] == 1:
+                north.add(Card.int_to_card(i))
+            elif binary_hands[Player.E][i] == 1:
+                east.add(Card.int_to_card(i))
+            elif binary_hands[Player.S][i] == 1:
+                south.add(Card.int_to_card(i))
+            elif binary_hands[Player.W][i] == 1:
+                west.add(Card.int_to_card(i))
+        return Hands(north_hand=north, east_hand=east,
+                     south_hand=south, west_hand=west)
+
+    @classmethod
+    def convert_np_binary(cls,
+                          binary_hands: Dict[Player, np.ndarray]) -> Hands:
+        """Converts dict of deal in binary numpy array format to Hands object.
+
+        :param binary_hands: Dict of Player and deal of binary numpy array.
+        :return: Hands instance converted from binary numpy array.
         """
         north_idxes = np.where(binary_hands[Player.N] == 1)[0]
         east_idxes = np.where(binary_hands[Player.E] == 1)[0]
