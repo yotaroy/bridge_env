@@ -172,6 +172,6 @@ class PBNParser(Parser):
                                         dealer=dealer,
                                         vul=vul,
                                         board_id=board_id,
-                                        dds=None))
+                                        dda=None))
 
         return outputs

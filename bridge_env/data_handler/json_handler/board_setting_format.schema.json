@@ -9,7 +9,7 @@
         "type": "string"
       }
     },
-    "player_dds": {
+    "player_dda": {
       "type": "object",
       "properties": {
         "C": {
@@ -85,20 +85,20 @@
             "description": "Vulnerability. (Both, NS, EW or None)",
             "type": "string"
           },
-          "dds": {
+          "dda": {
             "type": "object",
             "properties": {
               "N": {
-                "$ref": "#/definitions/player_dds"
+                "$ref": "#/definitions/player_dda"
               },
               "E": {
-                "$ref": "#/definitions/player_dds"
+                "$ref": "#/definitions/player_dda"
               },
               "S": {
-                "$ref": "#/definitions/player_dds"
+                "$ref": "#/definitions/player_dda"
               },
               "W": {
-                "$ref": "#/definitions/player_dds"
+                "$ref": "#/definitions/player_dda"
               }
             }
           }

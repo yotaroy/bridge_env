@@ -23,14 +23,14 @@ class TestJsonParser:
                  'dealer': 'E',
                  'deal': JSON_HANDS2,
                  'vulnerability': 'None',
-                 'dds': {'N': {'C': 1, 'D': 2, 'H': 3, 'S': 4, 'NT': 5},
+                 'dda': {'N': {'C': 1, 'D': 2, 'H': 3, 'S': 4, 'NT': 5},
                          'E': {'C': 6, 'D': 7, 'H': 8, 'S': 9, 'NT': 10},
                          'S': {'C': 2, 'D': 3, 'H': 4, 'S': 3, 'NT': 2},
                          'W': {'C': 4, 'D': 1, 'H': 0, 'S': 13, 'NT': 12}}}
             ]
         }
 
-        dds = {Player.N: {Suit.C: 1, Suit.D: 2, Suit.H: 3,
+        dda = {Player.N: {Suit.C: 1, Suit.D: 2, Suit.H: 3,
                           Suit.S: 4, Suit.NT: 5},
                Player.E: {Suit.C: 6, Suit.D: 7, Suit.H: 8,
                           Suit.S: 9, Suit.NT: 10},
@@ -43,11 +43,11 @@ class TestJsonParser:
                                  dealer=Player.N,
                                  vul=Vul.BOTH,
                                  board_id='test-board1',
-                                 dds=None),
+                                 dda=None),
                     BoardSetting(hands=HANDS2,
                                  dealer=Player.E,
                                  vul=Vul.NONE,
                                  board_id='test-board2',
-                                 dds=dds)]
+                                 dda=dda)]
 
         assert json_parser.parse_board_setting(mock_io) == expected

@@ -125,14 +125,14 @@ Board setting follows [json schema](board_setting_format.schema.json).
 Board setting consists of a list of board setting items, which is parts of game
 log items. "board_id", "dealer", "deal" and "vulnerability" in game log item are
 used.
-In addition to these fields, you can add "dds" field.
+In addition to these fields, you can add "dda" field.
 
-### dds
+### dda
 
 type: object of object
 
-"dds" is results of double dummy analysis.
-"dds" has fields of players' double dummy analysis results.
+"dda" is results of double dummy analysis.
+"dda" has fields of players' double dummy analysis results.
 Each field has fields of trumps and the numbers of taken tricks.
 
 ### Required fields

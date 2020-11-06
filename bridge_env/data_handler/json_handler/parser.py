@@ -21,13 +21,13 @@ class JsonParser(Parser):
             vul = Vul.str_to_vul(
                 d['vulnerability']) if 'vulnerability' in d else None
             board_id = d['board_id'] if 'board_id' in d else None
-            dds = {Player[p]: {Suit[s]: n for s, n in d.items()} for p, d in
-                   d['dds'].items()} if 'dds' in d else None
+            dda = {Player[p]: {Suit[s]: n for s, n in d.items()} for p, d in
+                   d['dda'].items()} if 'dda' in d else None
             outputs.append(BoardSetting(hands=deal,
                                         dealer=dealer,
                                         vul=vul,
                                         board_id=board_id,
-                                        dds=dds))
+                                        dda=dda))
 
         return outputs
 
