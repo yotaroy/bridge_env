@@ -1,8 +1,8 @@
 import json
 from typing import Dict, IO, List
 
-from ... import Card, Hands, Player, Vul
 from ..abstract_classes import BoardSetting, Parser
+from ... import Card, Hands, Player, Suit, Vul
 
 
 class JsonParser(Parser):
@@ -17,10 +17,17 @@ class JsonParser(Parser):
         outputs: List[BoardSetting] = list()
         for d in data_list:
             deal = hands_parser(d['deal'])
-            dealer = Player[d['dealer']]
-            vul = Vul.str_to_vul(d['vulnerability'])
-            board_id = d['board_id']
-            outputs.append(BoardSetting(deal, dealer, vul, board_id))
+            dealer = Player[d['dealer']] if 'dealer' in d else None
+            vul = Vul.str_to_vul(
+                d['vulnerability']) if 'vulnerability' in d else None
+            board_id = d['board_id'] if 'board_id' in d else None
+            dds = {Player[p]: {Suit[s]: n for s, n in d.items()} for p, d in
+                   d['dds'].items()} if 'dds' in d else None
+            outputs.append(BoardSetting(hands=deal,
+                                        dealer=dealer,
+                                        vul=vul,
+                                        board_id=board_id,
+                                        dds=dds))
 
         return outputs
 
