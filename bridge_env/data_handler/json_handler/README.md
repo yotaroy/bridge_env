@@ -117,6 +117,7 @@ type: object
 "scores" has 2 fields of int.
 "NS" is the score of north and south pair.
 "EW" is the score of east and west pair.
+The values are 0 in a passed out case.
 
 ## Board setting
 

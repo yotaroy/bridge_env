@@ -128,11 +128,11 @@
             "type": "object",
             "properties": {
               "NS": {
-                "description": "Score of NS pair.",
+                "description": "Score of NS pair. The value is 0 in passed out case.",
                 "type": "integer"
               },
               "EW": {
-                "description": "Score of NS pair.",
+                "description": "Score of NS pair. The value is 0 in passed out case.",
                 "type": "integer"
               }
             }

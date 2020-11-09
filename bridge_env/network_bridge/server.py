@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from .socket_interface import MessageInterface, SocketInterface
 from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Hands, \
-    Player, Suit, Vul
+    Pair, Player, Suit, Vul
 from ..data_handler.abstract_classes import BoardSetting, Parser
 from ..data_handler.json_handler.parser import JsonParser
 from ..data_handler.json_handler.writer import JsonWriter
@@ -662,7 +662,12 @@ class Server(SocketInterface):
                                 f'Score: {score}.')
 
                 declarer = contract.declarer
-                assert declarer is not None
+                scores: Dict[Pair, int]
+                if declarer is None:
+                    scores = {Pair.NS: 0, Pair.EW: 0}
+                else:
+                    scores = {declarer.pair: score,
+                              declarer.pair.opponent_pair: -score}
 
                 game_log_writer.write_board_result(
                     board_id=board_id,
@@ -677,8 +682,7 @@ class Server(SocketInterface):
                     contract=contract,
                     play_history=play_history,
                     taken_trick_num=taken_trick_num,
-                    scores={declarer.pair: score,
-                            declarer.pair.opponent_pair: -score})
+                    scores=scores)
 
                 if board_number == max_board_num - 1:
                     break
