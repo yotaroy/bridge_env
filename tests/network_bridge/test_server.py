@@ -70,3 +70,11 @@ class TestServer:
     ])
     def test_hand_to_str(self, hand_set, expected):
         assert Server.hand_to_str(hand_set) == expected
+
+    @pytest.mark.parametrize(('message', 'expected'), [
+        ('North bids 1D Alert.', 'North bids 1D'),
+        ('East bids 2D alert. ', 'East bids 2D'),
+        ('South bids 3S  Alert. ', 'South bids 3S'),
+    ])
+    def test_remove_alert_word(self, message, expected):
+        assert Server.remove_alert_word(message) == expected
