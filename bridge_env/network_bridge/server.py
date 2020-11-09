@@ -464,10 +464,13 @@ class Server(SocketInterface):
         # wait to be ready for cards
         self._sync_event(self.players_event, event_sync)
 
+    @staticmethod
+    def remove_alert_word(message: str) -> str:
+        return re.sub(r'\s+Alert\.\s*', '', message, flags=re.IGNORECASE)
+
     def bidding_phase(self,
                       dealer: Player,
                       vul: Vul) -> Tuple[Contract, List[Bid]]:
-        # TODO: Consider alerting
         bidding_env = BiddingPhase(dealer=dealer, vul=vul)
 
         while not bidding_env.has_done():
@@ -476,6 +479,11 @@ class Server(SocketInterface):
             for player in Player:
                 self.sent_message_queues[player].put(active_player.formal_name)
             bid_message = self.received_message_queues[active_player].get()
+            if 'alert' in bid_message.lower():
+                # TODO: Consider alerting
+                logger.info(f'Alert detected. Message = {bid_message}')
+                bid_message = self.remove_alert_word(bid_message)
+                # _ = input('Skip alert. [press enter key]')
             bid = MessageInterface.parse_bid(bid_message,
                                              active_player.formal_name)
             bidding_phase_state = bidding_env.take_bid(bid)
