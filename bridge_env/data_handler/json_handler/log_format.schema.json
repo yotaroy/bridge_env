@@ -37,37 +37,28 @@
             "type": "string"
           },
           "deal": {
+            "description": "Hands of 4 players. (required)",
             "type": "object",
             "properties": {
               "N": {
-                "description": "Hand of north player. Card format is <suit><rank>.",
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
+                "$ref": "board_setting_format.schema.json#/definitions/hand"
               },
               "E": {
-                "description": "Hand of east player. Card format is <suit><rank>.",
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
+                "$ref": "board_setting_format.schema.json#/definitions/hand"
               },
               "S": {
-                "description": "Hand of south player. Card format is <suit><rank>.",
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
+                "$ref": "board_setting_format.schema.json#/definitions/hand"
               },
               "W": {
-                "description": "Hand of west player. Card format is <suit><rank>.",
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
+                "$ref": "board_setting_format.schema.json#/definitions/hand"
               }
-            }
+            },
+            "required": [
+              "N",
+              "E",
+              "S",
+              "W"
+            ]
           },
           "vulnerability": {
             "description": "Vulnerability. (Both, NS, EW or None)",
@@ -128,12 +119,29 @@
             "type": "object",
             "properties": {
               "NS": {
-                "description": "Score of NS pair.",
+                "description": "Score of NS pair. The value is 0 in passed out case.",
                 "type": "integer"
               },
               "EW": {
-                "description": "Score of NS pair.",
+                "description": "Score of NS pair. The value is 0 in passed out case.",
                 "type": "integer"
+              }
+            }
+          },
+          "dda": {
+            "type": "object",
+            "properties": {
+              "N": {
+                "$ref": "board_setting_format.schema.json#/definitions/player_dda"
+              },
+              "E": {
+                "$ref": "board_setting_format.schema.json#/definitions/player_dda"
+              },
+              "S": {
+                "$ref": "board_setting_format.schema.json#/definitions/player_dda"
+              },
+              "W": {
+                "$ref": "board_setting_format.schema.json#/definitions/player_dda"
               }
             }
           }

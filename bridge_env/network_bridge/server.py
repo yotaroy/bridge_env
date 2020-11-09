@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from .socket_interface import MessageInterface, SocketInterface
 from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Hands, \
-    Player, Suit, Vul
+    Pair, Player, Suit, Vul
 from ..data_handler.abstract_classes import BoardSetting, Parser
 from ..data_handler.json_handler.parser import JsonParser
 from ..data_handler.json_handler.writer import JsonWriter
@@ -622,7 +622,7 @@ class Server(SocketInterface):
             game_log_writer = JsonWriter(fw)
             game_log_writer.open()
             for board_number in range(1, max_board_num):
-                cards, vul, dealer, board_id = None, None, None, None
+                cards, vul, dealer, board_id, dda = None, None, None, None, None
                 if self.board_settings is not None:
                     board_setting: BoardSetting = self.board_settings[
                         board_number - 1]
@@ -630,6 +630,7 @@ class Server(SocketInterface):
                     dealer = board_setting.dealer
                     vul = board_setting.vul
                     board_id = board_setting.board_id
+                    dda = board_setting.dda
                     logger.info(f'Load a board setting. Board id: {board_id}')
 
                 if cards is None:
@@ -662,7 +663,12 @@ class Server(SocketInterface):
                                 f'Score: {score}.')
 
                 declarer = contract.declarer
-                assert declarer is not None
+                scores: Dict[Pair, int]
+                if declarer is None:
+                    scores = {Pair.NS: 0, Pair.EW: 0}
+                else:
+                    scores = {declarer.pair: score,
+                              declarer.pair.opponent_pair: -score}
 
                 game_log_writer.write_board_result(
                     board_id=board_id,
@@ -677,8 +683,8 @@ class Server(SocketInterface):
                     contract=contract,
                     play_history=play_history,
                     taken_trick_num=taken_trick_num,
-                    scores={declarer.pair: score,
-                            declarer.pair.opponent_pair: -score})
+                    scores=scores,
+                    dda=dda)
 
                 if board_number == max_board_num - 1:
                     break

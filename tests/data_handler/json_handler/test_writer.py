@@ -105,7 +105,15 @@ class TestJsonWriter:
                               vul=Vul.NS),
             play_history=None,
             taken_trick_num=None,
-            scores={Pair.NS: 0, Pair.EW: 0})
+            scores={Pair.NS: 0, Pair.EW: 0},
+            dda={Player.N:
+                     {Suit.C: 1, Suit.D: 2, Suit.H: 3, Suit.S: 4, Suit.NT: 5},
+                 Player.E:
+                     {Suit.C: 6, Suit.D: 7, Suit.H: 8, Suit.S: 9, Suit.NT: 10},
+                 Player.S:
+                     {Suit.C: 11, Suit.D: 12, Suit.H: 1, Suit.S: 2, Suit.NT: 3},
+                 Player.W:
+                     {Suit.C: 4, Suit.D: 5, Suit.H: 6, Suit.S: 7, Suit.NT: 8}})
 
         json_writer.close()
 
@@ -169,6 +177,10 @@ class TestJsonWriter:
                  '"play_history": null, '
                  '"taken_trick": null, '
                  '"score_type": "MP", '
-                 '"scores": {"NS": 0, "EW": 0}}'),
+                 '"scores": {"NS": 0, "EW": 0}, '
+                 '"dda": {"N": {"C": 1, "D": 2, "H": 3, "S": 4, "NT": 5}, '
+                 '"E": {"C": 6, "D": 7, "H": 8, "S": 9, "NT": 10}, '
+                 '"S": {"C": 11, "D": 12, "H": 1, "S": 2, "NT": 3}, '
+                 '"W": {"C": 4, "D": 5, "H": 6, "S": 7, "NT": 8}}}'),
             call('\n]}')
         ])

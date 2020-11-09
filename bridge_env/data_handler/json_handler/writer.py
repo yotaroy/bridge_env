@@ -1,9 +1,9 @@
 import json
 from typing import Dict, IO, List, Optional
 
-from ... import Bid, Contract, Hands, Pair, Player
 from ..abstract_classes import Writer
 from ..pbn_handler.writer import Scoring
+from ... import Bid, Contract, Hands, Pair, Player, Suit
 from ...playing_phase import PlayingHistory
 
 
@@ -40,7 +40,9 @@ class JsonWriter(Writer):
                            contract: Contract,
                            play_history: Optional[PlayingHistory],
                            taken_trick_num: Optional[int],
-                           scores: Dict[Pair, int]) -> None:
+                           scores: Dict[Pair, int],
+                           dda: Optional[
+                               Dict[Player, Dict[Suit, int]]] = None) -> None:
         if not self._open:
             raise Exception('JsonWriter does not open the file.')
         result = {'players': {'N': north_player,
@@ -65,6 +67,10 @@ class JsonWriter(Writer):
                   'scores': {'NS': scores[Pair.NS],
                              'EW': scores[Pair.EW]}
                   }
+        if dda is not None:
+            result['dda'] = {str(p): {str(s): v for s, v in r.items()} for p, r
+                             in dda.items()}
+
         line = json.dumps(result, indent=None)
         if self._first_line:
             self._first_line = False
