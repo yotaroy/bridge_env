@@ -315,21 +315,23 @@ class PlayerThread(Thread, MessageInterface):
                 return
 
             logger.info('Bidding phase')
+            passed_out = False
             if not self._bidding_phase():
                 logger.debug('Bidding phase error. (exit:03)')
                 return
 
             message = self.receive_message_from_queue()
             if message is Server.Message.PASSED_OUT:
-                continue
+                passed_out = True
             elif message is not Server.Message.NULL:
                 # TODO: Consider error handling
                 # close connection
                 raise Exception('Server error')
 
-            if not self._playing_phase():
-                logger.debug('Playing phase error. (exit:04)')
-                return
+            if not passed_out:
+                if not self._playing_phase():
+                    logger.debug('Playing phase error. (exit:04)')
+                    return
 
             status_message = self.receive_message_from_queue()
             if status_message == Server.Message.NEXT_BOARD:

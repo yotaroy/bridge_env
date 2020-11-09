@@ -336,11 +336,10 @@ class Client(SocketInterface, MessageInterface):
             self._deal()
 
             contract = self.bidding_phase()
-            if contract.is_passed_out():
-                continue
-            logger.info(f'contract is {contract}')
+            if not contract.is_passed_out():
+                logger.info(f'contract is {contract}')
 
-            self.playing_phase(contract)
+                self.playing_phase(contract)
 
             message = super().receive_message()
             if message == 'End of session':
@@ -357,7 +356,8 @@ def main() -> None:
 
     :return: None.
     """
-    logging.basicConfig(level=logging.DEBUG)
+    FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.DEBUG, format=FORMAT)
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port',
                         default=2000,
