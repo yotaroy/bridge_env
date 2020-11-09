@@ -119,15 +119,6 @@ type: object
 "EW" is the score of east and west pair.
 The values are 0 in a passed out case.
 
-## Board setting
-
-Board setting follows [json schema](board_setting_format.schema.json).
-
-Board setting consists of a list of board setting items, which is parts of game
-log items. "board_id", "dealer", "deal" and "vulnerability" in game log item are
-used.
-In addition to these fields, you can add "dda" field.
-
 ### dda
 
 type: object of object
@@ -135,6 +126,15 @@ type: object of object
 "dda" is results of double dummy analysis.
 "dda" has fields of players' double dummy analysis results.
 Each field has fields of trumps and the numbers of taken tricks.
+
+## Board setting
+
+Board setting follows [json schema](board_setting_format.schema.json).
+
+Board setting consists of a list of board setting items, which is parts of game
+log items. "board_id", "dealer", "deal", "vulnerability" and "dda" in game log item are
+used.
+In addition to these fields, you can add "dda" field.
 
 ### Required fields
 

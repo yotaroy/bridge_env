@@ -622,7 +622,7 @@ class Server(SocketInterface):
             game_log_writer = JsonWriter(fw)
             game_log_writer.open()
             for board_number in range(1, max_board_num):
-                cards, vul, dealer, board_id = None, None, None, None
+                cards, vul, dealer, board_id, dda = None, None, None, None, None
                 if self.board_settings is not None:
                     board_setting: BoardSetting = self.board_settings[
                         board_number - 1]
@@ -630,6 +630,7 @@ class Server(SocketInterface):
                     dealer = board_setting.dealer
                     vul = board_setting.vul
                     board_id = board_setting.board_id
+                    dda = board_setting.dda
                     logger.info(f'Load a board setting. Board id: {board_id}')
 
                 if cards is None:
@@ -682,7 +683,8 @@ class Server(SocketInterface):
                     contract=contract,
                     play_history=play_history,
                     taken_trick_num=taken_trick_num,
-                    scores=scores)
+                    scores=scores,
+                    dda=dda)
 
                 if board_number == max_board_num - 1:
                     break

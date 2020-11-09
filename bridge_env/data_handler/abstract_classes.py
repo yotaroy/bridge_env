@@ -27,7 +27,7 @@ class BoardSetting(NamedTuple):
     dealer: Optional[Player]
     vul: Optional[Vul]
     board_id: Optional[str]
-    dda: Optional[Dict[Player, Dict[Suit, int]]] # double dummy analysis
+    dda: Optional[Dict[Player, Dict[Suit, int]]]  # double dummy analysis
     # TODO: Consider immutable object. dict is not immutable.
 
 
