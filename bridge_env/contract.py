@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Optional
 
@@ -110,3 +112,25 @@ class Contract:
             "[Contract Bid], vul=[vulnerable], declarer=[declarer]"
         """
         return f'{self}, vul={self.vul}, declarer={self.declarer}'
+
+    @classmethod
+    def str_to_contract(cls,
+                        str_contract: str,
+                        vul: Vul = Vul.NONE,
+                        declarer: Optional[Player] = None) -> Contract:
+        if str_contract == 'Passed_out':
+            assert declarer is None
+            return Contract(final_bid=None, x=False, xx=False, vul=vul,
+                            declarer=declarer)
+
+        x = False
+        xx = False
+        if str_contract[-1] == 'X':
+            x = True
+            str_contract = str_contract[:-1]
+            if str_contract[-1] == 'X':
+                xx = True
+                str_contract = str_contract[:-1]
+
+        return Contract(final_bid=Bid.str_to_bid(str_contract), x=x, xx=xx,
+                        vul=vul, declarer=declarer)
