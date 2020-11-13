@@ -8,7 +8,7 @@ from ... import Card, Hands, Player, Suit, Vul
 class JsonParser(Parser):
     # TODO: Consider stream handling.
 
-    def parse_all(self, fp: IO[str]) -> List[Dict[str, str]]:
+    def parse_all(self, fp: IO[str]) -> List[dict]:
         return json.load(fp)
 
     def parse_board_setting(self, fp: IO[str]) -> List[BoardSetting]:
