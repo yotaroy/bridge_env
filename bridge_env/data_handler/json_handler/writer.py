@@ -52,7 +52,7 @@ class JsonWriter(Writer):
                   'board_id': board_id,
                   'dealer': str(dealer),
                   'deal': convert_deal(deal),
-                  'vulnerable': str(contract.vul),
+                  'vulnerability': str(contract.vul),
                   'bid_history': [str(bid) for bid in bid_history],
                   'contract': str(contract),  # "Passed_out" when passed out.
                   'declarer': None if contract.is_passed_out() else str(

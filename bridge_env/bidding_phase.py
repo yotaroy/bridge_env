@@ -29,7 +29,7 @@ class BiddingPhase:
         :param Vul vul: Vulnerability setting.
         """
         self.__dealer: Player = dealer  # player who firstly take a bid.
-        self.__vul: Vul = vul  # vulnerable.
+        self.__vul: Vul = vul  # vulnerability.
 
         # player who take a bid in this turn.
         self.__active_player: Optional[Player] = dealer
