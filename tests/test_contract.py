@@ -45,3 +45,16 @@ class TestContract:
                               (CONTRACT_6S, True)])
     def test_is_vul(self, contract, expected):
         assert contract.is_vul() == expected
+
+    @pytest.mark.parametrize(('str_contract', 'vul', 'declarer', 'expected'), [
+        ('1CX', Vul.NONE, Player.N,
+         Contract(Bid.C1, x=True, vul=Vul.NONE, declarer=Player.N)),
+        ('3NT', Vul.NS, Player.E,
+         Contract(Bid.NT3, vul=Vul.NS, declarer=Player.E)),
+        ('5SXX', Vul.EW, Player.W,
+         Contract(Bid.S5, x=True, xx=True, vul=Vul.EW, declarer=Player.W)),
+        ('6NTXX', Vul.BOTH, Player.S,
+         Contract(Bid.NT6, x=True, xx=True, vul=Vul.BOTH, declarer=Player.S)),
+        ('Passed_out', Vul.EW, None, Contract(None, vul=Vul.EW, declarer=None))])
+    def test_str_to_contract(self, str_contract, vul, declarer, expected):
+        assert Contract.str_to_contract(str_contract, vul, declarer) == expected
