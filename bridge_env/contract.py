@@ -107,6 +107,6 @@ class Contract:
         """str type contract information.
 
         :return: Contract information.
-            "[Contract Bid], vul=[vulnerable], declarer=[declarer]"
+            "[Contract Bid], vul=[vulnerability], declarer=[declarer]"
         """
         return f'{self}, vul={self.vul}, declarer={self.declarer}'
