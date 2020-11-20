@@ -19,7 +19,7 @@ from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Hands, \
 from ..data_handler.abstract_classes import BoardSetting, Parser
 from ..data_handler.json_handler.parser import JsonParser
 from ..data_handler.json_handler.writer import JsonWriter
-from ..data_handler.pbn_handler.parser import PBNParser
+from ..data_handler.pbn_handler.parser import PbnParser
 from ..data_handler.pbn_handler.writer import Scoring
 from ..playing_phase import PlayingHistory, PlayingPhaseWithHands
 from ..score import calc_score
@@ -740,7 +740,7 @@ def main() -> None:
         path = pathlib.Path(args.board_setting)
         board_setting_parser: Parser
         if path.suffix == '.pbn':
-            board_setting_parser = PBNParser()
+            board_setting_parser = PbnParser()
         elif path.suffix == '.json':
             board_setting_parser = JsonParser()
         else:
@@ -748,7 +748,7 @@ def main() -> None:
                             'Board setting file is neither PBN or JSON.')
         # TODO: Consider streaming
         with open(path, 'r') as fp:
-            board_settings = board_setting_parser.parse_board_setting(fp)
+            board_settings = board_setting_parser.parse_board_settings(fp)
             logger.info(f'Board settings are imported from {path}. '
                         f'Board num = {len(board_settings)}')
 

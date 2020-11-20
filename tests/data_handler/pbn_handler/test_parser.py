@@ -3,11 +3,11 @@ from unittest.mock import call
 import pytest
 from pytest_mock import MockFixture
 
-from bridge_env.data_handler.pbn_handler.parser import PBNParser
+from bridge_env.data_handler.pbn_handler.parser import PbnParser
 from .. import PBN_HANDS1, PBN_HANDS2
 
 
-class TestPBNParser:
+class TestPbnParser:
     PLAY_FILE_PATH = 'tests/data_handler/pbn_handler/source/play_ex.pbn'
     PLAY_FILE_EXPECTED = [
         {'Event': '?',
@@ -107,7 +107,7 @@ class TestPBNParser:
 
     @pytest.fixture(scope='function')
     def parser(self):
-        return PBNParser()
+        return PbnParser()
 
     @pytest.mark.parametrize(('string', 'in_comment', 'after_in_comment',
                               'expected_tag_pair_buffer',

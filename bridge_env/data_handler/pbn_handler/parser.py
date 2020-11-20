@@ -6,7 +6,7 @@ http://www.tistis.nl/pbn/
 
 Parse PBN file::
 
-    >>> parser = PBNParser()
+    >>> parser = PbnParser()
     >>> with open(file_path, 'r') as fp:
     ...     print(parser.parse_all(fp))
 
@@ -16,13 +16,13 @@ import re
 from logging import getLogger
 from typing import Dict, IO, Iterator, List
 
-from ..abstract_classes import BoardSetting, Parser
+from ..abstract_classes import BoardSetting, Parser, BoardLog
 from ... import Hands, Player, Vul
 
 logger = getLogger(__file__)
 
 
-class PBNParser(Parser):
+class PbnParser(Parser):
     """PBN (Portable Bridge Notation) format parser."""
 
     def __init__(self):
@@ -161,7 +161,7 @@ class PBNParser(Parser):
         return outputs
 
     # TODO: Add unit test
-    def parse_board_setting(self, fp: IO[str]) -> List[BoardSetting]:
+    def parse_board_settings(self, fp: IO[str]) -> List[BoardSetting]:
         outputs: List[BoardSetting] = list()
         for x in self.parse_stream(fp):
             deal = Hands.convert_pbn(x['Deal'])
@@ -175,3 +175,7 @@ class PBNParser(Parser):
                                         dda=None))
 
         return outputs
+
+    def parse_board_logs(self, fp: IO[str]) -> List[BoardLog]:
+        raise NotImplementedError(
+            'parse_board_log in PbnParser is not implemented')

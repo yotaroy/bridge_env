@@ -7,7 +7,7 @@ from .. import HANDS1, HANDS2, JSON_HANDS1, JSON_HANDS2
 
 
 class TestJsonParser:
-    def test_parse_board_setting(self, mocker: MockFixture):
+    def test_parse_board_settings(self, mocker: MockFixture):
         mock_io = mocker.MagicMock()
         json_parser = JsonParser()
 
@@ -50,4 +50,4 @@ class TestJsonParser:
                                  board_id='test-board2',
                                  dda=dda)]
 
-        assert json_parser.parse_board_setting(mock_io) == expected
+        assert json_parser.parse_board_settings(mock_io) == expected

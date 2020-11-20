@@ -9,7 +9,7 @@ from ..abstract_classes import Writer
 from ... import Contract, Hands, Player
 
 
-class PBNWriter(Writer):
+class PbnWriter(Writer):
     """Writer to write contract bridge results in PBN format."""
     # maximum characters in a line including non-visible characters
     MAX_LINE_CHARS = 255
