@@ -44,6 +44,7 @@ def hands_parser(hands: Dict[str, List[str]]) -> Hands:
                  west_hand={Card.str_to_card(card) for card in hands['W']})
 
 
+# TODO: Add docstring
 def convert_board_setting(data) -> BoardSetting:
     board_id = data['board_id'] if 'board_id' in data else None
     dealer: Optional[Player] = Player[
@@ -62,6 +63,7 @@ def convert_board_setting(data) -> BoardSetting:
                         dda=dda)
 
 
+# TODO: Add docstring
 def convert_board_log(data):
     board_setting = convert_board_setting(data)
     bid_history: Optional[List[Bid]] = [Bid.str_to_bid(bid) for bid in data[
