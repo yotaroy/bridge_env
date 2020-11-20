@@ -41,6 +41,7 @@ class BoardSetting(NamedTuple):
 
 
 class BoardLog(NamedTuple):
+    players: Dict[Player, str]  # player names
     hands: Hands  # required field
     dealer: Optional[Player]
     vul: Optional[Vul]

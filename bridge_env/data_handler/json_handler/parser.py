@@ -66,6 +66,8 @@ def convert_board_setting(data) -> BoardSetting:
 # TODO: Add docstring
 def convert_board_log(data):
     board_setting = convert_board_setting(data)
+    players: Optional[Dict[Player, str]] = {Player[p]: name for p, name in data[
+        'players']} if 'players' in data else None
     bid_history: Optional[List[Bid]] = [Bid.str_to_bid(bid) for bid in data[
         'bid_history']] if 'bid_history' in data else None
     declarer: Optional[Player] = Player[
@@ -84,7 +86,8 @@ def convert_board_log(data):
     scores: Optional[Dict[Pair, int]] = data[
         'scores'] if 'scores' in data else None
 
-    return BoardLog(hands=board_setting.hands,
+    return BoardLog(players=players,
+                    hands=board_setting.hands,
                     dealer=board_setting.dealer,
                     vul=board_setting.vul,
                     board_id=board_setting.board_id,
