@@ -47,16 +47,22 @@ def hands_parser(hands: Dict[str, List[str]]) -> Hands:
 def convert_board_setting(data: dict) -> BoardSetting:
     """Converts dict of a board setting to BoardSetting.
 
-    :param data: Dict of a board setting. 'board_id', 'dealer', 'vulnerability'
-        and 'dda' tags will be converted. 'deal' is required.
+    :param data: Dict of a board setting.
+        'board_id', 'dealer', 'vulnerability' and 'dda' tags will be converted.
+        'board_id', 'dealer', 'deal', 'vulnerability' are required.
     :return: BoardSetting object converted from data.
     """
-    board_id = data['board_id'] if 'board_id' in data else None
-    dealer: Optional[Player] = Player[
-        data['dealer']] if 'dealer' in data else None
-    deal: Hands = hands_parser(data['deal'])  # required
-    vul: Optional[Vul] = Vul.str_to_vul(
-        data['vulnerability']) if 'vulnerability' in data else None
+    # required
+    assert 'board_id' in data
+    assert 'dealer' in data
+    assert 'deal' in data
+    assert 'vulnerability' in data
+    board_id: str = data['board_id']
+    dealer: Player = Player[data['dealer']]
+    deal: Hands = hands_parser(data['deal'])
+    vul: Vul = Vul.str_to_vul(data['vulnerability'])
+
+    # optional
     dda: Optional[Dict[Player, Dict[Suit, int]]] = \
         {Player[p]: {Suit[s]: n for s, n in d.items()} for p, d in
          data['dda'].items()} if 'dda' in data else None
@@ -71,25 +77,32 @@ def convert_board_setting(data: dict) -> BoardSetting:
 def convert_board_log(data: dict) -> BoardLog:
     """Converts dict of a board log to BoardLog.
 
-    :param data: Dict of a board log. 'deal', 'contract' are required.
+    :param data: Dict of a board log.
+        'board_id', 'hands', 'dealer', 'vul', 'declarer', 'contract' and
+        'taken_trick' are required.
     :return: BoardLog object converted from data.
     """
     board_setting = convert_board_setting(data)
+
+    # required
+    assert 'declarer' in data
+    assert 'contract' in data
+    assert 'taken_trick' in data
+    declarer: Player = Player[data['declarer']]
+    contract = Contract.str_to_contract(data['contract'],
+                                        vul=board_setting.vul,
+                                        declarer=declarer)
+    taken_trick: int = data['taken_trick']
+
+    # optional
     players: Optional[Dict[Player, str]] = {Player[p]: name for p, name in data[
         'players']} if 'players' in data else None
     bid_history: Optional[List[Bid]] = [Bid.str_to_bid(bid) for bid in data[
         'bid_history']] if 'bid_history' in data else None
-    declarer: Optional[Player] = Player[
-        data['declarer']] if 'declarer' in data else None
-    contract = Contract.str_to_contract(data['contract'],
-                                        vul=board_setting.vul,
-                                        declarer=declarer)  # required
-    play_history: List[TrickHistory] = [
+    play_history: Optional[List[TrickHistory]] = [
         TrickHistory(leader=b['leader'],
                      cards=tuple([Card.str_to_card(x) for x in b['cards']])) for
         b in data['play_history']] if 'play_history' in data else None
-    taken_trick: Optional[int] = data[
-        'taken_trick'] if 'taken_trick' in data else None
     score_type: Optional[str] = data[
         'score_type'] if 'score_type' in data else None
     scores: Optional[Dict[Pair, int]] = data[

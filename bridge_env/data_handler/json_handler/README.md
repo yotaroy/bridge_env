@@ -127,15 +127,21 @@ type: object of object
 "dda" has fields of players' double dummy analysis results.
 Each field has fields of trumps and the numbers of taken tricks.
 
+### Required fields of a board log
+
+Items in "logs" require "board_id", "dealer", "deal", "vulnerability",
+"declarer", "contract" and "taken_trick" fields.
+
 ## Board setting
 
 Board setting follows [json schema](board_setting_format.schema.json).
 
 Board setting consists of a list of board setting items, which is parts of game
-log items. "board_id", "dealer", "deal", "vulnerability" and "dda" in game log item are
-used.
+log items. "board_id", "dealer", "deal", "vulnerability" and "dda" in game log
+item are used.
 In addition to these fields, you can add "dda" field.
 
-### Required fields
+### Required fields of a board setting
 
-Items in "board_settings" require "deal" field.
+Items in "board_settings" require "board_id", "dealer", "deal" and
+"vulnerability" fields.

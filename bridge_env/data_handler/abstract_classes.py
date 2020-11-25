@@ -32,27 +32,43 @@ class Parser(metaclass=ABCMeta):
 
 
 class BoardSetting(NamedTuple):
-    hands: Hands  # required field
-    dealer: Optional[Player]
-    vul: Optional[Vul]
-    board_id: Optional[str]
-    dda: Optional[Dict[Player, Dict[Suit, int]]]  # double dummy analysis
+    """Board setting.
+
+    'hands', 'dealer', 'vul', 'board_id' are required.
+    'dda' is optional (default value is None).
+    """
+    # required
+    hands: Hands
+    dealer: Player
+    vul: Vul
+    board_id: str
+    # optional
+    dda: Optional[Dict[Player, Dict[Suit, int]]] = None  # double dummy analysis
     # TODO: Consider immutable object. dict is not immutable.
 
 
 class BoardLog(NamedTuple):
-    players: Dict[Player, str]  # player names
-    hands: Hands  # required field
-    dealer: Optional[Player]
-    vul: Optional[Vul]
-    board_id: Optional[str]
-    dda: Optional[Dict[Player, Dict[Suit, int]]]
+    """Board log.
+
+    'board_id', 'hands', 'dealer', 'vul', 'declarer', 'contract' and
+    'taken_trick' are required.
+    'players', 'bid_history', 'play_history', 'dda', 'score_type' and 'scores'
+    are optional.
+    """
+    # required
+    board_id: str
+    hands: Hands
+    dealer: Player
+    vul: Vul
+    declarer: Player
+    contract: Contract  # Contract contains vul and dealer information.
+    taken_trick: int
+    # optional
+    players: Optional[Dict[Player, str]]  # player names
     bid_history: Optional[List[Bid]]
-    declarer: Optional[Player]
-    contract: Contract  # required filed
-    play_history: List[TrickHistory]
-    taken_trick: Optional[int]
-    score_type: str  # TODO: Use pbn_hander.writer.Scoring?
+    play_history: Optional[List[TrickHistory]]
+    dda: Optional[Dict[Player, Dict[Suit, int]]]
+    score_type: Optional[str]  # TODO: Use pbn_hander.writer.Scoring?
     scores: Optional[Dict[Pair, int]]
 
 
