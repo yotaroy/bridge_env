@@ -60,16 +60,16 @@ class BoardLog(NamedTuple):
     hands: Hands
     dealer: Player
     vul: Vul
-    declarer: Player
+    declarer: Optional[Player]  # None if passed out.
     contract: Contract  # Contract contains vul and dealer information.
     taken_trick: int
     # optional
-    players: Optional[Dict[Player, str]]  # player names
-    bid_history: Optional[List[Bid]]
-    play_history: Optional[List[TrickHistory]]
-    dda: Optional[Dict[Player, Dict[Suit, int]]]
-    score_type: Optional[str]  # TODO: Use pbn_hander.writer.Scoring?
-    scores: Optional[Dict[Pair, int]]
+    players: Optional[Dict[Player, str]] = None  # player names
+    bid_history: Optional[List[Bid]] = None
+    play_history: Optional[List[TrickHistory]] = None
+    dda: Optional[Dict[Player, Dict[Suit, int]]] = None
+    score_type: Optional[str] = None  # TODO: Use pbn_hander.writer.Scoring?
+    scores: Optional[Dict[Pair, int]] = None
 
 
 class Writer(metaclass=ABCMeta):
