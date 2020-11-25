@@ -16,7 +16,7 @@ import re
 from logging import getLogger
 from typing import Dict, IO, Iterator, List
 
-from ..abstract_classes import BoardSetting, Parser, BoardLog
+from ..abstract_classes import BoardLog, BoardSetting, Parser
 from ... import Hands, Player, Vul
 
 logger = getLogger(__file__)

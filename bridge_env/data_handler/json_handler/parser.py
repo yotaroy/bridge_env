@@ -44,8 +44,13 @@ def hands_parser(hands: Dict[str, List[str]]) -> Hands:
                  west_hand={Card.str_to_card(card) for card in hands['W']})
 
 
-# TODO: Add docstring
-def convert_board_setting(data) -> BoardSetting:
+def convert_board_setting(data: dict) -> BoardSetting:
+    """Converts dict of a board setting to BoardSetting.
+
+    :param data: Dict of a board setting. 'board_id', 'dealer', 'vulnerability'
+        and 'dda' tags will be converted. 'deal' is required.
+    :return: BoardSetting object converted from data.
+    """
     board_id = data['board_id'] if 'board_id' in data else None
     dealer: Optional[Player] = Player[
         data['dealer']] if 'dealer' in data else None
@@ -63,8 +68,12 @@ def convert_board_setting(data) -> BoardSetting:
                         dda=dda)
 
 
-# TODO: Add docstring
-def convert_board_log(data):
+def convert_board_log(data: dict) -> BoardLog:
+    """Converts dict of a board log to BoardLog.
+
+    :param data: Dict of a board log. 'deal', 'contract' are required.
+    :return: BoardLog object converted from data.
+    """
     board_setting = convert_board_setting(data)
     players: Optional[Dict[Player, str]] = {Player[p]: name for p, name in data[
         'players']} if 'players' in data else None
@@ -74,7 +83,7 @@ def convert_board_log(data):
         data['declarer']] if 'declarer' in data else None
     contract = Contract.str_to_contract(data['contract'],
                                         vul=board_setting.vul,
-                                        declarer=declarer)
+                                        declarer=declarer)  # required
     play_history: List[TrickHistory] = [
         TrickHistory(leader=b['leader'],
                      cards=tuple([Card.str_to_card(x) for x in b['cards']])) for
