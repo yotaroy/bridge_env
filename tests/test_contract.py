@@ -55,6 +55,7 @@ class TestContract:
          Contract(Bid.S5, x=True, xx=True, vul=Vul.EW, declarer=Player.W)),
         ('6NTXX', Vul.BOTH, Player.S,
          Contract(Bid.NT6, x=True, xx=True, vul=Vul.BOTH, declarer=Player.S)),
-        ('Passed_out', Vul.EW, None, Contract(None, vul=Vul.EW, declarer=None))])
+        ('Passed_out', Vul.EW, None, Contract(None, vul=Vul.EW, declarer=None))
+    ])
     def test_str_to_contract(self, str_contract, vul, declarer, expected):
         assert Contract.str_to_contract(str_contract, vul, declarer) == expected
