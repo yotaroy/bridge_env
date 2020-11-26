@@ -88,7 +88,9 @@ def convert_board_log(data: dict) -> BoardLog:
     assert 'declarer' in data
     assert 'contract' in data
     assert 'taken_trick' in data
-    declarer: Player = Player[data['declarer']]
+    declarer: Optional[Player] = Player[data['declarer']] if \
+        data['declarer'] is not None else None
+
     contract = Contract.str_to_contract(data['contract'],
                                         vul=board_setting.vul,
                                         declarer=declarer)
@@ -96,13 +98,14 @@ def convert_board_log(data: dict) -> BoardLog:
 
     # optional
     players: Optional[Dict[Player, str]] = {Player[p]: name for p, name in data[
-        'players']} if 'players' in data else None
+        'players'].items()} if 'players' in data else None
     bid_history: Optional[List[Bid]] = [Bid.str_to_bid(bid) for bid in data[
         'bid_history']] if 'bid_history' in data else None
     play_history: Optional[List[TrickHistory]] = [
         TrickHistory(leader=b['leader'],
                      cards=tuple([Card.str_to_card(x) for x in b['cards']])) for
-        b in data['play_history']] if 'play_history' in data else None
+        b in data['play_history']] if 'play_history' in data and data[
+        'play_history'] is not None else None
     score_type: Optional[str] = data[
         'score_type'] if 'score_type' in data else None
     scores: Optional[Dict[Pair, int]] = data[
