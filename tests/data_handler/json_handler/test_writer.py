@@ -4,13 +4,13 @@ import pytest
 from pytest_mock import MockFixture
 
 from bridge_env import Bid, Card, Contract, Pair, Player, Suit, Vul
-from bridge_env.data_handler.json_handler.writer import JsonWriter
+from bridge_env.data_handler.json_handler.writer import JsonLogWriter
 from bridge_env.data_handler.pbn_handler.writer import Scoring
 from bridge_env.playing_phase import PlayingHistory, TrickHistory
 from .. import HANDS1, HANDS2, JSON_HANDS1, JSON_HANDS2
 
 
-class TestJsonWriter:
+class TestJsonLogWriter:
     @pytest.fixture(scope='function')
     def playing_history1(self, mocker: MockFixture):
         play_history = PlayingHistory(mocker.MagicMock())
@@ -49,10 +49,10 @@ class TestJsonWriter:
     def test_integration(self, playing_history1, playing_history2,
                          mocker: MockFixture):
         mock_io = mocker.MagicMock()
-        json_writer = JsonWriter(mock_io)
+        json_log_writer = JsonLogWriter(mock_io)
 
-        json_writer.open()
-        json_writer.write_board_result(
+        json_log_writer.open()
+        json_log_writer.write(
             board_id='test_board1',
             west_player='player-west',
             north_player='player-north',
@@ -71,7 +71,7 @@ class TestJsonWriter:
             taken_trick_num=9,
             scores={Pair.NS: 40, Pair.EW: -40})
 
-        json_writer.write_board_result(
+        json_log_writer.write(
             board_id='test_board2',
             west_player='player-west',
             north_player='player-north',
@@ -91,7 +91,7 @@ class TestJsonWriter:
             scores={Pair.NS: 300, Pair.EW: -300})
 
         # passed out
-        json_writer.write_board_result(
+        json_log_writer.write(
             board_id='test_board3',
             west_player='player-west',
             north_player='player-north',
@@ -115,7 +115,7 @@ class TestJsonWriter:
                  Player.W:
                      {Suit.C: 4, Suit.D: 5, Suit.H: 6, Suit.S: 7, Suit.NT: 8}})
 
-        json_writer.close()
+        json_log_writer.close()
 
         deal1_n = '{"N": ["' + '", "'.join(JSON_HANDS1['N']) + '"], '
         deal1_e = '"E": ["' + '", "'.join(JSON_HANDS1['E']) + '"], '
