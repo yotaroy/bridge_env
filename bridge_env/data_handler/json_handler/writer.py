@@ -48,6 +48,7 @@ class JsonWriter(Writer):
 
 
 class JsonBoardSettingWriter(JsonWriter):
+    """Writer for board settings in json."""
     TAG = 'board_settings'
 
     def __init__(self, writer: IO[str]):
@@ -82,6 +83,7 @@ class JsonBoardSettingWriter(JsonWriter):
 
 
 class JsonLogWriter(JsonWriter):
+    """Writer for logs in json."""
     TAG = 'logs'
 
     def __init__(self, writer: IO[str]):
