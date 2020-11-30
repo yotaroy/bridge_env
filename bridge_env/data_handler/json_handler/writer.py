@@ -66,7 +66,7 @@ class JsonBoardSettingWriter(JsonWriter):
         :param dealer: Dealer of the board.
         :param deal: Deal of the board.
         :param vul: Vul of the board.
-        :param dda: Double dummy analysis results of the board.
+        :param dda: Double dummy analysis results of the board. (optional)
         :return: None.
         """
         if not self._open:
@@ -105,6 +105,24 @@ class JsonLogWriter(JsonWriter):
               scores: Dict[Pair, int],
               dda: Optional[
                   Dict[Player, Dict[Suit, int]]] = None) -> None:
+        """Writes a board setting to a file.
+
+        :param board_id: Board id in the board setting.
+        :param west_player: West player name.
+        :param north_player: North player name.
+        :param east_player: East player name.
+        :param south_player: South player name.
+        :param dealer: Dealer of the board.
+        :param deal: Deal of the board.
+        :param scoring: Scoring style.
+        :param bid_history: History of bidding (auction) phase.
+        :param contract: Contract of the board.
+        :param play_history: History of playing phase.
+        :param taken_trick_num: The number of taken tricks by declarers' team.
+        :param scores: Scores of two teams, which follows the scoring style.
+        :param dda: Double dummy analysis results of the board. (optional)
+        :return: None.
+        """
         if not self._open:
             raise Exception('JsonWriter does not open the file.')
         result = {'players': {'N': north_player,
