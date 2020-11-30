@@ -12,7 +12,7 @@ class JsonWriter(Writer):
     TAG = ''
 
     def __init__(self, writer: IO[str]):
-        self.writer = writer
+        self._writer = writer
         self._open = False
         self._first_line = False
 
@@ -24,16 +24,16 @@ class JsonWriter(Writer):
         self.close()
 
     def open(self):
-        self.writer.write('{"'
-                          f'{self.TAG}": [\n')
+        self._writer.write('{"'
+                           f'{self.TAG}": [\n')
         self._open = True
         self._first_line = True
 
     def close(self):
         if self._first_line:
-            self.writer.write(']}')
+            self._writer.write(']}')
         else:
-            self.writer.write('\n]}')
+            self._writer.write('\n]}')
         self._open = False
 
     def _write_content(self, d: dict) -> None:
@@ -41,10 +41,10 @@ class JsonWriter(Writer):
         if self._first_line:
             self._first_line = False
         else:
-            self.writer.write(',\n')
+            self._writer.write(',\n')
 
         # write a board result
-        self.writer.write(line)
+        self._writer.write(line)
 
 
 class JsonBoardSettingWriter(JsonWriter):
@@ -74,7 +74,7 @@ class JsonBoardSettingWriter(JsonWriter):
         setting = {'board_id': board_id,
                    'dealer': str(dealer),
                    'deal': convert_deal(deal),
-                   'vulnerable': str(vul)}
+                   'vulnerability': str(vul)}
 
         if dda is not None:
             setting['dda'] = {str(p): {str(s): v for s, v in r.items()} for p, r
