@@ -4,13 +4,68 @@ import pytest
 from pytest_mock import MockFixture
 
 from bridge_env import Bid, Card, Contract, Pair, Player, Suit, Vul
-from bridge_env.data_handler.json_handler.writer import JsonWriter
+from bridge_env.data_handler.json_handler.writer import JsonBoardSettingWriter, \
+    JsonLogWriter
 from bridge_env.data_handler.pbn_handler.writer import Scoring
 from bridge_env.playing_phase import PlayingHistory, TrickHistory
 from .. import HANDS1, HANDS2, JSON_HANDS1, JSON_HANDS2
 
+DDA_DICT = {Player.N:
+                {Suit.C: 1, Suit.D: 2, Suit.H: 3, Suit.S: 4, Suit.NT: 5},
+            Player.E:
+                {Suit.C: 6, Suit.D: 7, Suit.H: 8, Suit.S: 9, Suit.NT: 10},
+            Player.S:
+                {Suit.C: 11, Suit.D: 12, Suit.H: 1, Suit.S: 2, Suit.NT: 3},
+            Player.W:
+                {Suit.C: 4, Suit.D: 5, Suit.H: 6, Suit.S: 7, Suit.NT: 8}}
+DDA_STR = '"dda": {"N": {"C": 1, "D": 2, "H": 3, "S": 4, "NT": 5}, ' \
+          '"E": {"C": 6, "D": 7, "H": 8, "S": 9, "NT": 10}, ' \
+          '"S": {"C": 11, "D": 12, "H": 1, "S": 2, "NT": 3}, ' \
+          '"W": {"C": 4, "D": 5, "H": 6, "S": 7, "NT": 8}}'
 
-class TestJsonWriter:
+DEAL1_N = '{"N": ["' + '", "'.join(JSON_HANDS1['N']) + '"], '
+DEAL1_E = '"E": ["' + '", "'.join(JSON_HANDS1['E']) + '"], '
+DEAL1_S = '"S": ["' + '", "'.join(JSON_HANDS1['S']) + '"], '
+DEAL1_W = '"W": ["' + '", "'.join(JSON_HANDS1['W']) + '"]}'
+
+DEAL2_N = '{"N": ["' + '", "'.join(JSON_HANDS2['N']) + '"], '
+DEAL2_E = '"E": ["' + '", "'.join(JSON_HANDS2['E']) + '"], '
+DEAL2_S = '"S": ["' + '", "'.join(JSON_HANDS2['S']) + '"], '
+DEAL2_W = '"W": ["' + '", "'.join(JSON_HANDS2['W']) + '"]}'
+
+
+class TestJsonBoardSettingWriter:
+    def test_integration(self, mocker: MockFixture):
+        mock_io = mocker.MagicMock()
+        with JsonBoardSettingWriter(mock_io) as json_board_setting_writer:
+            json_board_setting_writer.write(board_id='test1',
+                                            dealer=Player.N,
+                                            deal=HANDS1,
+                                            vul=Vul.NONE)
+            json_board_setting_writer.write(board_id='test2',
+                                            dealer=Player.E,
+                                            deal=HANDS2,
+                                            vul=Vul.NS,
+                                            dda=DDA_DICT)
+
+        mock_io.write.assert_has_calls([
+            call('{"board_settings": [\n'),
+            call('{"board_id": "test1", '
+                 '"dealer": "N", '
+                 f'"deal": {DEAL1_N}{DEAL1_E}{DEAL1_S}{DEAL1_W}, '
+                 '"vulnerability": "None"'
+                 '}'),
+            call(',\n'),
+            call('{"board_id": "test2", '
+                 '"dealer": "E", '
+                 f'"deal": {DEAL2_N}{DEAL2_E}{DEAL2_S}{DEAL2_W}, '
+                 '"vulnerability": "NS", '
+                 f'{DDA_STR}'
+                 '}'),
+            call('\n]}')])
+
+
+class TestJsonLogWriter:
     @pytest.fixture(scope='function')
     def playing_history1(self, mocker: MockFixture):
         play_history = PlayingHistory(mocker.MagicMock())
@@ -45,14 +100,13 @@ class TestJsonWriter:
         # TODO: It is better to create all trick_history until trick #13.
         return play_history
 
-    # TODO: Add passed out case.
     def test_integration(self, playing_history1, playing_history2,
                          mocker: MockFixture):
         mock_io = mocker.MagicMock()
-        json_writer = JsonWriter(mock_io)
+        json_log_writer = JsonLogWriter(mock_io)
 
-        json_writer.open()
-        json_writer.write_board_result(
+        json_log_writer.open()
+        json_log_writer.write(
             board_id='test_board1',
             west_player='player-west',
             north_player='player-north',
@@ -71,7 +125,7 @@ class TestJsonWriter:
             taken_trick_num=9,
             scores={Pair.NS: 40, Pair.EW: -40})
 
-        json_writer.write_board_result(
+        json_log_writer.write(
             board_id='test_board2',
             west_player='player-west',
             north_player='player-north',
@@ -91,7 +145,7 @@ class TestJsonWriter:
             scores={Pair.NS: 300, Pair.EW: -300})
 
         # passed out
-        json_writer.write_board_result(
+        json_log_writer.write(
             board_id='test_board3',
             west_player='player-west',
             north_player='player-north',
@@ -106,26 +160,9 @@ class TestJsonWriter:
             play_history=None,
             taken_trick_num=None,
             scores={Pair.NS: 0, Pair.EW: 0},
-            dda={Player.N:
-                     {Suit.C: 1, Suit.D: 2, Suit.H: 3, Suit.S: 4, Suit.NT: 5},
-                 Player.E:
-                     {Suit.C: 6, Suit.D: 7, Suit.H: 8, Suit.S: 9, Suit.NT: 10},
-                 Player.S:
-                     {Suit.C: 11, Suit.D: 12, Suit.H: 1, Suit.S: 2, Suit.NT: 3},
-                 Player.W:
-                     {Suit.C: 4, Suit.D: 5, Suit.H: 6, Suit.S: 7, Suit.NT: 8}})
+            dda=DDA_DICT)
 
-        json_writer.close()
-
-        deal1_n = '{"N": ["' + '", "'.join(JSON_HANDS1['N']) + '"], '
-        deal1_e = '"E": ["' + '", "'.join(JSON_HANDS1['E']) + '"], '
-        deal1_s = '"S": ["' + '", "'.join(JSON_HANDS1['S']) + '"], '
-        deal1_w = '"W": ["' + '", "'.join(JSON_HANDS1['W']) + '"]}'
-
-        deal2_n = '{"N": ["' + '", "'.join(JSON_HANDS2['N']) + '"], '
-        deal2_e = '"E": ["' + '", "'.join(JSON_HANDS2['E']) + '"], '
-        deal2_s = '"S": ["' + '", "'.join(JSON_HANDS2['S']) + '"], '
-        deal2_w = '"W": ["' + '", "'.join(JSON_HANDS2['W']) + '"]}'
+        json_log_writer.close()
 
         mock_io.write.assert_has_calls([
             call('{"logs": [\n'),
@@ -133,7 +170,7 @@ class TestJsonWriter:
                  '"S": "player-south", "W": "player-west"}, '
                  '"board_id": "test_board1", '
                  '"dealer": "N", '
-                 f'"deal": {deal1_n}{deal1_e}{deal1_s}{deal1_w}, '
+                 f'"deal": {DEAL1_N}{DEAL1_E}{DEAL1_S}{DEAL1_W}, '
                  '"vulnerability": "Both", '
                  '"bid_history": ["Pass", "1NT", "2C", "3NT", "Pass", "4S", '
                  '"Pass", "4NT", "Pass", "5NT", "X", "Pass", "Pass", "Pass"], '
@@ -151,7 +188,7 @@ class TestJsonWriter:
                  '"S": "player-south", "W": "player-west"}, '
                  '"board_id": "test_board2", '
                  '"dealer": "E", '
-                 f'"deal": {deal2_n}{deal2_e}{deal2_s}{deal2_w}, '
+                 f'"deal": {DEAL2_N}{DEAL2_E}{DEAL2_S}{DEAL2_W}, '
                  '"vulnerability": "None", '
                  '"bid_history": ["1C", "1H", "Pass", "1S", "1NT", "3S", '
                  '"X", "4S", "X", "XX", "Pass", "Pass", "Pass"], '
@@ -169,7 +206,7 @@ class TestJsonWriter:
                  '"S": "player-south", "W": "player-west"}, '
                  '"board_id": "test_board3", '
                  '"dealer": "S", '
-                 f'"deal": {deal1_n}{deal1_e}{deal1_s}{deal1_w}, '
+                 f'"deal": {DEAL1_N}{DEAL1_E}{DEAL1_S}{DEAL1_W}, '
                  '"vulnerability": "NS", '
                  '"bid_history": ["Pass", "Pass", "Pass", "Pass"], '
                  '"contract": "Passed_out", '
@@ -178,9 +215,7 @@ class TestJsonWriter:
                  '"taken_trick": null, '
                  '"score_type": "MP", '
                  '"scores": {"NS": 0, "EW": 0}, '
-                 '"dda": {"N": {"C": 1, "D": 2, "H": 3, "S": 4, "NT": 5}, '
-                 '"E": {"C": 6, "D": 7, "H": 8, "S": 9, "NT": 10}, '
-                 '"S": {"C": 11, "D": 12, "H": 1, "S": 2, "NT": 3}, '
-                 '"W": {"C": 4, "D": 5, "H": 6, "S": 7, "NT": 8}}}'),
+                 f'{DDA_STR}'
+                 '}'),
             call('\n]}')
         ])

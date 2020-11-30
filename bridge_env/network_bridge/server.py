@@ -18,7 +18,7 @@ from .. import Bid, BiddingPhase, BiddingPhaseState, Card, Contract, Hands, \
     Pair, Player, Suit, Vul
 from ..data_handler.abstract_classes import BoardSetting, Parser
 from ..data_handler.json_handler.parser import JsonParser
-from ..data_handler.json_handler.writer import JsonWriter
+from ..data_handler.json_handler.writer import JsonLogWriter
 from ..data_handler.pbn_handler.parser import PbnParser
 from ..data_handler.pbn_handler.writer import Scoring
 from ..playing_phase import PlayingHistory, PlayingPhaseWithHands
@@ -621,7 +621,7 @@ class Server(SocketInterface):
             self.board_settings) + 1
 
         with open(self.output_file_path, 'w') as fw:
-            game_log_writer = JsonWriter(fw)
+            game_log_writer = JsonLogWriter(fw)
             game_log_writer.open()
             for board_number in range(1, max_board_num):
                 cards, vul, dealer, board_id, dda = None, None, None, None, None
@@ -672,7 +672,7 @@ class Server(SocketInterface):
                     scores = {declarer.pair: score,
                               declarer.pair.opponent_pair: -score}
 
-                game_log_writer.write_board_result(
+                game_log_writer.write(
                     board_id=board_id,
                     west_player=ew_team_name,
                     north_player=ns_team_name,
