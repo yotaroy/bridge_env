@@ -754,15 +754,22 @@ def main() -> None:
         # TODO: Consider streaming
         with open(path, 'r') as fp:
             board_settings = board_setting_parser.parse_board_settings(fp)
-            logger.info(f'Board settings are imported from {path}. '
-                        f'Board num = {len(board_settings)}')
 
-    # Set board settings with restart index.
-    if board_settings is not None:
+        original_len = len(board_settings)
+
+        # Set board settings with restart index.
         restart_idx = args.restart_index
         if restart_idx < 0 or len(board_settings) <= restart_idx:
             raise IndexError('Restart index is out of range.')
         board_settings = board_settings[restart_idx:]
+
+        logger.info(f'Board settings are imported from {path}. '
+                    f'Board nums = {original_len}. '
+                    f'First board index = {restart_idx} (0-idx).')
+    else:
+        logger.info('File of board settings is not set. '
+                    'Board settings will be randomly generated. '
+                    'Board nums = 100.')
 
     with Server(ip_address=args.ip_address,
                 port=args.port,
