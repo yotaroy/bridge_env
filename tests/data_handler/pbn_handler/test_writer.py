@@ -6,18 +6,18 @@ import pytest
 from pytest_mock import MockFixture
 
 from bridge_env import Bid, Contract, Hands, Player, Vul
-from bridge_env.data_handler.pbn_handler.writer import PBNWriter, Scoring
+from bridge_env.data_handler.pbn_handler.writer import PbnWriter, Scoring
 from .. import HANDS1, HANDS2, PBN_HANDS1, PBN_HANDS2
 
 
-class TestPBNWriter:
+class TestPbnWriter:
     @pytest.fixture(scope='function')
     def mock_writer(self, mocker: MockFixture):
         return mocker.MagicMock()
 
     @pytest.fixture(scope='function')
     def pbn_writer(self, mock_writer):
-        return PBNWriter(mock_writer)
+        return PbnWriter(mock_writer)
 
     @pytest.mark.parametrize(('string', 'max_line_chars', 'expected_calls'), [
         ('[Test "This is the test code. Check new lines"]', 20,
@@ -45,14 +45,14 @@ class TestPBNWriter:
     def test_write_tag_pair(self, tag, content, expected, pbn_writer,
                             mocker: MockFixture):
         mock_write_line = mocker.patch(
-            'bridge_env.data_handler.pbn_handler.writer.PBNWriter.write_line')
+            'bridge_env.data_handler.pbn_handler.writer.PbnWriter.write_line')
         pbn_writer.write_tag_pair(tag, content)
         mock_write_line.assert_called_once_with(expected)
 
     def test_create_contents_sequence(self):
         contents = ['test1', 'test2', 'test3']
         expected = 'test1;test2;test3'
-        assert PBNWriter.create_contents_sequence(contents) == expected
+        assert PbnWriter.create_contents_sequence(contents) == expected
 
     # TODO: Fix to write examples to follow a format protocol.
     @pytest.mark.parametrize(
@@ -100,7 +100,7 @@ class TestPBNWriter:
                                 pbn_writer,
                                 mocker: MockFixture):
         mock_write_tag_pair = mocker.patch(
-            'bridge_env.data_handler.pbn_handler.writer.PBNWriter.'
+            'bridge_env.data_handler.pbn_handler.writer.PbnWriter.'
             'write_tag_pair')
         # mock to_pbn() method in Hands
         mock_to_pbn = mocker.patch.object(deal, "to_pbn",

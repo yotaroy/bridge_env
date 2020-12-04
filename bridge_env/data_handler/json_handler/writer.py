@@ -3,46 +3,126 @@ from typing import Dict, IO, List, Optional
 
 from ..abstract_classes import Writer
 from ..pbn_handler.writer import Scoring
-from ... import Bid, Contract, Hands, Pair, Player, Suit
+from ... import Bid, Contract, Hands, Pair, Player, Suit, Vul
 from ...playing_phase import PlayingHistory
 
 
 class JsonWriter(Writer):
-    # TODO: Consider to use abstract method
-    # TODO: Implement context manager
+    # TODO: Consider to use abstract method (Writer)
+    TAG = ''
+
     def __init__(self, writer: IO[str]):
-        self.writer = writer
+        self._writer = writer
         self._open = False
         self._first_line = False
 
+    def __enter__(self):
+        self.open()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def open(self):
-        self.writer.write('{"logs": [\n')
+        self._writer.write('{"'
+                           f'{self.TAG}": [\n')
         self._open = True
         self._first_line = True
 
     def close(self):
         if self._first_line:
-            self.writer.write(']}')
+            self._writer.write(']}')
         else:
-            self.writer.write('\n]}')
+            self._writer.write('\n]}')
         self._open = False
 
-    def write_board_result(self,
-                           board_id: str,
-                           west_player: str,
-                           north_player: str,
-                           east_player: str,
-                           south_player: str,
-                           dealer: Player,
-                           deal: Hands,
-                           scoring: Scoring,
-                           bid_history: List[Bid],
-                           contract: Contract,
-                           play_history: Optional[PlayingHistory],
-                           taken_trick_num: Optional[int],
-                           scores: Dict[Pair, int],
-                           dda: Optional[
-                               Dict[Player, Dict[Suit, int]]] = None) -> None:
+    def _write_content(self, d: dict) -> None:
+        line = json.dumps(d, indent=None)
+        if self._first_line:
+            self._first_line = False
+        else:
+            self._writer.write(',\n')
+
+        # write a board result
+        self._writer.write(line)
+
+
+class JsonBoardSettingWriter(JsonWriter):
+    """Writer for board settings in json."""
+    TAG = 'board_settings'
+
+    def __init__(self, writer: IO[str]):
+        super().__init__(writer=writer)
+
+    def write(self,
+              board_id: str,
+              dealer: Player,
+              deal: Hands,
+              vul: Vul,
+              dda: Optional[Dict[Player, Dict[Suit, int]]] = None) -> None:
+        """Writes a board setting to a file.
+
+        :param board_id: Board id in the board setting.
+        :param dealer: Dealer of the board.
+        :param deal: Deal of the board.
+        :param vul: Vul of the board.
+        :param dda: Double dummy analysis results of the board. (optional)
+        :return: None.
+        """
+        if not self._open:
+            raise Exception('JsonWriter does not open the file.')
+        setting = {'board_id': board_id,
+                   'dealer': str(dealer),
+                   'deal': convert_deal(deal),
+                   'vulnerability': str(vul)}
+
+        if dda is not None:
+            setting['dda'] = {str(p): {str(s): v for s, v in r.items()} for p, r
+                              in dda.items()}
+        super()._write_content(setting)
+
+
+class JsonLogWriter(JsonWriter):
+    """Writer for logs in json."""
+    TAG = 'logs'
+
+    def __init__(self, writer: IO[str]):
+        super().__init__(writer=writer)
+
+    def write(self,
+              board_id: str,
+              west_player: str,
+              north_player: str,
+              east_player: str,
+              south_player: str,
+              dealer: Player,
+              deal: Hands,
+              scoring: Scoring,
+              bid_history: List[Bid],
+              contract: Contract,
+              play_history: Optional[PlayingHistory],
+              taken_trick_num: Optional[int],
+              scores: Dict[Pair, int],
+              dda: Optional[
+                  Dict[Player, Dict[Suit, int]]] = None) -> None:
+        """Writes a board setting to a file.
+
+        :param board_id: Board id in the board setting.
+        :param west_player: West player name.
+        :param north_player: North player name.
+        :param east_player: East player name.
+        :param south_player: South player name.
+        :param dealer: Dealer of the board.
+        :param deal: Deal of the board.
+        :param scoring: Scoring style.
+        :param bid_history: History of bidding (auction) phase.
+        :param contract: Contract of the board.
+        :param play_history: History of playing phase.
+        :param taken_trick_num: The number of taken tricks by declarers' team.
+        :param scores: Scores of two teams, which follows the scoring style.
+        :param dda: Double dummy analysis results of the board. (optional)
+        :return: None.
+        """
         if not self._open:
             raise Exception('JsonWriter does not open the file.')
         result = {'players': {'N': north_player,
@@ -71,14 +151,7 @@ class JsonWriter(Writer):
             result['dda'] = {str(p): {str(s): v for s, v in r.items()} for p, r
                              in dda.items()}
 
-        line = json.dumps(result, indent=None)
-        if self._first_line:
-            self._first_line = False
-        else:
-            self.writer.write(',\n')
-
-        # write a board result
-        self.writer.write(line)
+        super()._write_content(result)
 
 
 def convert_deal(deal: Hands) -> Dict[str, List[str]]:

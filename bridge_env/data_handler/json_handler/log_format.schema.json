@@ -30,7 +30,7 @@
           },
           "board_id": {
             "description": "The id of the board.",
-            "type": "integer"
+            "type": "string"
           },
           "dealer": {
             "description": "Dealer. (N, E, S or W)",
@@ -145,7 +145,16 @@
               }
             }
           }
-        }
+        },
+        "required": [
+          "board_id",
+          "dealer",
+          "deal",
+          "vulnerability",
+          "declarer",
+          "contract",
+          "taken_trick"
+        ]
       }
     }
   }
