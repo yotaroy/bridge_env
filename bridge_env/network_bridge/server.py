@@ -758,8 +758,8 @@ def main() -> None:
                         f'Board num = {len(board_settings)}')
 
     # Set board settings with restart index.
-    restart_idx = args.restart_index
     if board_settings is not None:
+        restart_idx = args.restart_index
         if restart_idx < 0 or len(board_settings) <= restart_idx:
             raise IndexError('Restart index is out of range.')
         board_settings = board_settings[restart_idx:]

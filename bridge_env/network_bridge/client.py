@@ -370,16 +370,16 @@ def main() -> None:
     parser.add_argument('-l', '--location',
                         default='N',
                         type=str,
-                        help='Player (N, E, S or W)')
+                        help='Player location. (N, E, S or W)')
     parser.add_argument('-t', '--team_name',
                         default='teamNS',
                         type=str,
-                        help='Team name')
+                        help='Team name.')
 
     args = parser.parse_args()
     player = Player[args.location]
     with Client(player=player,
-                team_name=str(player.pair),
+                team_name=args.team_name,
                 bidding_system=WeakBid(),
                 playing_system=RandomPlay(),
                 ip_address=args.ip_address,

@@ -54,9 +54,9 @@ bridge-client-ex [-h] [-p PORT] [-i IP_ADDRESS] [-l LOCATION] [-t TEAM_NAME]
 #   -i IP_ADDRESS, --ip_address IP_ADDRESS
 #                         IP address. (default=localhost)
 #   -l LOCATION, --location LOCATION
-#                         Player (N, E, S or W)
+#                         Player location. (N, E, S or W)
 #   -t TEAM_NAME, --team_name TEAM_NAME
-#                         Team name
+#                         Team name.
 ```
 
 ### Board setting and log formats
