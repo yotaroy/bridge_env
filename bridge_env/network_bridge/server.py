@@ -723,6 +723,11 @@ def main() -> None:
                         default='',
                         type=str,
                         help='Board settings file (.json or .pbn).')
+    parser.add_argument('-r', '--restart_index',
+                        default=0,
+                        type=int,
+                        help='Index of board settings to restart. '
+                             '(0-idx, default=0)')
     parser.add_argument('-o', '--output_file',
                         default='output.json',
                         type=str,
@@ -751,6 +756,13 @@ def main() -> None:
             board_settings = board_setting_parser.parse_board_settings(fp)
             logger.info(f'Board settings are imported from {path}. '
                         f'Board num = {len(board_settings)}')
+
+    # Set board settings with restart index.
+    if board_settings is not None:
+        restart_idx = args.restart_index
+        if restart_idx < 0 or len(board_settings) <= restart_idx:
+            raise IndexError('Restart index is out of range.')
+        board_settings = board_settings[restart_idx:]
 
     with Server(ip_address=args.ip_address,
                 port=args.port,
