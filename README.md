@@ -21,6 +21,8 @@ pip install '.[dev]'
 
 Protocol is [version 18](http://www.bluechipbridge.co.uk/protocol.htm).
 
+### Server
+
 Run server.
 
 ```bash
@@ -42,6 +44,25 @@ bridge-server [-h] [-p PORT] [-i IP_ADDRESS] [-b BOARD_SETTING] \
 ```
 
 If a board settings file is not set, randomly generated 100 boards setting is used.
+
+#### Use docker
+
+Build an image from a Dockerfile.
+
+```bash
+docker build -t yotaroy/bridge-server:v0.2.0 \
+  -f ./docker/network_bridge/Dockerfile .
+```
+
+Run a container for bridge-server.
+
+```bash
+docker run -it --rm yotaroy/bridge-server:v0.2.0 [OPTIONAL ARGUMENTS]
+```
+
+Optional arguments are same as the above.
+
+### Client
 
 Run an example client.
 
