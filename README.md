@@ -47,16 +47,17 @@ If a board settings file is not set, randomly generated 100 boards setting is us
 
 #### Use docker
 
-Build dockerfile.
+Build an image from a Dockerfile.
 
 ```bash
-docker build -t bridge-server:v0.2.0 -f ./docker/network_bridge/Dockerfile .
+docker build -t yotaroy/bridge-server:v0.2.0 \
+  -f ./docker/network_bridge/Dockerfile .
 ```
 
-Run docker container.
+Run a container for bridge-server.
 
 ```bash
-docker run -it --rm bridge-server:v0.2.0 [OPTIONAL ARGUMENTS]
+docker run -it --rm yotaroy/bridge-server:v0.2.0 [OPTIONAL ARGUMENTS]
 ```
 
 Optional arguments are same as the above.
