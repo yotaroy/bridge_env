@@ -86,7 +86,7 @@ class Hands:
             binaries[p] = tuple(binary)
         return binaries
 
-    def to_np_binary(self, dtype: np.dtype = np.int) -> Dict[
+    def to_np_binary(self, dtype: np.dtype = np.int32) -> Dict[
         Player, np.ndarray]:
         """Converts to 52 dims binary numpy array.
 
